@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <filter id="neon" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0   0 1 0 0 1   0 0 1 0 0  0 0 0 18 -7" result="glow" />
+            <feBlend in="SourceGraphic" in2="glow" mode="normal" />
+        </filter>
+    </defs>
+    <circle cx="40" cy="40" r="36" fill="#003B1F" stroke="#00FF85" stroke-width="2" />
+    <text x="40" y="48" font-family="Orbitron" font-size="24" fill="#00FF85" text-anchor="middle" filter="url(#neon)">HOF</text>
+</svg> 
