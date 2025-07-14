@@ -114,7 +114,7 @@ export function OTPVerificationScreen({
         {phoneNumber}
       </h1>
 
-      <div className="mt-8 flex justify-between gap-4">
+      <div className="mt-8 grid grid-cols-6 gap-2 w-full max-w-xs mx-auto">
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -126,7 +126,7 @@ export function OTPVerificationScreen({
             value={digit}
             onChange={(e) => handleChange(e.target.value, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className="otp-input w-14 h-14 text-center text-white text-2xl font-bold rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+            className="otp-input w-10 h-12 sm:w-14 sm:h-14 text-center text-white text-2xl font-bold rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-transparent"
             disabled={attemptsExceeded}
           />
         ))}

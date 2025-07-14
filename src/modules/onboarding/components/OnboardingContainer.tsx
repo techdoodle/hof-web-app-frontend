@@ -9,6 +9,7 @@ interface OnboardingContainerProps {
   showSkip?: boolean;
   onSkip?: () => void;
   title?: string;
+  fullBleed?: boolean; // <-- add this
 }
 
 export function OnboardingContainer({
@@ -19,12 +20,26 @@ export function OnboardingContainer({
   showSkip,
   onSkip,
   title,
+  fullBleed = false, // <-- default false
 }: OnboardingContainerProps) {
   return (
     <OnbaordingNavigationProvider>
       <div className="fixed inset-0 h-full min-h-screen w-full overflow-hidden bg-background">
+        {/* Background for all screens except fullBleed (welcome) */}
+        {!fullBleed && (
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: 'url(/hof-background.svg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }}
+            aria-hidden="true"
+          />
+        )}
         {/* Mobile container with max-width for larger screens */}
-        <div className="relative h-full w-full mx-auto max-w-md flex flex-col">
+        <div className={`relative h-full w-full mx-auto flex flex-col ${fullBleed ? '' : 'max-w-md'}`}>
           {/* Header */}
           {!!(showBackButton || (progress && progress > 0) || showSkip) && (
             <header className="flex items-center gap-2 px-4 py-4 justify-between">
@@ -55,7 +70,7 @@ export function OnboardingContainer({
             </header>
           )}
           {/* Content */}
-          <main className="flex-1 flex flex-col px-4 safe-bottom">
+          <main className={`flex-1 flex flex-col safe-bottom ${fullBleed ? '' : 'px-4'}`}>
             {children}
           </main>
         </div>

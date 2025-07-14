@@ -35,8 +35,8 @@ export default function OnboardingPage() {
   // Only show progress bar and skip after OTP
   const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP';
   const showSkip = showProgress;
-  const showBackButton =
-    (currentStep !== 'WELCOME' && currentStep !== 'LOGIN' && currentStep !== 'OTP_VERIFICATION') && currentStep !== 'USER_INFO' ? true : false;
+  // Show back button for all steps after LOGIN
+  const showBackButton = currentStep !== 'WELCOME' && currentStep !== 'LOGIN';
 
   const getProgress = (step: OnboardingStep): number => {
     const steps: OnboardingStep[] = [
@@ -98,6 +98,7 @@ export default function OnboardingPage() {
       progress={showProgress ? getProgress(currentStep) : 0}
       showSkip={showSkip}
       onSkip={handleSkip}
+      fullBleed={currentStep === 'WELCOME'} // <-- only for welcome screen
     >
       {currentStep === 'WELCOME' && (
         <WelcomeScreen
