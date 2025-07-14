@@ -8,6 +8,7 @@ import { getUser } from '@/lib/utils/auth';
 
 interface ProfileSetupScreenProps {
   onSubmit: (file: File) => Promise<{url: string}>;
+  onFinish: () => void;
   isLoading: boolean;
   error?: Error | null;
   userData?: UserData;
@@ -15,6 +16,7 @@ interface ProfileSetupScreenProps {
 
 export function ProfileSetupScreen({
   onSubmit,
+  onFinish,
   isLoading,
   error,
   userData,
@@ -95,8 +97,8 @@ export function ProfileSetupScreen({
   };
 
   const handleFinish = () => {
-    // Navigate to the main app
-    router.push('/landing');
+    // Navigate to position selection
+    onFinish();
   };
 
   return (
@@ -194,7 +196,7 @@ export function ProfileSetupScreen({
           size="lg"
           className="w-full"
         >
-          Finish
+          Continue
         </Button>
       </div>
     </div>

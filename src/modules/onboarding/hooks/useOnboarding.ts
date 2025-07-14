@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OnboardingRepository } from '../repository/onboarding.repository';
-import { OnboardingStep, UserInfo, GenderSelection } from '../types';
+import { OnboardingStep, UserInfo, GenderSelection, PositionSelection, TeamSelection } from '../types';
 import { storeAuthData } from '@/lib/utils/auth';
 import { getAccessToken } from '@/lib/utils/auth';
 import { getUser } from '@/lib/utils/auth';
@@ -135,6 +135,35 @@ export function useOnboarding() {
     },
   });
 
+  const updatePositionSelectionMutation = useMutation({
+    mutationFn: (positionData: PositionSelection) => {
+      if (!userId || !token) {
+        throw new Error('User ID or token not available');
+      }
+      return repository.updatePositionSelection(positionData, userId, token);
+    },
+    onSuccess: (data) => {
+      console.log("updatePositionSelectionMutation", data);
+      queryClient.setQueryData(['user'], data);
+      setCurrentStep('TEAM_SELECTION');
+    },
+  });
+
+  const updateTeamSelectionMutation = useMutation({
+    mutationFn: (teamData: TeamSelection) => {
+      if (!userId || !token) {
+        throw new Error('User ID or token not available');
+      }
+      return repository.updateTeamSelection(teamData, userId, token);
+    },
+    onSuccess: (data) => {
+      console.log("updateTeamSelectionMutation", data);
+      queryClient.setQueryData(['user'], data);
+      // Complete onboarding flow
+      router.push('/landing');
+    },
+  });
+
   const handleRequestOTP = async (otp: string) => {
     setPhoneNumber(otp);
     await requestOTPMutation.mutateAsync(otp);
@@ -165,6 +194,23 @@ export function useOnboarding() {
     return await uploadProfilePictureMutation.mutateAsync(file);
   };
 
+  const handlePositionSelection = async (positionData: PositionSelection) => {
+    await updatePositionSelectionMutation.mutateAsync(positionData).then((data) => {
+      console.log("updatePositionSelectionMutation data", data);
+      queryClient.setQueryData(['user'], data);
+      setCurrentStep('TEAM_SELECTION');
+    });
+  };
+
+  const handleTeamSelection = async (teamData: TeamSelection) => {
+    await updateTeamSelectionMutation.mutateAsync(teamData).then((data) => {
+      console.log("updateTeamSelectionMutation data", data);
+      queryClient.setQueryData(['user'], data);
+      // Complete onboarding - redirect to landing
+      router.push('/landing');
+    });
+  };
+
   const handleResendOTP = async () => {
     if (resendAttempts >= maxResendAttempts) return;
     await requestOTPMutation.mutateAsync(phoneNumber);
@@ -183,6 +229,8 @@ export function useOnboarding() {
       updateUserInfo: updateUserInfoMutation.isPending,
       updateGenderSelection: updateGenderSelectionMutation.isPending,
       uploadProfilePicture: uploadProfilePictureMutation.isPending,
+      updatePositionSelection: updatePositionSelectionMutation.isPending,
+      updateTeamSelection: updateTeamSelectionMutation.isPending,
     },
     error: {
       requestOTP: requestOTPMutation.error,
@@ -190,12 +238,16 @@ export function useOnboarding() {
       updateUserInfo: updateUserInfoMutation.error,
       updateGenderSelection: updateGenderSelectionMutation.error,
       uploadProfilePicture: uploadProfilePictureMutation.error,
+      updatePositionSelection: updatePositionSelectionMutation.error,
+      updateTeamSelection: updateTeamSelectionMutation.error,
     },
     handleRequestOTP,
     handleVerifyOTP,
     handleUpdateUserInfo,
     handleGenderSelection,
     handleUploadProfilePicture,
+    handlePositionSelection,
+    handleTeamSelection,
     otpAttempts,
     maxOtpAttempts,
     handleResendOTP,

@@ -6,7 +6,9 @@ export const OnboardingStepSchema = z.enum([
   'OTP_VERIFICATION',
   'USER_INFO',
   'GENDER_SELECTION',
-  'PROFILE_SETUP'
+  'PROFILE_SETUP',
+  'POSITION_SELECTION',
+  'TEAM_SELECTION'
 ]);
 
 export type OnboardingStep = z.infer<typeof OnboardingStepSchema>;
@@ -25,8 +27,18 @@ export const GenderSelectionSchema = z.object({
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
 });
 
+export const PositionSelectionSchema = z.object({
+  playerCategory: z.enum(['MIDFIELDER', 'STRIKER', 'DEFENDER', 'GOALKEEPER', 'CASUAL']),
+});
+
+export const TeamSelectionSchema = z.object({
+  preferredTeam: z.number(),
+});
+
 export type UserInfo = z.infer<typeof UserInfoSchema>;
 export type GenderSelection = z.infer<typeof GenderSelectionSchema>;
+export type PositionSelection = z.infer<typeof PositionSelectionSchema>;
+export type TeamSelection = z.infer<typeof TeamSelectionSchema>;
 
 export type UserData = {
   accessToken: string;
@@ -48,4 +60,23 @@ export type UserData = {
   lastName: string;
   city: string;
   gender: string;
+  preferredTeam: number | null;
+};
+
+export type FootballTeam = {
+  id: number;
+  apiTeamId: number;
+  teamName: string;
+  teamCode: string | null;
+  country: string;
+  founded: number | null;
+  national: boolean;
+  logoUrl: string | null;
+  leagueId: number | null;
+  leagueName: string | null;
+  leagueCountry: string | null;
+  season: number | null;
+  starred: boolean;
+  createdAt: string;
+  updatedAt: string;
 }; 

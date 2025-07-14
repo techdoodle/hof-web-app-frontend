@@ -1,11 +1,13 @@
 import api from '../../../lib/api';
-import { UserInfo, UserData, GenderSelection } from '../types';
+import { UserInfo, UserData, GenderSelection, PositionSelection, TeamSelection, FootballTeam } from '../types';
+import { useQueryClient } from '@tanstack/react-query';
 
 
 export class OnboardingRepository {
   private static instance: OnboardingRepository;
   private constructor() {
   }
+  private queryClient = useQueryClient();
 
   static getInstance(): OnboardingRepository {
     if (!OnboardingRepository.instance) {
@@ -124,6 +126,47 @@ export class OnboardingRepository {
 
   async getCurrentUser(): Promise<UserData> {
     const response = await api.get(`/auth/me`);
+    console.log(" getCurrentUser response.data", response.data);
+    this.queryClient.setQueryData(['user'], response.data);
+    return response.data;
+  }
+
+  async updatePositionSelection(positionData: PositionSelection, userId: number, token: string): Promise<{ success: boolean }> {
+    const response = await api.patch(
+      `/users/${userId}`,
+      positionData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+
+  async updateTeamSelection(teamData: TeamSelection, userId: number, token: string): Promise<{ success: boolean }> {
+    const response = await api.patch(
+      `/users/${userId}`,
+      teamData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+
+  async getTopTeams(limit: number = 9): Promise<FootballTeam[]> {
+    const response = await api.get(`/football-teams/top?limit=${limit}`);
+    return response.data;
+  }
+
+  async searchTeams(query: string): Promise<FootballTeam[]> {
+    if (!query.trim()) {
+      return [];
+    }
+    const response = await api.get(`/football-teams/search?q=${encodeURIComponent(query)}`);
     return response.data;
   }
 } 

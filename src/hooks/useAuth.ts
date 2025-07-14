@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAccessToken, getUser, refreshUserData, clearAuthData } from '@/lib/utils/auth';
 import { OnboardingRepository } from '@/modules/onboarding/repository/onboarding.repository';
 import { UserData } from '@/modules/onboarding/types';
@@ -8,6 +8,7 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // Check if user is authenticated on mount
   useEffect(() => {
@@ -23,8 +24,8 @@ export function useAuth() {
 
   // Query to fetch current user data
   const { data: currentUser, isLoading: isRefreshing, error, refetch } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
+    queryKey: ['user'],
+    queryFn: async (): Promise<UserData> => {
       const repository = OnboardingRepository.getInstance();
       return await repository.getCurrentUser();
     },
@@ -44,10 +45,12 @@ export function useAuth() {
   useEffect(() => {
     if (currentUser) {
       setUser(currentUser);
+      queryClient.setQueryData(['user'], currentUser);
+      console.log('currentUser', currentUser);
       // Update localStorage with fresh data
       localStorage.setItem('user', JSON.stringify(currentUser));
     }
-  }, [currentUser]);
+  }, [currentUser, queryClient]);
 
   // Handle errors
   useEffect(() => {

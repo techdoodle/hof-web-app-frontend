@@ -10,6 +10,8 @@ import { ProfileSetupScreen } from '@/modules/onboarding/components/ProfileSetup
 import { OnboardingStep, UserData } from '@/modules/onboarding/types';
 import { useRouter } from 'next/navigation';
 import { GenderSelectionScreen } from '@/modules/onboarding/components/GenderSelectionScreen';
+import { PositionSelectionScreen } from '@/modules/onboarding/components/PositionSelectionScreen';
+import { TeamSelectionScreen } from '@/modules/onboarding/components/TeamSelectionScreen';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function OnboardingPage() {
@@ -25,6 +27,8 @@ export default function OnboardingPage() {
     handleUpdateUserInfo,
     handleGenderSelection,
     handleUploadProfilePicture,
+    handlePositionSelection,
+    handleTeamSelection,
     otpAttempts,
     maxOtpAttempts,
     handleResendOTP,
@@ -36,7 +40,7 @@ export default function OnboardingPage() {
   const userData = queryClient.getQueryData(['user']);
   console.log("userData", userData);
   // Only show progress bar and skip after OTP
-  const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP';
+  const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP' || currentStep === 'POSITION_SELECTION' || currentStep === 'TEAM_SELECTION';
   const showSkip = showProgress;
   // Show back button for all steps after LOGIN, except USER_INFO (first form after OTP)
   const showBackButton = currentStep !== 'WELCOME' && currentStep !== 'LOGIN' && currentStep !== 'USER_INFO';
@@ -49,6 +53,8 @@ export default function OnboardingPage() {
       'USER_INFO',
       'GENDER_SELECTION',
       'PROFILE_SETUP',
+      'POSITION_SELECTION',
+      'TEAM_SELECTION',
     ];
     const currentIndex = steps.indexOf(step);
     return ((currentIndex + 1) / steps.length) * 100;
@@ -68,6 +74,10 @@ export default function OnboardingPage() {
         return 'About You';
       case 'PROFILE_SETUP':
         return 'Profile Setup';
+      case 'POSITION_SELECTION':
+        return 'Position';
+      case 'TEAM_SELECTION':
+        return 'Team';
       default:
         return '';
     }
@@ -82,6 +92,8 @@ export default function OnboardingPage() {
       'USER_INFO',
       'GENDER_SELECTION',
       'PROFILE_SETUP',
+      'POSITION_SELECTION',
+      'TEAM_SELECTION',
     ];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex > 0) {
@@ -155,8 +167,27 @@ export default function OnboardingPage() {
       {currentStep === 'PROFILE_SETUP' && (
         <ProfileSetupScreen
           onSubmit={handleUploadProfilePicture}
+          onFinish={() => setCurrentStep('POSITION_SELECTION')}
           isLoading={isLoading.uploadProfilePicture}
           error={error.uploadProfilePicture}
+          userData={userData as UserData}
+        />
+      )}
+
+      {currentStep === 'POSITION_SELECTION' && (
+        <PositionSelectionScreen
+          onSubmit={handlePositionSelection}
+          isLoading={isLoading.updatePositionSelection}
+          error={error.updatePositionSelection}
+          userData={userData as UserData}
+        />
+      )}
+
+      {currentStep === 'TEAM_SELECTION' && (
+        <TeamSelectionScreen
+          onSubmit={handleTeamSelection}
+          isLoading={isLoading.updateTeamSelection}
+          error={error.updateTeamSelection}
           userData={userData as UserData}
         />
       )}

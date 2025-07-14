@@ -23,6 +23,7 @@ export function GenderSelectionScreen({
   userName = 'User',
   userData,
 }: GenderSelectionScreenProps) {
+  console.log('userData', userData);
   const [selectedGender, setSelectedGender] = useState<'MALE' | 'FEMALE' | 'OTHER' | null>(null);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [facePreviewUrl, setFacePreviewUrl] = useState<string | null>(null);
@@ -33,6 +34,13 @@ export function GenderSelectionScreen({
   const [isExtractingFace, setIsExtractingFace] = useState(false);
 
   const repository = OnboardingRepository.getInstance();
+
+  useEffect(() => {
+    if (userData) {
+      setSelectedGender(userData.gender as 'MALE' | 'FEMALE' | 'OTHER');
+      setProfilePicture(userData.profilePicture);
+    }
+  }, [userData]);
 
   // Load cached image on component mount
   useEffect(() => {
@@ -175,7 +183,7 @@ export function GenderSelectionScreen({
         
         <div className="flex flex-col items-center">
           {/* Face Preview Section */}
-          {facePreviewUrl && (
+          {/* {facePreviewUrl && (
             <div className="mb-4 text-center">
               <p className="text-sm text-gray-400 mb-2">Face Preview</p>
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/30 mx-auto">
@@ -186,7 +194,7 @@ export function GenderSelectionScreen({
                 />
               </div>
             </div>
-          )}
+          )} */}
 
           <div className="relative">
             <button
