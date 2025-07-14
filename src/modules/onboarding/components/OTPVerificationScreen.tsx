@@ -8,6 +8,11 @@ interface OTPVerificationScreenProps {
   onResendOTP: () => Promise<void>;
   isLoading: boolean;
   error?: Error | null;
+  otpAttempts: number;
+  maxOtpAttempts: number;
+  resendAttempts: number;
+  maxResendAttempts: number;
+  invalidOtpError?: string | null;
 }
 
 export function OTPVerificationScreen({
@@ -16,6 +21,11 @@ export function OTPVerificationScreen({
   onResendOTP,
   isLoading,
   error,
+  otpAttempts,
+  maxOtpAttempts,
+  resendAttempts,
+  maxResendAttempts,
+  invalidOtpError,
 }: OTPVerificationScreenProps) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [validationError, setValidationError] = useState('');
@@ -91,6 +101,9 @@ export function OTPVerificationScreen({
     inputRefs[0].current?.focus();
   }, []);
 
+  const attemptsExceeded = otpAttempts >= maxOtpAttempts;
+  const resendLimitReached = resendAttempts >= maxResendAttempts;
+
   return (
     <div className="flex flex-col flex-1">
       <h1 className="text-2xl font-bold mb-4">
@@ -114,23 +127,34 @@ export function OTPVerificationScreen({
             onChange={(e) => handleChange(e.target.value, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className="otp-input w-14 h-14 text-center text-white text-2xl font-bold rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+            disabled={attemptsExceeded}
           />
         ))}
       </div>
 
-      {(validationError || error) && (
+      {(validationError || error || invalidOtpError) && (
         <p className="mt-4 text-sm text-red-600">
-          {validationError || error?.message}
+          {validationError || invalidOtpError || error?.message}
+        </p>
+      )}
+      {attemptsExceeded && (
+        <p className="mt-4 text-sm text-red-600">
+          Too many incorrect attempts. Please resend OTP.
         </p>
       )}
 
       <button
         onClick={handleResend}
         className="mt-4 text-sm text-primary hover:underline disabled:opacity-50"
-        disabled={isLoading || timer > 0}
+        disabled={isLoading || timer > 0 || resendLimitReached}
       >
         I haven't received a code ({`0:${timer.toString().padStart(2, '0')}`})
       </button>
+      {resendLimitReached && (
+        <p className="mt-2 text-sm text-red-600">
+          You have reached the maximum number of resends. Please try again later or contact support.
+        </p>
+      )}
 
       <div className="mt-auto mb-4">
         <Button
@@ -138,7 +162,7 @@ export function OTPVerificationScreen({
           isLoading={isLoading}
           size="lg"
           variant='gradient'
-          disabled={otp.some((digit) => !digit)}
+          disabled={otp.some((digit) => !digit) || attemptsExceeded}
         >
           Continue
         </Button>

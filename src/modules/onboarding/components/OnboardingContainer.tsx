@@ -26,21 +26,31 @@ export function OnboardingContainer({
         {/* Mobile container with max-width for larger screens */}
         <div className="relative h-full w-full mx-auto max-w-md flex flex-col">
           {/* Header */}
-          {!!(showBackButton || progress) && (
-            <header className="flex items-center gap-2 px-4 py-4">
-              {showBackButton && (
+          {!!(showBackButton || (progress && progress > 0) || showSkip) && (
+            <header className="flex items-center gap-2 px-4 py-4 justify-between">
+              <div className="flex items-center gap-2">
+                {showBackButton && (
+                  <button
+                    onClick={onBack}
+                    className="p-2 rounded-full hover:bg-foreground/10 focus:outline-none"
+                    aria-label="Go back"
+                  >
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                  </button>
+                )}
+                {progress !== undefined && progress > 0 && (
+                  <div className="w-48 h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#FFA726]" style={{ width: `${progress}%` }} />
+                  </div>
+                )}
+              </div>
+              {showSkip && onSkip && (
                 <button
-                  onClick={onBack}
-                  className="p-2 rounded-full hover:bg-foreground/10 focus:outline-none"
-                  aria-label="Go back"
+                  onClick={onSkip}
+                  className="ml-auto px-4 py-1 text-sm font-medium text-primary hover:underline"
                 >
-                  <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                  Skip
                 </button>
-              )}
-              {progress !== undefined && progress > 0 && (
-                <div className="w-48 h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-green-400 to-blue-500" style={{ width: `${progress}%` }} />
-                </div>
               )}
             </header>
           )}

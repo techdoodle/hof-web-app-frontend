@@ -8,8 +8,10 @@ import { OTPVerificationScreen } from '@/modules/onboarding/components/OTPVerifi
 import { UserInfoScreen } from '@/modules/onboarding/components/UserInfoScreen';
 import { ProfileSetupScreen } from '@/modules/onboarding/components/ProfileSetupScreen';
 import { OnboardingStep } from '@/modules/onboarding/types';
+import { useRouter } from 'next/navigation';
 
 export default function OnboardingPage() {
+  const router = useRouter();
   const {
     currentStep,
     setCurrentStep,
@@ -20,7 +22,19 @@ export default function OnboardingPage() {
     handleVerifyOTP,
     handleUpdateUserInfo,
     handleUploadProfilePicture,
+    otpAttempts,
+    maxOtpAttempts,
+    handleResendOTP,
+    resendAttempts,
+    maxResendAttempts,
+    invalidOtpError,
   } = useOnboarding();
+
+  // Only show progress bar and skip after OTP
+  const showProgress = currentStep === 'USER_INFO' || currentStep === 'PROFILE_SETUP';
+  const showSkip = showProgress;
+  const showBackButton =
+    (currentStep !== 'WELCOME' && currentStep !== 'LOGIN' && currentStep !== 'OTP_VERIFICATION') && currentStep !== 'USER_INFO' ? true : false;
 
   const getProgress = (step: OnboardingStep): number => {
     const steps: OnboardingStep[] = [
@@ -66,12 +80,18 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleSkip = () => {
+    router.push('/landing');
+  };
+
   return (
     <OnboardingContainer
-      showBackButton={currentStep !== 'WELCOME'}
+      showBackButton={showBackButton}
       onBack={handleBack}
       title={getStepTitle(currentStep)}
-      {...(currentStep !== 'WELCOME' ? { progress: getProgress(currentStep) } : {})}
+      progress={showProgress ? getProgress(currentStep) : 0}
+      showSkip={showSkip}
+      onSkip={handleSkip}
     >
       {currentStep === 'WELCOME' && (
         <WelcomeScreen
@@ -92,9 +112,14 @@ export default function OnboardingPage() {
         <OTPVerificationScreen
           phoneNumber={phoneNumber}
           onSubmit={handleVerifyOTP}
-          onResendOTP={() => handleRequestOTP(phoneNumber)}
+          onResendOTP={handleResendOTP}
           isLoading={isLoading.verifyOTP}
           error={error.verifyOTP}
+          otpAttempts={otpAttempts}
+          maxOtpAttempts={maxOtpAttempts}
+          resendAttempts={resendAttempts}
+          maxResendAttempts={maxResendAttempts}
+          invalidOtpError={invalidOtpError}
         />
       )}
 

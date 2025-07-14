@@ -16,6 +16,7 @@ export function UserInfoScreen({
   const [formData, setFormData] = useState<UserInfo>({
     firstName: '',
     lastName: '',
+    city: 'Delhi',
     gender: 'MALE',
   });
   const [validationError, setValidationError] = useState('');
@@ -41,7 +42,7 @@ export function UserInfoScreen({
 
   return (
     <div className="flex flex-col flex-1">
-      <h1 className="text-2xl font-bold mb-2">What's our name?</h1>
+      <h1 className="text-2xl font-bold mb-2">What's your name?</h1>
       <p className="text-gray-600 mb-8">Let us know how to properly address you</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
