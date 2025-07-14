@@ -9,6 +9,7 @@ import { UserInfoScreen } from '@/modules/onboarding/components/UserInfoScreen';
 import { ProfileSetupScreen } from '@/modules/onboarding/components/ProfileSetupScreen';
 import { OnboardingStep } from '@/modules/onboarding/types';
 import { useRouter } from 'next/navigation';
+import { GenderSelectionScreen } from '@/modules/onboarding/components/GenderSelectionScreen';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function OnboardingPage() {
     handleRequestOTP,
     handleVerifyOTP,
     handleUpdateUserInfo,
+    handleGenderSelection,
     handleUploadProfilePicture,
     otpAttempts,
     maxOtpAttempts,
@@ -31,7 +33,7 @@ export default function OnboardingPage() {
   } = useOnboarding();
 
   // Only show progress bar and skip after OTP
-  const showProgress = currentStep === 'USER_INFO' || currentStep === 'PROFILE_SETUP';
+  const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP';
   const showSkip = showProgress;
   const showBackButton =
     (currentStep !== 'WELCOME' && currentStep !== 'LOGIN' && currentStep !== 'OTP_VERIFICATION') && currentStep !== 'USER_INFO' ? true : false;
@@ -42,6 +44,7 @@ export default function OnboardingPage() {
       'LOGIN',
       'OTP_VERIFICATION',
       'USER_INFO',
+      'GENDER_SELECTION',
       'PROFILE_SETUP',
     ];
     const currentIndex = steps.indexOf(step);
@@ -58,6 +61,8 @@ export default function OnboardingPage() {
         return 'Verify OTP';
       case 'USER_INFO':
         return 'Your Info';
+      case 'GENDER_SELECTION':
+        return 'About You';
       case 'PROFILE_SETUP':
         return 'Profile Setup';
       default:
@@ -72,6 +77,7 @@ export default function OnboardingPage() {
       'LOGIN',
       'OTP_VERIFICATION',
       'USER_INFO',
+      'GENDER_SELECTION',
       'PROFILE_SETUP',
     ];
     const currentIndex = steps.indexOf(currentStep);
@@ -128,6 +134,15 @@ export default function OnboardingPage() {
           onSubmit={handleUpdateUserInfo}
           isLoading={isLoading.updateUserInfo}
           error={error.updateUserInfo}
+          setCurrentStep={setCurrentStep}
+        />
+      )}
+
+      {currentStep === 'GENDER_SELECTION' && (
+        <GenderSelectionScreen
+          onSubmit={handleGenderSelection}
+          isLoading={isLoading.updateGenderSelection}
+          error={error.updateGenderSelection}
         />
       )}
 

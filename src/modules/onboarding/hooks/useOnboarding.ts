@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { OnboardingRepository } from '../repository/onboarding.repository';
-import { OnboardingStep, UserInfo } from '../types';
+import { OnboardingStep, UserInfo, GenderSelection } from '../types';
 import { storeAuthData } from '@/lib/utils/auth';
 import { getAccessToken } from '@/lib/utils/auth';
 import { getUser } from '@/lib/utils/auth';
@@ -11,6 +11,7 @@ export function useOnboarding() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('WELCOME');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [token, setToken] = useState('');
+  const [userId, setUserId] = useState<number | null>(null);
   const [requestOTPData, setRequestOTPData] = useState<{ iv: string, encryptedOtp: string, mobile: string | number } | null>(null);
   const [otpAttempts, setOtpAttempts] = useState(0);
   const maxOtpAttempts = 3;
@@ -26,11 +27,36 @@ export function useOnboarding() {
     const token = getAccessToken();
     const user = getUser();
     if (token && user) {
-      if (user.onboardingComplete) {
-        router.replace('/landing');
-      } else {
-        setCurrentStep('USER_INFO');
-      }
+      setToken(token);
+      setUserId(user.id);
+      
+      // Refresh user data from server on page load
+      const refreshUserData = async () => {
+        try {
+          const repository = OnboardingRepository.getInstance();
+          const freshUserData = await repository.getCurrentUser();
+          
+          // Update local storage with fresh data
+          localStorage.setItem('user', JSON.stringify(freshUserData));
+          
+          // Check onboarding status with fresh data
+          if (freshUserData.onboardingComplete) {
+            router.replace('/landing');
+          } else {
+            setCurrentStep('USER_INFO');
+          }
+        } catch (error) {
+          console.error('Failed to refresh user data:', error);
+          // Fallback to cached data
+          if (user.onboardingComplete) {
+            router.replace('/landing');
+          } else {
+            setCurrentStep('USER_INFO');
+          }
+        }
+      };
+      
+      refreshUserData();
     }
   }, [router]);
 
@@ -62,6 +88,8 @@ export function useOnboarding() {
       const { accessToken, refreshToken, ...userData } = data;
       if (accessToken && refreshToken) {
         storeAuthData({ accessToken, refreshToken, ...userData });
+        setToken(accessToken);
+        setUserId(userData.id);
       }
       // Save user info in React Query cache
       queryClient.setQueryData(['user'], userData);
@@ -69,17 +97,40 @@ export function useOnboarding() {
   });
 
   const updateUserInfoMutation = useMutation({
-    mutationFn: (userInfo: UserInfo) => repository.updateUserInfo(userInfo, token),
+    mutationFn: (userInfo: UserInfo) => {
+      if (!userId || !token) {
+        throw new Error('User ID or token not available');
+      }
+      return repository.updateUserInfo(userInfo, userId, token);
+    },
+    onSuccess: () => {
+      setCurrentStep('GENDER_SELECTION');
+    },
+  });
+
+  const updateGenderSelectionMutation = useMutation({
+    mutationFn: (genderData: GenderSelection & { profilePicture?: string }) => {
+      if (!userId || !token) {
+        throw new Error('User ID or token not available');
+      }
+      return repository.updateGenderSelection(genderData, userId, token);
+    },
     onSuccess: () => {
       setCurrentStep('PROFILE_SETUP');
     },
   });
 
   const uploadProfilePictureMutation = useMutation({
-    mutationFn: (file: File) => repository.uploadProfilePicture(file, token),
+    mutationFn: (file: File) => {
+      if (!token) {
+        throw new Error('Token not available');
+      }
+      return repository.uploadProfilePicture(file, token);
+    },
   });
 
   const handleRequestOTP = async (otp: string) => {
+    setPhoneNumber(otp);
     await requestOTPMutation.mutateAsync(otp);
   };
 
@@ -88,7 +139,12 @@ export function useOnboarding() {
   };
 
   const handleUpdateUserInfo = async (userInfo: UserInfo) => {
+    console.log("handleUpdateUserInfo", userInfo);
     await updateUserInfoMutation.mutateAsync(userInfo);
+  };
+
+  const handleGenderSelection = async (genderData: GenderSelection & { profilePicture?: string }) => {
+    await updateGenderSelectionMutation.mutateAsync(genderData);
   };
 
   const handleUploadProfilePicture = async (file: File) => {
@@ -106,21 +162,25 @@ export function useOnboarding() {
     currentStep,
     setCurrentStep,
     phoneNumber,
+    userId,
     isLoading: {
       requestOTP: requestOTPMutation.isPending,
       verifyOTP: verifyOTPMutation.isPending,
       updateUserInfo: updateUserInfoMutation.isPending,
+      updateGenderSelection: updateGenderSelectionMutation.isPending,
       uploadProfilePicture: uploadProfilePictureMutation.isPending,
     },
     error: {
       requestOTP: requestOTPMutation.error,
       verifyOTP: verifyOTPMutation.error,
       updateUserInfo: updateUserInfoMutation.error,
+      updateGenderSelection: updateGenderSelectionMutation.error,
       uploadProfilePicture: uploadProfilePictureMutation.error,
     },
     handleRequestOTP,
     handleVerifyOTP,
     handleUpdateUserInfo,
+    handleGenderSelection,
     handleUploadProfilePicture,
     otpAttempts,
     maxOtpAttempts,

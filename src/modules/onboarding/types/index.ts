@@ -5,6 +5,7 @@ export const OnboardingStepSchema = z.enum([
   'LOGIN',
   'OTP_VERIFICATION',
   'USER_INFO',
+  'GENDER_SELECTION',
   'PROFILE_SETUP'
 ]);
 
@@ -17,11 +18,14 @@ export const UserInfoSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   city: z.string().min(1),
+});
+
+export const GenderSelectionSchema = z.object({
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
-  profilePicture: z.string().optional()
 });
 
 export type UserInfo = z.infer<typeof UserInfoSchema>;
+export type GenderSelection = z.infer<typeof GenderSelectionSchema>;
 
 export type UserData = {
   accessToken: string;

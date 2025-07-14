@@ -1,3 +1,5 @@
+import { OnboardingRepository } from '@/modules/onboarding/repository/onboarding.repository';
+
 // Utility functions for authentication token and user data storage
 
 export function storeAuthData({ accessToken, refreshToken, ...userData }: { accessToken: string, refreshToken: string, [key: string]: any }) {
@@ -23,4 +25,25 @@ export function clearAuthData() {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
+}
+
+export function updateUserData(userData: any) {
+  localStorage.setItem('user', JSON.stringify(userData));
+}
+
+export async function refreshUserData(): Promise<any> {
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error('No access token available');
+  }
+
+  try {
+    const repository = OnboardingRepository.getInstance();
+    const userData = await repository.getCurrentUser();
+    updateUserData(userData);
+    return userData;
+  } catch (error) {
+    console.error('Failed to refresh user data:', error);
+    throw error;
+  }
 } 
