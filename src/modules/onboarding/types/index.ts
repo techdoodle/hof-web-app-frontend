@@ -17,7 +17,8 @@ export const OTPSchema = z.string().length(6);
 export const UserInfoSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  city: z.string().min(1),
+  city: z.enum(['Gurugram', 'Noida', 'Delhi', 'Mumbai', 'Bengaluru', 'Pune']),
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
 });
 
 export const GenderSelectionSchema = z.object({
@@ -43,4 +44,8 @@ export type UserData = {
   updatedAt: string;
   username: string | null;
   valid: boolean;
+  firstName: string;
+  lastName: string;
+  city: string;
+  gender: string;
 }; 

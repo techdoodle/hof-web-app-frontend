@@ -29,7 +29,7 @@ api.interceptors.response.use(
           return api(originalRequest);
         } catch (refreshError) {
           clearAuthData();
-          window.location.href = '/login'; // or your login route
+          window.location.href = '/onboarding'; // or your login route
         }
       }
     }

@@ -7,9 +7,10 @@ import { LoginScreen } from '@/modules/onboarding/components/LoginScreen';
 import { OTPVerificationScreen } from '@/modules/onboarding/components/OTPVerificationScreen';
 import { UserInfoScreen } from '@/modules/onboarding/components/UserInfoScreen';
 import { ProfileSetupScreen } from '@/modules/onboarding/components/ProfileSetupScreen';
-import { OnboardingStep } from '@/modules/onboarding/types';
+import { OnboardingStep, UserData } from '@/modules/onboarding/types';
 import { useRouter } from 'next/navigation';
 import { GenderSelectionScreen } from '@/modules/onboarding/components/GenderSelectionScreen';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -31,12 +32,14 @@ export default function OnboardingPage() {
     maxResendAttempts,
     invalidOtpError,
   } = useOnboarding();
-
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(['user']);
+  console.log("userData", userData);
   // Only show progress bar and skip after OTP
   const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP';
   const showSkip = showProgress;
-  // Show back button for all steps after LOGIN
-  const showBackButton = currentStep !== 'WELCOME' && currentStep !== 'LOGIN';
+  // Show back button for all steps after LOGIN, except USER_INFO (first form after OTP)
+  const showBackButton = currentStep !== 'WELCOME' && currentStep !== 'LOGIN' && currentStep !== 'USER_INFO';
 
   const getProgress = (step: OnboardingStep): number => {
     const steps: OnboardingStep[] = [
@@ -136,6 +139,7 @@ export default function OnboardingPage() {
           isLoading={isLoading.updateUserInfo}
           error={error.updateUserInfo}
           setCurrentStep={setCurrentStep}
+          userData={userData as UserData}
         />
       )}
 
@@ -144,6 +148,7 @@ export default function OnboardingPage() {
           onSubmit={handleGenderSelection}
           isLoading={isLoading.updateGenderSelection}
           error={error.updateGenderSelection}
+          userData={userData as UserData}
         />
       )}
 
@@ -152,6 +157,7 @@ export default function OnboardingPage() {
           onSubmit={handleUploadProfilePicture}
           isLoading={isLoading.uploadProfilePicture}
           error={error.uploadProfilePicture}
+          userData={userData as UserData}
         />
       )}
     </OnboardingContainer>

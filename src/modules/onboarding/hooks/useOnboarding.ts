@@ -103,8 +103,12 @@ export function useOnboarding() {
       }
       return repository.updateUserInfo(userInfo, userId, token);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("updateUserInfoMutation", data);
       setCurrentStep('GENDER_SELECTION');
+    },
+    onError: (error) => {
+      console.error("updateUserInfoMutation error", error);
     },
   });
 
@@ -115,7 +119,9 @@ export function useOnboarding() {
       }
       return repository.updateGenderSelection(genderData, userId, token);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("updateGenderSelectionMutation", data);
+      queryClient.setQueryData(['user'], data);
       setCurrentStep('PROFILE_SETUP');
     },
   });
@@ -140,11 +146,19 @@ export function useOnboarding() {
 
   const handleUpdateUserInfo = async (userInfo: UserInfo) => {
     console.log("handleUpdateUserInfo", userInfo);
-    await updateUserInfoMutation.mutateAsync(userInfo);
+    await updateUserInfoMutation.mutateAsync(userInfo).then((data) => {
+      console.log("updateUserInfoMutation data", data);
+      queryClient.setQueryData(['user'], data);
+      setCurrentStep('GENDER_SELECTION');
+    });
   };
 
   const handleGenderSelection = async (genderData: GenderSelection & { profilePicture?: string }) => {
-    await updateGenderSelectionMutation.mutateAsync(genderData);
+    await updateGenderSelectionMutation.mutateAsync(genderData).then((data) => {
+      console.log("updateGenderSelectionMutation data", data);
+      queryClient.setQueryData(['user'], data);
+      setCurrentStep('PROFILE_SETUP');
+    });
   };
 
   const handleUploadProfilePicture = async (file: File) => {

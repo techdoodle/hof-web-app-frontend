@@ -1,4 +1,5 @@
 import { OnbaordingNavigationProvider } from '@/lib/ui/context/OnbaordingNavigationContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 
 interface OnboardingContainerProps {
@@ -22,6 +23,10 @@ export function OnboardingContainer({
   title,
   fullBleed = false, // <-- default false
 }: OnboardingContainerProps) {
+
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(['user']);
+
   return (
     <OnbaordingNavigationProvider>
       <div className="fixed inset-0 h-full min-h-screen w-full overflow-hidden bg-background">
@@ -44,7 +49,7 @@ export function OnboardingContainer({
           {!!(showBackButton || (progress && progress > 0) || showSkip) && (
             <header className="flex items-center gap-2 px-4 py-4 justify-between">
               <div className="flex items-center gap-2">
-                {showBackButton && (
+                {(showBackButton) && (
                   <button
                     onClick={onBack}
                     className="p-2 rounded-full hover:bg-foreground/10 focus:outline-none"

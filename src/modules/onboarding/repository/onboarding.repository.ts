@@ -95,6 +95,20 @@ export class OnboardingRepository {
     return response.data;
   }
 
+  async extractFaceFromImage(imageData: string, token: string): Promise<{ url: string }> {
+    const response = await api.post(
+      `/users/profile-picture/extract-face`,
+      { imageData },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
+  }
+
   async updateGenderSelection(genderData: GenderSelection & { profilePicture?: string }, userId: number, token: string): Promise<{ success: boolean }> {
     const response = await api.patch(
       `/users/${userId}`,
