@@ -5,15 +5,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  swcMinify: false,
   compiler: {
-    removeConsole: false,
-  },
-  experimental: {
-    swcMinifyDebugOptions: {
-      compress: false,
-      mangle: false
-    }
+    removeConsole: process.env.NODE_ENV === 'production',
   },
   reactStrictMode: true,
   images: {
@@ -26,6 +19,24 @@ const withPWAConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/, // Cache all HTTP/HTTPS requests
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
+    },
+  ],
+  buildExcludes: [/middleware-manifest.json$/],
+  publicExcludes: ['!robots.txt', '!sitemap.xml'],
 });
 
 export default withPWAConfig(nextConfig);
