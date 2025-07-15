@@ -39,7 +39,7 @@ export class OnboardingRepository {
     return response.data;
   }
 
-  async updateUserInfo(userInfo: UserInfo, userId: number, token: string): Promise<{ success: boolean }> {
+  async updateUserInfo(userInfo: any, userId: number, token: string): Promise<{ success: boolean }> {
     const response = await api.patch(
       `/users/${userId}`,
       userInfo,

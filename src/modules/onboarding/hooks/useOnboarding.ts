@@ -26,6 +26,7 @@ export function useOnboarding() {
   useEffect(() => {
     const token = getAccessToken();
     const user = getUser();
+    
     if (token && user) {
       setToken(token);
       setUserId(user.id);
@@ -33,32 +34,47 @@ export function useOnboarding() {
       // Refresh user data from server on page load
       const refreshUserData = async () => {
         try {
+          console.log('Refreshing user data from /auth/me...');
           const repository = OnboardingRepository.getInstance();
           const freshUserData = await repository.getCurrentUser();
           
           // Update local storage with fresh data
           localStorage.setItem('user', JSON.stringify(freshUserData));
+          queryClient.setQueryData(['user'], freshUserData);
           
           // Check onboarding status with fresh data
+          console.log('Fresh user data:', { 
+            id: freshUserData.id, 
+            onboardingComplete: freshUserData.onboardingComplete 
+          });
+          
           if (freshUserData.onboardingComplete) {
+            console.log('Onboarding complete, redirecting to landing...');
             router.replace('/landing');
           } else {
+            console.log('Onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
           }
         } catch (error) {
           console.error('Failed to refresh user data:', error);
+          
           // Fallback to cached data
+          console.log('Using cached user data as fallback...');
           if (user.onboardingComplete) {
+            console.log('Cached data shows onboarding complete, redirecting to landing...');
             router.replace('/landing');
           } else {
+            console.log('Cached data shows onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
           }
         }
       };
       
       refreshUserData();
+    } else {
+      console.log('No token or user found, staying on current step');
     }
-  }, [router]);
+  }, [router, queryClient]);
 
   const repository = OnboardingRepository.getInstance();
 
@@ -159,6 +175,18 @@ export function useOnboarding() {
     onSuccess: (data) => {
       console.log("updateTeamSelectionMutation", data);
       queryClient.setQueryData(['user'], data);
+      
+      // Track onboarding completion
+      console.log('Onboarding completed successfully');
+      
+      // Optional: Send analytics event
+      // analytics.track('onboarding_completed', {
+      //   userId: userId,
+      //   completedAt: new Date().toISOString(),
+      //   totalSteps: 8,
+      //   method: 'full_completion'
+      // });
+      
       // Complete onboarding flow
       router.push('/landing');
     },

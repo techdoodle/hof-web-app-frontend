@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/lib/ui/components/Button/Button';
 import { TeamSelection, UserData, FootballTeam } from '../types';
 import { OnboardingRepository } from '../repository/onboarding.repository';
+import { useOnboardingTracking } from '@/hooks/useOnboardingTracking';
 
 interface TeamSelectionScreenProps {
   onSubmit: (teamData: TeamSelection) => Promise<void>;
@@ -23,6 +24,7 @@ export function TeamSelectionScreen({
   const [topTeams, setTopTeams] = useState<FootballTeam[]>([]);
   const [searchResults, setSearchResults] = useState<FootballTeam[]>([]);
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
+  const { markOnboardingCompleted } = useOnboardingTracking();
 
   // Fetch top 9 teams on component mount
   useEffect(() => {
@@ -73,6 +75,8 @@ export function TeamSelectionScreen({
     
     await onSubmit({
       preferredTeam: selectedTeam,
+    }).then(() => {
+        markOnboardingCompleted();
     });
   };
 
@@ -121,7 +125,7 @@ export function TeamSelectionScreen({
                     <button
                       key={team.id}
                       onClick={() => handleTeamSelect(team.id)}
-                      className={`aspect-square flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
+                      className={`max-h-26 aspect-square flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
                         selectedTeam === team.id
                           ? 'border-primary bg-primary/10'
                           : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'

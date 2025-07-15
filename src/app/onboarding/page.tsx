@@ -13,6 +13,7 @@ import { GenderSelectionScreen } from '@/modules/onboarding/components/GenderSel
 import { PositionSelectionScreen } from '@/modules/onboarding/components/PositionSelectionScreen';
 import { TeamSelectionScreen } from '@/modules/onboarding/components/TeamSelectionScreen';
 import { useQueryClient } from '@tanstack/react-query';
+import { useOnboardingTracking } from '@/hooks/useOnboardingTracking';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -38,6 +39,8 @@ export default function OnboardingPage() {
   } = useOnboarding();
   const queryClient = useQueryClient();
   const userData = queryClient.getQueryData(['user']);
+  const { trackOnboardingSkipped, trackStepCompleted } = useOnboardingTracking();
+  
   console.log("userData", userData);
   // Only show progress bar and skip after OTP
   const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP' || currentStep === 'POSITION_SELECTION' || currentStep === 'TEAM_SELECTION';
@@ -102,6 +105,19 @@ export default function OnboardingPage() {
   };
 
   const handleSkip = () => {
+    // Track skip event
+    console.log('Onboarding skipped at step:', currentStep);
+    
+    // Track the skip event with current progress
+    trackOnboardingSkipped(currentStep, getProgress(currentStep));
+    
+    // Optional: Send analytics event
+    // analytics.track('onboarding_skipped', {
+    //   step: currentStep,
+    //   progress: getProgress(currentStep),
+    //   timestamp: new Date().toISOString()
+    // });
+    
     router.push('/landing');
   };
 

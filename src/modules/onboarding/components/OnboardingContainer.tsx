@@ -75,7 +75,7 @@ export function OnboardingContainer({
             </header>
           )}
           {/* Content */}
-          <main className={`flex-1 flex flex-col safe-bottom ${fullBleed ? '' : 'px-4'}`}>
+          <main className={`flex-1 flex flex-col safe-bottom ${fullBleed ? '' : 'px-4 pb-4'}`}>
             {children}
           </main>
         </div>
