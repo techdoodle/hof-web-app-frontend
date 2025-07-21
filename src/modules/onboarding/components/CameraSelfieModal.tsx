@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { faceDetector, FaceDetectionResult } from '@/lib/utils/faceDetection';
+import { realignFaceImage } from '@/lib/utils/imageUtils';
 
 interface CameraSelfieModalProps {
-  onCapture: (imageData: string) => void;
+  onCapture: (originalImage: string, processedImage: string, faceBounds: {x: number, y: number, width: number, height: number}) => void;
   onClose: () => void;
 }
 
@@ -77,20 +78,25 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
           const detectionResult = await faceDetector.detectFace(imageData);
           setFaceDetectionResult(detectionResult);
 
-          if (detectionResult.hasFace && detectionResult.hasNeck && detectionResult.confidence > 0.3) {
-            // Face and neck detected, proceed with capture
-            onCapture(imageData);
+          if (detectionResult.hasFace && detectionResult.hasNeck && detectionResult.confidence > 0.3 && detectionResult.landmarks && detectionResult.landmarks.length >= 2) {
+            // Face, neck, and both eyes detected, proceed with capture
+            let finalImageData = imageData;
+            if (detectionResult.landmarks && detectionResult.landmarks.length >= 2) {
+              finalImageData = await realignFaceImage(imageData, detectionResult.landmarks);
+            }
+            onCapture(imageData, finalImageData, detectionResult.boundingBox || { x: 0, y: 0, width: 100, height: 100 });
             stopCamera();
           } else {
-            // Show validation error
+            // Show validation error and DO NOT proceed
             setShowValidationError(true);
             setTimeout(() => setShowValidationError(false), 3000);
           }
         } catch (err) {
           console.error('Face detection error:', err);
-          // If face detection fails, still allow capture
-          onCapture(imageData);
-          stopCamera();
+          // If face detection fails, DO NOT allow capture - show error instead
+          setFaceDetectionResult({ hasFace: false, hasNeck: false, confidence: 0 });
+          setShowValidationError(true);
+          setTimeout(() => setShowValidationError(false), 3000);
         }
       }
       
@@ -111,6 +117,10 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
     
     if (faceDetectionResult.confidence < 0.3) {
       return 'Face detection confidence is low. Please improve lighting.';
+    }
+    
+    if (!faceDetectionResult.landmarks || faceDetectionResult.landmarks.length < 2) {
+      return 'Please ensure both eyes are visible in the frame.';
     }
     
     return 'Please ensure your face and neck are clearly visible.';
@@ -182,13 +192,12 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
               <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 text-center">
                 <h3 className="text-white text-lg font-semibold mb-2">Take a selfie</h3>
                 <p className="text-gray-300 text-sm">
-                  Please make sure your face and neck are<br />
-                  clearly visible in the frame
+                  Please make sure your face and neck are clearly visible in the frame
                 </p>
               </div>
 
               {/* Face Frame */}
-              <div className="w-80 h-96 border-4 border-blue-400 rounded-full opacity-80 relative">
+              <div className="w-[90vw] h-[70vh] border-4 border-blue-400 rounded-full opacity-80 relative">
                 {/* Corner guides */}
                 <div className="absolute -top-2 -left-2 w-8 h-8 border-l-4 border-t-4 border-blue-400 rounded-tl-lg"></div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 border-r-4 border-t-4 border-blue-400 rounded-tr-lg"></div>

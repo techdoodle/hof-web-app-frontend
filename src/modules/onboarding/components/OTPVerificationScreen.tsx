@@ -114,7 +114,7 @@ export function OTPVerificationScreen({
         {phoneNumber}
       </h1>
 
-      <div className="mt-8 grid grid-cols-6 gap-2 w-full max-w-xs mx-auto">
+      <div className="mt-8 grid grid-cols-6 gap-1 sm:gap-5 w-full max-w-sm sm:max-w-md mx-auto">
         {otp.map((digit, index) => (
           <input
             key={index}
