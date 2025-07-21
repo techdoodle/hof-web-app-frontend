@@ -169,4 +169,10 @@ export class OnboardingRepository {
     const response = await api.get(`/football-teams/search?q=${encodeURIComponent(query)}`);
     return response.data;
   }
+
+  async fetchCities(): Promise<string[]> {
+    const response = await api.get('/cities');
+    // Extract cityName from each city object
+    return response.data.map((city: any) => city.cityName);
+  }
 } 

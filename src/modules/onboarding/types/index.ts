@@ -19,7 +19,7 @@ export const OTPSchema = z.string().length(6);
 export const UserInfoSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  city: z.enum(['Gurugram', 'Noida', 'Delhi', 'Mumbai', 'Bengaluru', 'Pune']),
+  city: z.string(), // allow any city string
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
 });
 

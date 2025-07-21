@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/lib/ui/components/Button/Button';
 import { OnboardingStep, UserData, UserInfo } from '../types';
+import { OnboardingRepository } from '../repository/onboarding.repository';
 
 interface UserInfoScreenProps {
   onSubmit: (userInfo: UserInfo) => Promise<void>;
@@ -20,18 +21,40 @@ export function UserInfoScreen({
   const [formData, setFormData] = useState<UserInfo>({
     firstName: '',
     lastName: '',
-    city: 'Gurugram',
+    city: '',
     gender: 'MALE',
   });
+  const [cities, setCities] = useState<string[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(true);
 
   useEffect(() => {
-    console.log("userData", userData);
+    const fetchCities = async () => {
+      try {
+        const repo = OnboardingRepository.getInstance();
+        const cityList = await repo.fetchCities();
+        setCities(cityList);
+        // Default to Pune if available, else first city
+        setFormData((prev) => ({
+          ...prev,
+          city: cityList.includes('Pune') ? 'Pune' : (cityList[0] || ''),
+        }));
+      } catch (e) {
+        setCities([]);
+      } finally {
+        setCitiesLoading(false);
+      }
+    };
+    fetchCities();
+  }, []);
+
+  useEffect(() => {
     if (userData) {
+      const validGenders = ['MALE', 'FEMALE', 'OTHER'];
       setFormData({
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
-        city: (userData.city as any) || 'Gurugram',
-        gender: (userData.gender as any) || 'MALE',
+        city: userData.city || '',
+        gender: (validGenders.includes(userData.gender) ? userData.gender : 'MALE') as 'MALE' | 'FEMALE' | 'OTHER',
       });
     }
   }, [userData]);
@@ -46,7 +69,7 @@ export function UserInfoScreen({
   const handleChange = (field: keyof UserInfo, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: value as any, // Type assertion needed for enum values
+      [field]: value,
     }));
   };
 
@@ -56,7 +79,7 @@ export function UserInfoScreen({
       <p className="text-gray-400 mb-8">Let us know how to properly address you</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <div className="space-y-4">
+        <div className="space-y-4 w-full max-w-full overflow-x-auto">
           <input
             type="text"
             value={formData.firstName}
@@ -74,14 +97,18 @@ export function UserInfoScreen({
           <select
             value={formData.city}
             onChange={(e) => handleChange('city', e.target.value)}
-            className="w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+            className="w-full max-w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+            disabled={citiesLoading}
           >
-            <option value="Gurugram" className="bg-background text-white">Gurugram</option>
-            <option value="Noida" className="bg-background text-white">Noida</option>
-            <option value="Delhi" className="bg-background text-white">Delhi</option>
-            <option value="Mumbai" className="bg-background text-white">Mumbai</option>
-            <option value="Bengaluru" className="bg-background text-white">Bengaluru</option>
-            <option value="Pune" className="bg-background text-white">Pune</option>
+            {citiesLoading ? (
+              <option>Loading cities...</option>
+            ) : cities.length > 0 ? (
+              cities.map((city) => (
+                <option key={city} value={city} className="bg-background text-white">{city}</option>
+              ))
+            ) : (
+              <option>No cities found</option>
+            )}
           </select>
         </div>
 
