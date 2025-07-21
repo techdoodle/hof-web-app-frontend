@@ -182,13 +182,12 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
               <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 text-center">
                 <h3 className="text-white text-lg font-semibold mb-2">Take a selfie</h3>
                 <p className="text-gray-300 text-sm">
-                  Please make sure your face and neck are<br />
-                  clearly visible in the frame
+                  Please make sure your face and neck are clearly visible in the frame
                 </p>
               </div>
 
               {/* Face Frame */}
-              <div className="w-80 h-96 border-4 border-blue-400 rounded-full opacity-80 relative">
+              <div className="w-[90vw] h-[70vh] border-4 border-blue-400 rounded-full opacity-80 relative">
                 {/* Corner guides */}
                 <div className="absolute -top-2 -left-2 w-8 h-8 border-l-4 border-t-4 border-blue-400 rounded-tl-lg"></div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 border-r-4 border-t-4 border-blue-400 rounded-tr-lg"></div>
