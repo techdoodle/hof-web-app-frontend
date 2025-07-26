@@ -8,7 +8,7 @@ import { getUser } from '@/lib/utils/auth';
 import { useRouter } from 'next/navigation';
 
 export function useOnboarding() {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>('WELCOME');
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>('LOGIN');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [token, setToken] = useState('');
   const [userId, setUserId] = useState<number | null>(null);
