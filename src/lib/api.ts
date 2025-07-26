@@ -1,8 +1,15 @@
 import axios from 'axios';
 import { getAccessToken, getRefreshToken, storeAuthData, clearAuthData } from './utils/auth';
+import { API_CONFIG } from '@/config/api';
+
+console.log('DEBUG: API_CONFIG', API_CONFIG);
+console.log('DEBUG: API_CONFIG.baseURL', API_CONFIG.baseURL);
+console.log('DEBUG: process.env', process.env);
+console.log('DEBUG: window', window);
+console.log('DEBUG: process.env.NEXT_PUBLIC_API_BASE_URL', process.env.NEXT_PUBLIC_API_BASE_URL);
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000',
+  baseURL: API_CONFIG.baseURL,
 });
 
 api.interceptors.request.use(config => {
