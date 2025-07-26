@@ -1,11 +1,4 @@
 'use client';
-
-import { LeaderboardHeader } from '@/components/LeaderboardHeader';
-import { LeaderboardTabs } from '@/components/LeaderboardTabs';
-import { LeaderboardFilters } from '@/components/LeaderboardFilters';
-import { LeaderboardPodium } from '@/components/LeaderboardPodium';
-import { LeaderboardList } from '@/components/LeaderboardList';
-import { SeeYourselfBox } from '@/components/SeeYourselfBox';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -34,7 +27,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen w-full bg-cover bg-center bg-no-repeat flex flex-col items-center p-0" style={{ backgroundImage: 'url(/hof-background.svg)' }}>
-      <div className="w-full max-w-md mx-auto rounded-b-3xl overflow-hidden relative">
+      {/* <div className="w-full max-w-md mx-auto rounded-b-3xl overflow-hidden relative">
         <LeaderboardHeader
           title="Bengaluru Leaderboard"
           onBack={() => router.back()}
@@ -61,7 +54,9 @@ export default function LeaderboardPage() {
           isLoggedIn={isLoggedIn}
           onClick={() => router.push('/onboarding')}
         />
-      </div>
+      </div> */}
+
+      Welcome to HOF
     </div>
   );
 }
