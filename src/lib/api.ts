@@ -9,7 +9,7 @@ console.log('DEBUG: window', window);
 console.log('DEBUG: process.env.NEXT_PUBLIC_API_BASE_URL', process.env.NEXT_PUBLIC_API_BASE_URL);
 
 const api = axios.create({
-  baseURL: API_CONFIG.baseURL,
+  baseURL: 'https://hof-web-app-backend-production.up.railway.app',
 });
 
 api.interceptors.request.use(config => {
