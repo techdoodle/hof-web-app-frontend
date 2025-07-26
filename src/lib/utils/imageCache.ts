@@ -21,7 +21,10 @@ export class ImageCache {
   private maxAgeMs = 24 * 60 * 60 * 1000; // 24 hours
 
   private constructor() {
-    this.initializeDB();
+    // Only initialize IndexedDB in browser environment
+    if (typeof window !== 'undefined' && typeof indexedDB !== 'undefined') {
+      this.initializeDB();
+    }
   }
 
   static getInstance(): ImageCache {
@@ -53,8 +56,12 @@ export class ImageCache {
     return `${userId || 'anonymous'}_${btoa(url).replace(/[^a-zA-Z0-9]/g, '')}`;
   }
 
-  private async getDB(): Promise<IDBDatabase> {
-    return this.initializeDB();
+  private async getDB(): Promise<IDBDatabase | null> {
+    // Only use IndexedDB in browser environment
+    if (typeof window !== 'undefined' && typeof indexedDB !== 'undefined') {
+      return this.initializeDB();
+    }
+    return null;
   }
 
   private cleanupMemoryCache(): void {
@@ -96,9 +103,11 @@ export class ImageCache {
 
       // Store in IndexedDB
       const db = await this.getDB();
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      await store.put(cachedImage);
+      if (db) {
+        const transaction = db.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        await store.put(cachedImage);
+      }
 
     } catch (error) {
       console.error('Failed to cache image:', error);
@@ -117,23 +126,26 @@ export class ImageCache {
     // Check IndexedDB
     try {
       const db = await this.getDB();
-      const transaction = db.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
-      const request = store.get(cacheKey);
-      
-      return new Promise((resolve) => {
-        request.onsuccess = () => {
-          const result = request.result;
-          if (result && this.isValidCache(result)) {
-            // Add back to memory cache
-            this.memoryCache.set(cacheKey, result);
-            resolve(result);
-          } else {
-            resolve(null);
-          }
-        };
-        request.onerror = () => resolve(null);
-      });
+      if (db) {
+        const transaction = db.transaction([this.storeName], 'readonly');
+        const store = transaction.objectStore(this.storeName);
+        const request = store.get(cacheKey);
+        
+        return new Promise((resolve) => {
+          request.onsuccess = () => {
+            const result = request.result;
+            if (result && this.isValidCache(result)) {
+              // Add back to memory cache
+              this.memoryCache.set(cacheKey, result);
+              resolve(result);
+            } else {
+              resolve(null);
+            }
+          };
+          request.onerror = () => resolve(null);
+        });
+      }
+      return null;
     } catch (error) {
       console.error('Failed to retrieve cached image:', error);
       return null;
@@ -158,18 +170,20 @@ export class ImageCache {
     // Update IndexedDB
     try {
       const db = await this.getDB();
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      const getRequest = store.get(cacheKey);
-      
-      getRequest.onsuccess = () => {
-        const result = getRequest.result;
-        if (result) {
-          result.processedUrl = processedUrl;
-          result.timestamp = Date.now();
-          store.put(result);
-        }
-      };
+      if (db) {
+        const transaction = db.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        const getRequest = store.get(cacheKey);
+        
+        getRequest.onsuccess = () => {
+          const result = getRequest.result;
+          if (result) {
+            result.processedUrl = processedUrl;
+            result.timestamp = Date.now();
+            store.put(result);
+          }
+        };
+      }
     } catch (error) {
       console.error('Failed to update processed URL:', error);
     }
@@ -191,21 +205,23 @@ export class ImageCache {
     // Clear IndexedDB
     try {
       const db = await this.getDB();
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      
-      if (userId) {
-        const index = store.index('userId');
-        const request = index.openCursor(IDBKeyRange.only(userId));
-        request.onsuccess = (event) => {
-          const cursor = (event.target as IDBRequest).result;
-          if (cursor) {
-            cursor.delete();
-            cursor.continue();
-          }
-        };
-      } else {
-        store.clear();
+      if (db) {
+        const transaction = db.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        
+        if (userId) {
+          const index = store.index('userId');
+          const request = index.openCursor(IDBKeyRange.only(userId));
+          request.onsuccess = (event) => {
+            const cursor = (event.target as IDBRequest).result;
+            if (cursor) {
+              cursor.delete();
+              cursor.continue();
+            }
+          };
+        } else {
+          store.clear();
+        }
       }
     } catch (error) {
       console.error('Failed to clear cache:', error);
@@ -226,18 +242,20 @@ export class ImageCache {
     // Clean IndexedDB
     try {
       const db = await this.getDB();
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      const index = store.index('timestamp');
-      const request = index.openCursor(IDBKeyRange.upperBound(cutoffTime));
-      
-      request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
-        if (cursor) {
-          cursor.delete();
-          cursor.continue();
-        }
-      };
+      if (db) {
+        const transaction = db.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        const index = store.index('timestamp');
+        const request = index.openCursor(IDBKeyRange.upperBound(cutoffTime));
+        
+        request.onsuccess = (event) => {
+          const cursor = (event.target as IDBRequest).result;
+          if (cursor) {
+            cursor.delete();
+            cursor.continue();
+          }
+        };
+      }
     } catch (error) {
       console.error('Failed to cleanup expired cache:', error);
     }
@@ -261,25 +279,32 @@ export class ImageCache {
     
     try {
       const db = await this.getDB();
-      const transaction = db.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
-      const countRequest = store.count();
-      
-      return new Promise((resolve) => {
-        countRequest.onsuccess = () => {
-          resolve({
+      if (db) {
+        const transaction = db.transaction([this.storeName], 'readonly');
+        const store = transaction.objectStore(this.storeName);
+        const countRequest = store.count();
+        
+        return new Promise((resolve) => {
+          countRequest.onsuccess = () => {
+            resolve({
+              memoryItems,
+              dbItems: countRequest.result,
+              totalSize: Array.from(this.memoryCache.values())
+                .reduce((sum, item) => sum + (item.metadata?.size || 0), 0)
+            });
+          };
+          countRequest.onerror = () => resolve({
             memoryItems,
-            dbItems: countRequest.result,
-            totalSize: Array.from(this.memoryCache.values())
-              .reduce((sum, item) => sum + (item.metadata?.size || 0), 0)
+            dbItems: 0,
+            totalSize: 0
           });
-        };
-        countRequest.onerror = () => resolve({
-          memoryItems,
-          dbItems: 0,
-          totalSize: 0
         });
-      });
+      }
+      return {
+        memoryItems,
+        dbItems: 0,
+        totalSize: 0
+      };
     } catch (error) {
       return {
         memoryItems,
