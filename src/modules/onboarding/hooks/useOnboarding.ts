@@ -188,7 +188,7 @@ export function useOnboarding() {
       // });
       
       // Complete onboarding flow
-      router.push('/landing');
+      router.push('/profile');
     },
   });
 
@@ -234,8 +234,8 @@ export function useOnboarding() {
     await updateTeamSelectionMutation.mutateAsync(teamData).then((data) => {
       console.log("updateTeamSelectionMutation data", data);
       queryClient.setQueryData(['user'], data);
-      // Complete onboarding - redirect to landing
-      router.push('/landing');
+      // Complete onboarding - redirect to profile
+      router.push('/profile');
     });
   };
 

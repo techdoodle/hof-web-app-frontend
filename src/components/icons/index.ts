@@ -1,0 +1,10 @@
+export { EditIcon } from './EditIcon';
+export { ShareIcon } from './ShareIcon';
+export { CheckIcon } from './CheckIcon';
+export { LockIcon } from './LockIcon';
+export { UserIcon } from './UserIcon';
+export { TrophyIcon } from './TrophyIcon';
+export { LeaderboardIcon } from './LeaderboardIcon';
+export { PlayIcon } from './PlayIcon';
+export { ProfileIcon } from './ProfileIcon';
+export { MatchHistoryIcon } from './MatchHistoryIcon'; 
