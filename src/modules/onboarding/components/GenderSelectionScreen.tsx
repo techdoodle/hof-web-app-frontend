@@ -20,7 +20,6 @@ export function GenderSelectionScreen({
   onSubmit,
   isLoading,
   error,
-  userName = 'User',
   userData,
 }: GenderSelectionScreenProps) {
   console.log('userData', userData);
@@ -136,7 +135,7 @@ export function GenderSelectionScreen({
   return (
     <div className="flex flex-col flex-1">
       <h1 className="text-2xl font-bold mb-2">
-        Hello {userName}!
+        Hello {userData?.firstName}!
       </h1>
       <p className="text-gray-400 mb-8">Tell us more about you</p>
 
@@ -179,7 +178,7 @@ export function GenderSelectionScreen({
       </div>
 
       <div className="mb-8">
-        <h2 className="text-lg mb-4">Want your teammates to recognize you? (optional)</h2>
+        <h2 className="text-lg mb-4">Want your teammates to recognize you?</h2>
         
         <div className="flex flex-col items-center">
           {/* Face Preview Section */}

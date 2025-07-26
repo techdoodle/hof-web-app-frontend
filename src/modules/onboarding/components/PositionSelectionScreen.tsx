@@ -10,11 +10,11 @@ interface PositionSelectionScreenProps {
 }
 
 const positions = [
-  { value: 'MIDFIELDER', label: 'Midfielder', icon: '⚡' },
+  // { value: 'MIDFIELDER', label: 'Midfielder', icon: '⚡' },
   { value: 'STRIKER', label: 'Striker', icon: '⚡' },
   { value: 'DEFENDER', label: 'Defender', icon: '⚡' },
   { value: 'GOALKEEPER', label: 'Goalkeeper', icon: '⚡' },
-  { value: 'CASUAL', label: 'Casual', icon: '⚡' },
+  // { value: 'CASUAL', label: 'Casual', icon: '⚡' },
 ] as const;
 
 export function PositionSelectionScreen({

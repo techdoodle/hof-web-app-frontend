@@ -61,6 +61,15 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
               maxLength={10}
             />
           </div>
+          
+          {/* WhatsApp number information */}
+          <div className="flex items-center gap-2 mt-3">
+            <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-black text-xs font-bold">i</span>
+            </div>
+            <span className="text-green-400 text-sm">Please provide Whatsapp number</span>
+          </div>
+          
           {validationError && (
             <p className="mt-2 text-sm text-red-500">{validationError}</p>
           )}

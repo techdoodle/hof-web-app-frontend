@@ -173,6 +173,7 @@ export class OnboardingRepository {
   async fetchCities(): Promise<string[]> {
     const response = await api.get('/cities');
     // Extract cityName from each city object
+    this.queryClient.setQueryData(['cities'], response.data);
     return response.data.map((city: any) => city.cityName);
   }
 } 

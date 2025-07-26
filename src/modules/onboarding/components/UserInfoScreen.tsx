@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/lib/ui/components/Button/Button';
 import { OnboardingStep, UserData, UserInfo } from '../types';
 import { OnboardingRepository } from '../repository/onboarding.repository';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface UserInfoScreenProps {
   onSubmit: (userInfo: UserInfo) => Promise<void>;
@@ -18,10 +19,12 @@ export function UserInfoScreen({
   setCurrentStep,
   userData,
 }: UserInfoScreenProps) {
+
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<UserInfo>({
     firstName: '',
     lastName: '',
-    city: '',
+    city: userData.city ? userData.city.cityName : '',
     gender: 'MALE',
   });
   const [cities, setCities] = useState<string[]>([]);
@@ -36,7 +39,7 @@ export function UserInfoScreen({
         // Default to Pune if available, else first city
         setFormData((prev) => ({
           ...prev,
-          city: cityList.includes('Pune') ? 'Pune' : (cityList[0] || ''),
+          city: userData.city ? userData.city.cityName :  (cityList.includes('Pune') ? 'Pune' : (cityList[0] || '')),
         }));
       } catch (e) {
         setCities([]);
@@ -53,7 +56,7 @@ export function UserInfoScreen({
       setFormData({
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
-        city: userData.city || '',
+        city: userData.city ? userData.city.cityName : '',
         gender: (validGenders.includes(userData.gender) ? userData.gender : 'MALE') as 'MALE' | 'FEMALE' | 'OTHER',
       });
     }
@@ -61,9 +64,11 @@ export function UserInfoScreen({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("formData", formData);
+    const lcities = queryClient.getQueryData(['cities']);
+    let cityId = (lcities as any).find((city: any) => city.cityName === formData.city)?.id;
+    console.log("formData", formData, lcities, cityId);
     // setCurrentStep('GENDER_SELECTION');
-    await onSubmit(formData);
+    await onSubmit({...formData, city: cityId});
   };
 
   const handleChange = (field: keyof UserInfo, value: string) => {

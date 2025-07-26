@@ -36,7 +36,7 @@ export default function LandingPage() {
               <div className="space-y-1 text-sm">
                 <p><span className="font-medium">Phone:</span> {userData.phoneNumber}</p>
                 <p><span className="font-medium">Email:</span> {userData.email || 'Not provided'}</p>
-                <p><span className="font-medium">City:</span> {userData.city}</p>
+                <p><span className="font-medium">City:</span> {userData.city ? userData.city.cityName : 'Not provided'}</p>
                 <p><span className="font-medium">Gender:</span> {userData.gender}</p>
                 <p><span className="font-medium">Position:</span> {userData.playerCategory || 'Not selected'}</p>
                 <p><span className="font-medium">Onboarding Complete:</span> {userData.onboardingComplete ? 'Yes' : 'No'}</p>

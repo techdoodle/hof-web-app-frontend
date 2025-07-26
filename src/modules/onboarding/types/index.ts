@@ -19,7 +19,7 @@ export const OTPSchema = z.string().length(6);
 export const UserInfoSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  city: z.string(), // allow any city string
+  city: z.string().or(z.number()), // allow any city string
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
 });
 
@@ -58,7 +58,7 @@ export type UserData = {
   valid: boolean;
   firstName: string;
   lastName: string;
-  city: string;
+  city: any;
   gender: string;
   preferredTeam: number | null;
 };

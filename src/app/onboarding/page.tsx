@@ -55,7 +55,7 @@ export default function OnboardingPage() {
       'OTP_VERIFICATION',
       'USER_INFO',
       'GENDER_SELECTION',
-      'PROFILE_SETUP',
+      // 'PROFILE_SETUP',
       'POSITION_SELECTION',
       'TEAM_SELECTION',
     ];
@@ -75,8 +75,8 @@ export default function OnboardingPage() {
         return 'Your Info';
       case 'GENDER_SELECTION':
         return 'About You';
-      case 'PROFILE_SETUP':
-        return 'Profile Setup';
+      // case 'PROFILE_SETUP':
+      //   return 'Profile Setup';
       case 'POSITION_SELECTION':
         return 'Position';
       case 'TEAM_SELECTION':
@@ -94,7 +94,7 @@ export default function OnboardingPage() {
       'OTP_VERIFICATION',
       'USER_INFO',
       'GENDER_SELECTION',
-      'PROFILE_SETUP',
+      // 'PROFILE_SETUP',
       'POSITION_SELECTION',
       'TEAM_SELECTION',
     ];
@@ -180,7 +180,7 @@ export default function OnboardingPage() {
         />
       )}
 
-      {currentStep === 'PROFILE_SETUP' && (
+      {/* {currentStep === 'PROFILE_SETUP' && (
         <ProfileSetupScreen
           onSubmit={handleUploadProfilePicture}
           onFinish={() => setCurrentStep('POSITION_SELECTION')}
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
           error={error.uploadProfilePicture}
           userData={userData as UserData}
         />
-      )}
+      )} */}
 
       {currentStep === 'POSITION_SELECTION' && (
         <PositionSelectionScreen

@@ -33,7 +33,7 @@ export function TeamSelectionScreen({
       try {
         const repository = OnboardingRepository.getInstance();
         const teams = await repository.getTopTeams(9);
-        setTopTeams(teams);
+        setTopTeams(teams.slice(0, 9));
       } catch (error) {
         console.error('Failed to fetch top teams:', error);
         setTopTeams([]);
@@ -48,7 +48,8 @@ export function TeamSelectionScreen({
   // Search teams when query changes
   useEffect(() => {
     const searchTeams = async () => {
-      if (!searchQuery.trim()) {
+      // Only search if query has at least 3 characters
+      if (!searchQuery.trim() || searchQuery.trim().length < 3) {
         setSearchResults([]);
         return;
       }
@@ -66,7 +67,8 @@ export function TeamSelectionScreen({
       }
     };
 
-    const debounceTimer = setTimeout(searchTeams, 300);
+    // Increased debounce to 500ms
+    const debounceTimer = setTimeout(searchTeams, 500);
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
@@ -84,12 +86,12 @@ export function TeamSelectionScreen({
     setSelectedTeam(teamId);
   };
 
-  const displayTeams = searchQuery.trim() ? searchResults : topTeams;
-  const showImages = !searchQuery.trim();
+  const displayTeams = searchQuery.trim() && searchQuery.trim().length >= 3 ? searchResults : topTeams;
+  const showImages = !searchQuery.trim() || searchQuery.trim().length < 3;
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 flex flex-col">
+    <div className="flex flex-col h-full">
+      <div className="flex flex-col flex-1 min-h-0">
         <h1 className="text-2xl font-bold mb-2 text-white">
           Your favourite team
         </h1>
@@ -105,13 +107,23 @@ export function TeamSelectionScreen({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search team"
-            className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            placeholder="Search team (min 3 characters)"
+            className="w-full pl-10 pr-10 py-3 bg-gray-800/50 border border-gray-700 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Teams Grid/List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {isLoadingTeams ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -119,13 +131,13 @@ export function TeamSelectionScreen({
           ) : (
             <>
               {showImages ? (
-                // Grid layout for top teams with images
+                // Grid layout for top teams with images - fixed uniform size
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  {displayTeams.map((team) => (
+                  {displayTeams.map((team, idx) => (
                     <button
                       key={team.id}
                       onClick={() => handleTeamSelect(team.id)}
-                      className={`max-h-26 aspect-square flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
+                      className={`relative w-full h-32 flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
                         selectedTeam === team.id
                           ? 'border-primary bg-primary/10'
                           : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
@@ -135,23 +147,23 @@ export function TeamSelectionScreen({
                         <img
                           src={team.logoUrl}
                           alt={team.teamName}
-                          className="w-12 h-12 object-contain mb-2"
+                          className="w-12 h-12 object-contain mb-2 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center mb-2">
+                        <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center mb-2 flex-shrink-0">
                           <span className="text-xs font-bold text-gray-300">
                             {team.teamName.substring(0, 2).toUpperCase()}
                           </span>
                         </div>
                       )}
-                      <span className="text-xs text-center text-white leading-tight">
+                      <span className="text-xs text-center text-white leading-tight line-clamp-2">
                         {team.teamName}
                       </span>
-                      {selectedTeam === team.id && (
+                      {/* {selectedTeam === team.id && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                           <div className="w-2 h-2 bg-white rounded-full" />
                         </div>
-                      )}
+                      )} */}
                     </button>
                   ))}
                 </div>
@@ -179,11 +191,11 @@ export function TeamSelectionScreen({
                             : 'border-gray-500'
                         }`}
                       >
-                        {selectedTeam === team.id && (
+                        {/* {selectedTeam === team.id && (
                           <div className="w-full h-full rounded-full bg-primary flex items-center justify-center">
                             <div className="w-2 h-2 bg-white rounded-full" />
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </button>
                   ))}
@@ -192,7 +204,7 @@ export function TeamSelectionScreen({
 
               {displayTeams.length === 0 && !isLoadingTeams && (
                 <div className="text-center py-8 text-gray-400">
-                  {searchQuery.trim() ? 'No teams found' : 'No teams available'}
+                  {searchQuery.trim() && searchQuery.trim().length >= 3 ? 'No teams found' : 'No teams available'}
                 </div>
               )}
             </>
@@ -206,7 +218,7 @@ export function TeamSelectionScreen({
         )}
       </div>
 
-      <div className="pb-4">
+      <div className="pb-4 mt-4">
         <Button
           onClick={handleSubmit}
           disabled={!selectedTeam || isLoading}

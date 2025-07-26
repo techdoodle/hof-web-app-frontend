@@ -214,7 +214,7 @@ export function useOnboarding() {
     await updateGenderSelectionMutation.mutateAsync(genderData).then((data) => {
       console.log("updateGenderSelectionMutation data", data);
       queryClient.setQueryData(['user'], data);
-      setCurrentStep('PROFILE_SETUP');
+      setCurrentStep('POSITION_SELECTION');
     });
   };
 
