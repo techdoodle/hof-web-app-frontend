@@ -44,10 +44,10 @@ export function StatsTab({ userData }: StatsTabProps) {
 
 function UncalibratedStats({ userData }: { userData: UserData }) {
   return (
-    <div className="flex-1 p-4 space-y-6">
+    <div className="flex-1 p-4 space-y-6 mt-[46px]">
       {/* Player Info Section */}
       <div className="flex items-start justify-between">
-        <div className="flex-1">
+        <div className="flex-1 mt-[-46px]">
           <div className="text-4xl font-bold text-white mb-2">
             {userData.playerCategory?.toUpperCase() || 'FWD'}
           </div>
@@ -64,7 +64,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
             <img
               src="/dummy.png"
               alt="Jersey"
-              className="w-40 sm:w-48 md:w-56"
+              className="w-58 sm:w-48 md:w-56"
             />
             
             {/* Profile picture overlay */}
@@ -116,18 +116,46 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
       </div>
 
       {/* Calibration Message */}
-      <div className="bg-gray-800 rounded-lg p-10 border border-gray-700 flex flex-col items-center justify-center text-center">
-        <div className="text-orange-400">Your profile is uncalibrated</div>
-        <div className="text-white  font-medium mb-1">Play a match to calibrate</div>
+      <div 
+        className=" rounded-lg p-10  flex flex-col items-center justify-center text-center"
+        style={{
+          width: '362px',
+          height: '141px',
+          top: '261px',
+          left: '7px',
+          borderRadius: '16px',
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: '#374151',
+          backgroundColor: '#0B1E19',
+          gap: '10px'
+        }}
+      >
+        <div className="text-orange-400 mb-1">Your profile is uncalibrated</div>
+        <div className="text-white  font-small ">Play a match to calibrate</div>
       </div>
 
       {/* Locked Stats */}
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <div 
+        className="flex flex-col items-center justify-center py-12 space-y-4"
+       
+      >
         <div className="w-16 h-16  rounded-full flex items-center justify-center">
           <img src="/lock.svg" alt="Lock" className="w-12 h-12" />
         </div>
         <div className="text-white text-center">
-          <div className="font-medium">Calibrate to unlock stats</div>
+          <div 
+            className="font-medium"
+            style={{
+              fontFamily: 'Rajdhani',
+              fontWeight: 500,
+              fontSize: '20px',
+              lineHeight: '100%',
+              letterSpacing: '0%'
+            }}
+          >
+            Calibrate to unlock stats
+          </div>
         </div>
       </div>
     </div>
