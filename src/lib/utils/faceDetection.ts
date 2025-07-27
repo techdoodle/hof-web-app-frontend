@@ -3,8 +3,10 @@ import { FaceDetector as MediaPipeFaceDetector, FilesetResolver } from '@mediapi
 // Face detection utility for frontend validation
 export interface FaceDetectionResult {
   hasFace: boolean;
-  hasNeck: boolean;
+  hasEars: boolean; // Changed from hasNeck to hasEars
   confidence: number;
+  faceQuality: 'excellent' | 'good' | 'poor'; // New quality assessment
+  hasDisturbance: boolean; // New field to detect noise/disturbance
   boundingBox?: {
     x: number;
     y: number;
@@ -15,6 +17,10 @@ export interface FaceDetectionResult {
     x: number;
     y: number;
   }>;
+  earVisibility?: {
+    leftEar: boolean;
+    rightEar: boolean;
+  };
 }
 
 export class FaceDetector {
@@ -47,15 +53,15 @@ export class FaceDetector {
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
       );
 
-      // Create the face detector with options
+      // Create the face detector with stricter options for higher quality
       this.faceDetector = await MediaPipeFaceDetector.createFromOptions(vision, {
         baseOptions: {
           modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
           delegate: "GPU"
         },
         runningMode: "IMAGE",
-        minDetectionConfidence: 0.5,
-        minSuppressionThreshold: 0.3
+        minDetectionConfidence: 0.8, // Increased from 0.5 to 0.8 for higher confidence
+        minSuppressionThreshold: 0.5  // Increased from 0.3 to 0.5 for better filtering
       });
 
       this.isInitialized = true;
@@ -91,7 +97,7 @@ export class FaceDetector {
       };
       
       img.onerror = () => {
-        resolve({ hasFace: false, hasNeck: false, confidence: 0 });
+        resolve({ hasFace: false, hasEars: false, confidence: 0, faceQuality: 'poor', hasDisturbance: true });
       };
       
       img.src = imageData;
@@ -111,13 +117,24 @@ export class FaceDetector {
         const boundingBox = detection.boundingBox;
         
         if (!boundingBox) {
-          return { hasFace: false, hasNeck: false, confidence: 0 };
+          return { hasFace: false, hasEars: false, confidence: 0, faceQuality: 'poor', hasDisturbance: true };
         }
         
-        // Check for neck region based on face position
-        const faceBottom = boundingBox.originY + boundingBox.height;
-        const imageHeight = img.height;
-        const hasNeck = faceBottom < imageHeight * 0.8; // Face should be in upper 80% to have neck visible
+        // Get confidence score from categories
+        const confidence = detection.categories && detection.categories.length > 0 
+          ? detection.categories[0].score 
+          : 0.8;
+
+        // Require minimum confidence of 0.75 for good quality
+        if (confidence < 0.75) {
+          return { 
+            hasFace: false, 
+            hasEars: false, 
+            confidence, 
+            faceQuality: 'poor', 
+            hasDisturbance: true 
+          };
+        }
         
         // Extract landmarks if available (6 keypoints: left eye, right eye, nose tip, mouth, left ear, right ear)
         const landmarks = detection.keypoints?.map(keypoint => ({
@@ -125,25 +142,58 @@ export class FaceDetector {
           y: keypoint.y * img.height
         }));
 
-        // Get confidence score from categories
-        const confidence = detection.categories && detection.categories.length > 0 
-          ? detection.categories[0].score 
-          : 0.8;
+        // Detect ears from landmarks (keypoints 4 and 5 are typically ears in MediaPipe)
+        let earVisibility = { leftEar: false, rightEar: false };
+        let hasEars = false;
+        
+        if (landmarks && landmarks.length >= 6) {
+          // Check if ear landmarks are present and visible
+          const leftEar = landmarks[4]; // Left ear landmark
+          const rightEar = landmarks[5]; // Right ear landmark
+          
+          if (leftEar && rightEar) {
+            earVisibility.leftEar = this.isEarVisible(leftEar, boundingBox, img);
+            earVisibility.rightEar = this.isEarVisible(rightEar, boundingBox, img);
+            hasEars = earVisibility.leftEar && earVisibility.rightEar;
+          }
+        }
+
+        // Assess face quality based on confidence and ear visibility
+        let faceQuality: 'excellent' | 'good' | 'poor' = 'poor';
+        if (confidence >= 0.9 && hasEars) {
+          faceQuality = 'excellent';
+        } else if (confidence >= 0.8 && hasEars) {
+          faceQuality = 'good';
+        }
+
+        // Check for disturbances (low confidence, missing ears, face too small/large)
+        const faceArea = boundingBox.width * boundingBox.height;
+        const imageArea = img.width * img.height;
+        const faceRatio = faceArea / imageArea;
+        
+        const hasDisturbance = confidence < 0.8 || 
+                              !hasEars || 
+                              faceRatio < 0.1 || 
+                              faceRatio > 0.6 ||
+                              this.detectImageNoise(img, boundingBox);
 
         return {
           hasFace: true,
-          hasNeck,
+          hasEars,
           confidence,
+          faceQuality,
+          hasDisturbance,
           boundingBox: {
             x: boundingBox.originX,
             y: boundingBox.originY,
             width: boundingBox.width,
             height: boundingBox.height
           },
-          landmarks
+          landmarks,
+          earVisibility
         };
       } else {
-        return { hasFace: false, hasNeck: false, confidence: 0 };
+        return { hasFace: false, hasEars: false, confidence: 0, faceQuality: 'poor', hasDisturbance: true };
       }
     } catch (error) {
       console.error('MediaPipe detection error:', error);
@@ -157,7 +207,7 @@ export class FaceDetector {
     const ctx = canvas.getContext('2d');
     
     if (!ctx) {
-      return { hasFace: false, hasNeck: false, confidence: 0 };
+      return { hasFace: false, hasEars: false, confidence: 0, faceQuality: 'poor', hasDisturbance: true };
     }
 
     canvas.width = img.width;
@@ -184,20 +234,85 @@ export class FaceDetector {
     const faceRegions = this.detectFaceRegions(grayscale, canvas.width, canvas.height);
     const bestFace = this.selectBestFace(faceRegions);
 
-    if (bestFace) {
-      // Check for neck region
-      const neckY = bestFace.y + bestFace.height;
-      const hasNeck = neckY < canvas.height * 0.9 && this.detectNeckRegion(data, canvas.width, canvas.height, bestFace);
+          if (bestFace) {
+        // Check for ear region
+        const hasEars = this.detectEarRegion(data, canvas.width, canvas.height, bestFace);
+        
+        // Assess quality based on confidence and ear detection
+        let faceQuality: 'excellent' | 'good' | 'poor' = 'poor';
+        if (bestFace.confidence >= 0.8 && hasEars) {
+          faceQuality = 'good';
+        } else if (bestFace.confidence >= 0.7 && hasEars) {
+          faceQuality = 'good';
+        }
 
-      return {
-        hasFace: true,
-        hasNeck,
-        confidence: bestFace.confidence,
-        boundingBox: bestFace
-      };
+        // Check for disturbances
+        const faceArea = bestFace.width * bestFace.height;
+        const imageArea = canvas.width * canvas.height;
+        const faceRatio = faceArea / imageArea;
+        
+        const hasDisturbance = bestFace.confidence < 0.7 || 
+                              !hasEars || 
+                              faceRatio < 0.1 || 
+                              faceRatio > 0.6;
+
+        return {
+          hasFace: true,
+          hasEars,
+          confidence: bestFace.confidence,
+          faceQuality,
+          hasDisturbance,
+          boundingBox: bestFace
+        };
+      }
+
+    return { hasFace: false, hasEars: false, confidence: 0, faceQuality: 'poor', hasDisturbance: true };
+  }
+
+  private isEarVisible(earLandmark: {x: number, y: number}, boundingBox: any, img: HTMLImageElement): boolean {
+    // Check if ear landmark is within reasonable bounds and not at edge of image
+    const margin = 20; // pixels from edge
+    return earLandmark.x > margin && 
+           earLandmark.x < img.width - margin &&
+           earLandmark.y > margin && 
+           earLandmark.y < img.height - margin &&
+           earLandmark.x >= boundingBox.originX &&
+           earLandmark.x <= boundingBox.originX + boundingBox.width;
+  }
+
+  private detectImageNoise(img: HTMLImageElement, boundingBox: any): boolean {
+    // Create a small canvas to analyze the face region for noise
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return true;
+
+    canvas.width = boundingBox.width;
+    canvas.height = boundingBox.height;
+    
+    // Draw only the face region
+    ctx.drawImage(
+      img, 
+      boundingBox.originX, boundingBox.originY, boundingBox.width, boundingBox.height,
+      0, 0, boundingBox.width, boundingBox.height
+    );
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Calculate image variance to detect blur/noise
+    let sum = 0, sumSquared = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      sum += gray;
+      sumSquared += gray * gray;
     }
 
-    return { hasFace: false, hasNeck: false, confidence: 0 };
+    const pixelCount = data.length / 4;
+    const mean = sum / pixelCount;
+    const variance = (sumSquared / pixelCount) - (mean * mean);
+
+    // Low variance indicates blur or poor quality
+    return variance < 100; // Threshold for detecting poor quality
   }
 
   private detectFaceRegions(grayscale: Uint8ClampedArray, width: number, height: number): Array<{x: number, y: number, width: number, height: number, confidence: number}> {
@@ -304,17 +419,17 @@ export class FaceDetector {
     return faces[0];
   }
 
-  private detectNeckRegion(data: Uint8ClampedArray, width: number, height: number, face: {x: number, y: number, width: number, height: number}): boolean {
-    const neckStartY = face.y + face.height;
-    const neckEndY = Math.min(height, neckStartY + face.height * 0.5);
-    const neckCenterX = face.x + face.width / 2;
-    const neckWidth = face.width * 0.6;
+  private detectEarRegion(data: Uint8ClampedArray, width: number, height: number, face: {x: number, y: number, width: number, height: number}): boolean {
+    const earStartY = face.y + face.height;
+    const earEndY = Math.min(height, earStartY + face.height * 0.5);
+    const earCenterX = face.x + face.width / 2;
+    const earWidth = face.width * 0.6;
     
     let skinPixels = 0;
     let totalPixels = 0;
     
-    for (let y = neckStartY; y < neckEndY; y++) {
-      for (let x = neckCenterX - neckWidth/2; x < neckCenterX + neckWidth/2; x++) {
+    for (let y = earStartY; y < earEndY; y++) {
+      for (let x = earCenterX - earWidth/2; x < earCenterX + earWidth/2; x++) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
           const pixelIndex = (y * width + x) * 4;
           const r = data[pixelIndex];

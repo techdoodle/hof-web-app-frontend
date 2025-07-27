@@ -16,6 +16,7 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
   const [isProcessing, setIsProcessing] = useState(false);
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
   const [showValidationError, setShowValidationError] = useState(false);
+  const [guidanceMessage, setGuidanceMessage] = useState('Position your face in the frame with both ears visible');
 
   useEffect(() => {
     startCamera();
@@ -23,6 +24,61 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
       stopCamera();
     };
   }, []);
+
+  // Real-time face detection for guidance
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    
+    if (videoRef.current && !isLoading && !error) {
+      intervalId = setInterval(async () => {
+        await performRealTimeDetection();
+      }, 1000); // Check every second
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isLoading, error]);
+
+  const performRealTimeDetection = async () => {
+    if (videoRef.current && canvasRef.current && !isProcessing) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = canvas.toDataURL('image/jpeg', 0.6); // Lower quality for real-time
+
+        try {
+          const detectionResult = await faceDetector.detectFace(imageData);
+          setFaceDetectionResult(detectionResult);
+          
+          // Update guidance message based on real-time detection
+          if (!detectionResult.hasFace) {
+            setGuidanceMessage('No face detected. Position your face in the center of the frame.');
+          } else if (!detectionResult.hasEars) {
+            setGuidanceMessage('Both ears must be visible. Adjust your position or move back.');
+          } else if (detectionResult.confidence < 0.75) {
+            setGuidanceMessage('Face detection confidence is low. Ensure good lighting.');
+          } else if (detectionResult.hasDisturbance) {
+            setGuidanceMessage('Image quality is poor. Improve lighting and remove obstructions.');
+          } else if (detectionResult.faceQuality === 'poor') {
+            setGuidanceMessage('Face quality needs improvement. Better lighting and focus needed.');
+          } else {
+            setGuidanceMessage('Perfect! High quality face detected. Ready to capture!');
+          }
+        } catch (err) {
+          // Ignore real-time detection errors
+        }
+      }
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -77,24 +133,45 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
           // Detect face in the captured image
           const detectionResult = await faceDetector.detectFace(imageData);
           setFaceDetectionResult(detectionResult);
+          
+          // Update guidance message based on detection results
+          if (!detectionResult.hasFace) {
+            setGuidanceMessage('No face detected. Please position your face in the center of the frame.');
+          } else if (!detectionResult.hasEars) {
+            setGuidanceMessage('Both ears must be visible. Please adjust your position or move the camera back.');
+          } else if (detectionResult.confidence < 0.75) {
+            setGuidanceMessage('Face detection confidence is low. Ensure good lighting and clear visibility.');
+          } else if (detectionResult.hasDisturbance) {
+            setGuidanceMessage('Image quality is poor. Please ensure good lighting and remove any obstructions.');
+          } else if (detectionResult.faceQuality === 'poor') {
+            setGuidanceMessage('Face quality is not optimal. Please improve lighting and focus.');
+          } else {
+            setGuidanceMessage('Perfect! Face detected with high quality. You can now take the photo.');
+          }
 
-          if (detectionResult.hasFace && detectionResult.hasNeck && detectionResult.confidence > 0.3 && detectionResult.landmarks && detectionResult.landmarks.length >= 2) {
-            // Face, neck, and both eyes detected, proceed with capture
+          // Stricter validation: require high confidence, both ears visible, no disturbance
+          if (detectionResult.hasFace && 
+              detectionResult.hasEars && 
+              detectionResult.confidence > 0.75 && 
+              !detectionResult.hasDisturbance &&
+              detectionResult.faceQuality !== 'poor') {
+            
+            // Only proceed if we have a high-quality face with ears
             let finalImageData = imageData;
             if (detectionResult.landmarks && detectionResult.landmarks.length >= 2) {
               finalImageData = await realignFaceImage(imageData, detectionResult.landmarks);
             }
-            onCapture(imageData, finalImageData, detectionResult.boundingBox || { x: 0, y: 0, width: 100, height: 100 });
+            onCapture(imageData, finalImageData, detectionResult.boundingBox || { x: 0, y: 0, width: 100, height: 100 }); // Keep original interface
             stopCamera();
           } else {
             // Show validation error and DO NOT proceed
             setShowValidationError(true);
-            setTimeout(() => setShowValidationError(false), 3000);
+            setTimeout(() => setShowValidationError(false), 4000); // Longer display time
           }
         } catch (err) {
           console.error('Face detection error:', err);
           // If face detection fails, DO NOT allow capture - show error instead
-          setFaceDetectionResult({ hasFace: false, hasNeck: false, confidence: 0 });
+          setFaceDetectionResult({ hasFace: false, hasEars: false, confidence: 0, faceQuality: 'poor', hasDisturbance: true });
           setShowValidationError(true);
           setTimeout(() => setShowValidationError(false), 3000);
         }
@@ -105,25 +182,29 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
   };
 
   const getValidationMessage = () => {
-    if (!faceDetectionResult) return 'Please ensure your face is visible';
+    if (!faceDetectionResult) return 'Please position your face properly';
     
     if (!faceDetectionResult.hasFace) {
-      return 'No face detected. Please position your face in the frame.';
+      return 'No face detected. Please position your face in the center of the frame.';
     }
     
-    if (!faceDetectionResult.hasNeck) {
-      return 'Please ensure your neck is visible in the frame.';
+    if (!faceDetectionResult.hasEars) {
+      return 'Both ears must be visible. Please adjust your position or move the camera back.';
     }
     
-    if (faceDetectionResult.confidence < 0.3) {
-      return 'Face detection confidence is low. Please improve lighting.';
+    if (faceDetectionResult.confidence <= 0.75) {
+      return 'Face detection confidence is too low. Please ensure good lighting and clear visibility.';
     }
     
-    if (!faceDetectionResult.landmarks || faceDetectionResult.landmarks.length < 2) {
-      return 'Please ensure both eyes are visible in the frame.';
+    if (faceDetectionResult.hasDisturbance) {
+      return 'Image quality is poor. Please ensure good lighting and remove any obstructions.';
     }
     
-    return 'Please ensure your face and neck are clearly visible.';
+    if (faceDetectionResult.faceQuality === 'poor') {
+      return 'Face quality is not optimal. Please improve lighting and focus.';
+    }
+    
+    return 'Please position your face properly in the frame with both ears visible.';
   };
 
   return (
@@ -192,19 +273,81 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
               <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 text-center">
                 <h3 className="text-white text-lg font-semibold mb-2">Take a selfie</h3>
                 <p className="text-gray-300 text-sm">
-                  Please make sure your face and neck are clearly visible in the frame
+                  Position your face with both ears clearly visible (no neck required)
                 </p>
               </div>
 
-              {/* Face Frame */}
-              <div className="w-[90vw] h-[70vh] border-4 border-blue-400 rounded-full opacity-80 relative">
+              {/* Face Frame with Ear Guides */}
+              <div className={`w-[90vw] h-[60vh] border-4 rounded-full opacity-80 relative transition-colors duration-300 ${
+                faceDetectionResult?.hasFace && 
+                faceDetectionResult?.hasEars && 
+                faceDetectionResult?.confidence > 0.75 && 
+                !faceDetectionResult?.hasDisturbance &&
+                faceDetectionResult?.faceQuality !== 'poor'
+                  ? 'border-green-400'
+                  : 'border-blue-400'
+              }`}>
+                {/* Ear guides */}
+                <div className="absolute -left-6 top-16 w-10 h-16 border-2 border-white border-dashed rounded-full opacity-50"></div>
+                <div className="absolute -right-6 top-16 w-10 h-16 border-2 border-white border-dashed rounded-full opacity-50"></div>
+                
                 {/* Corner guides */}
-                <div className="absolute -top-2 -left-2 w-8 h-8 border-l-4 border-t-4 border-blue-400 rounded-tl-lg"></div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 border-r-4 border-t-4 border-blue-400 rounded-tr-lg"></div>
-                <div className="absolute -bottom-2 -left-2 w-8 h-8 border-l-4 border-b-4 border-blue-400 rounded-bl-lg"></div>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 border-r-4 border-b-4 border-blue-400 rounded-br-lg"></div>
+                <div className={`absolute -top-2 -left-2 w-8 h-8 border-l-4 border-t-4 rounded-tl-lg transition-colors duration-300 ${
+                  faceDetectionResult?.hasFace && 
+                  faceDetectionResult?.hasEars && 
+                  faceDetectionResult?.confidence > 0.75 && 
+                  !faceDetectionResult?.hasDisturbance &&
+                  faceDetectionResult?.faceQuality !== 'poor'
+                    ? 'border-green-400'
+                    : 'border-blue-400'
+                }`}></div>
+                <div className={`absolute -top-2 -right-2 w-8 h-8 border-r-4 border-t-4 rounded-tr-lg transition-colors duration-300 ${
+                  faceDetectionResult?.hasFace && 
+                  faceDetectionResult?.hasEars && 
+                  faceDetectionResult?.confidence > 0.75 && 
+                  !faceDetectionResult?.hasDisturbance &&
+                  faceDetectionResult?.faceQuality !== 'poor'
+                    ? 'border-green-400'
+                    : 'border-blue-400'
+                }`}></div>
+                <div className={`absolute -bottom-2 -left-2 w-8 h-8 border-l-4 border-b-4 rounded-bl-lg transition-colors duration-300 ${
+                  faceDetectionResult?.hasFace && 
+                  faceDetectionResult?.hasEars && 
+                  faceDetectionResult?.confidence > 0.75 && 
+                  !faceDetectionResult?.hasDisturbance &&
+                  faceDetectionResult?.faceQuality !== 'poor'
+                    ? 'border-green-400'
+                    : 'border-blue-400'
+                }`}></div>
+                <div className={`absolute -bottom-2 -right-2 w-8 h-8 border-r-4 border-b-4 rounded-br-lg transition-colors duration-300 ${
+                  faceDetectionResult?.hasFace && 
+                  faceDetectionResult?.hasEars && 
+                  faceDetectionResult?.confidence > 0.75 && 
+                  !faceDetectionResult?.hasDisturbance &&
+                  faceDetectionResult?.faceQuality !== 'poor'
+                    ? 'border-green-400'
+                    : 'border-blue-400'
+                }`}></div>
               </div>
             </div>
+          </div>
+
+          {/* Real-time Guidance Message */}
+          <div className="absolute top-4 left-4 right-4 bg-black bg-opacity-70 rounded-lg p-3 text-white text-center text-sm">
+            <p className="font-medium">{guidanceMessage}</p>
+            {faceDetectionResult && (
+              <div className="mt-2 flex justify-center space-x-4 text-xs">
+                <span className={faceDetectionResult.hasFace ? 'text-green-400' : 'text-red-400'}>
+                  Face: {faceDetectionResult.hasFace ? '✓' : '✗'}
+                </span>
+                <span className={faceDetectionResult.hasEars ? 'text-green-400' : 'text-red-400'}>
+                  Ears: {faceDetectionResult.hasEars ? '✓' : '✗'}
+                </span>
+                <span className={faceDetectionResult.confidence > 0.75 ? 'text-green-400' : 'text-orange-400'}>
+                  Quality: {Math.round(faceDetectionResult.confidence * 100)}%
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Validation Error */}
@@ -228,11 +371,67 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <button
               onClick={validateAndCapture}
-              disabled={isLoading || !!error || isProcessing}
-              className="w-20 h-20 bg-white rounded-full border-4 border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-50"
+              disabled={
+                isLoading || 
+                !!error || 
+                isProcessing || 
+                !faceDetectionResult?.hasFace ||
+                !faceDetectionResult?.hasEars ||
+                faceDetectionResult?.confidence <= 0.75 ||
+                faceDetectionResult?.hasDisturbance ||
+                faceDetectionResult?.faceQuality === 'poor'
+              }
+              className={`w-20 h-20 rounded-full border-4 flex items-center justify-center transition-all duration-300 ${
+                faceDetectionResult?.hasFace && 
+                faceDetectionResult?.hasEars && 
+                faceDetectionResult?.confidence > 0.75 && 
+                !faceDetectionResult?.hasDisturbance &&
+                faceDetectionResult?.faceQuality !== 'poor' &&
+                !isLoading && !error && !isProcessing
+                  ? 'bg-green-500 border-green-400 hover:bg-green-600 hover:scale-110'
+                  : 'bg-white border-gray-300 hover:bg-gray-100 disabled:opacity-50'
+              }`}
             >
-              <div className="w-16 h-16 bg-white rounded-full border-2 border-gray-400"></div>
+              <div className={`w-16 h-16 rounded-full border-2 transition-colors duration-300 ${
+                faceDetectionResult?.hasFace && 
+                faceDetectionResult?.hasEars && 
+                faceDetectionResult?.confidence > 0.75 && 
+                !faceDetectionResult?.hasDisturbance &&
+                faceDetectionResult?.faceQuality !== 'poor' &&
+                !isLoading && !error && !isProcessing
+                  ? 'bg-white border-green-200'
+                  : 'bg-white border-gray-400'
+              }`}>
+                {isProcessing && (
+                  <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                )}
+              </div>
             </button>
+            
+            {/* Capture button status text */}
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-center">
+              <p className={`text-xs font-medium ${
+                faceDetectionResult?.hasFace && 
+                faceDetectionResult?.hasEars && 
+                faceDetectionResult?.confidence > 0.75 && 
+                !faceDetectionResult?.hasDisturbance &&
+                faceDetectionResult?.faceQuality !== 'poor' &&
+                !isLoading && !error && !isProcessing
+                  ? 'text-green-400'
+                  : 'text-gray-400'
+              }`}>
+                {isProcessing ? 'Processing...' : 
+                 faceDetectionResult?.hasFace && 
+                 faceDetectionResult?.hasEars && 
+                 faceDetectionResult?.confidence > 0.75 && 
+                 !faceDetectionResult?.hasDisturbance &&
+                 faceDetectionResult?.faceQuality !== 'poor' &&
+                 !isLoading && !error && !isProcessing
+                   ? 'Tap to Capture'
+                   : 'Adjust Position'
+                }
+              </p>
+            </div>
           </div>
         </div>
 
