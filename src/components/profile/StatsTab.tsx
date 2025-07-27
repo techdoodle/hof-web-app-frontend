@@ -116,15 +116,15 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
       </div>
 
       {/* Calibration Message */}
-      <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-        <div className="text-orange-400 font-medium mb-1">Your profile is uncalibrated</div>
-        <div className="text-white">Play a match to calibrate</div>
+      <div className="bg-gray-800 rounded-lg p-10 border border-gray-700 flex flex-col items-center justify-center text-center">
+        <div className="text-orange-400">Your profile is uncalibrated</div>
+        <div className="text-white  font-medium mb-1">Play a match to calibrate</div>
       </div>
 
       {/* Locked Stats */}
       <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center">
-          <LockIcon className="w-8 h-8 text-gray-500" />
+        <div className="w-16 h-16  rounded-full flex items-center justify-center">
+          <img src="/lock.svg" alt="Lock" className="w-12 h-12" />
         </div>
         <div className="text-white text-center">
           <div className="font-medium">Calibrate to unlock stats</div>
