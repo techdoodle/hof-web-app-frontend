@@ -114,15 +114,16 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
           </div> */}
         </div>
       </div>
-
+ 
       {/* Calibration Message */}
       <div 
         className=" rounded-lg p-10  flex flex-col items-center justify-center text-center"
         style={{
+          position: 'relative',
           width: '362px',
           height: '141px',
-          top: '261px',
-          left: '7px',
+          // top: '261px',
+          // left: '7px',
           borderRadius: '16px',
           borderWidth: '1px',
           borderStyle: 'solid',
@@ -131,6 +132,25 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
           gap: '10px'
         }}
       >
+        <div className="text-center mt-2" style={{
+  position: 'absolute',
+  top: '-65px',
+  left: '10px',
+  gap: '5px',
+  // left: '100px',
+ }}>
+            <h2 className="text-xl font-bold text-white" style={{
+              fontSize: '30px',
+              marginBottom: '10px',
+            }}>
+              {userData.firstName} 
+            </h2>
+            <h2 className="text-xl font-bold text-white"  style={{
+              fontSize: '30px',
+            }}>
+               {userData.lastName}
+            </h2>
+          </div>
         <div className="text-orange-400 mb-1">Your profile is uncalibrated</div>
         <div className="text-white  font-small ">Play a match to calibrate</div>
       </div>
