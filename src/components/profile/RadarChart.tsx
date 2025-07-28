@@ -1,154 +1,236 @@
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+
 interface RadarChartProps {
-  data: {
-    shooting: number;
-    dribbling: number;
-    passing: number;
-    defending: number;
-    physical: number;
-  };
+  data: any;
 }
 
+// Dynamically import Highcharts components to avoid SSR issues
+const HighchartsReact = dynamic(() => import('highcharts-react-official'), {
+  ssr: false,
+});
+
 export function RadarChart({ data }: RadarChartProps) {
-  const size = 200;
-  const center = size / 2;
-  const radius = 80;
-  
-  // Convert data to polar coordinates
-  const attributes = [
-    { name: 'Shooting', value: data.shooting, angle: 0 }, // Top
-    { name: 'Dribbling', value: data.dribbling, angle: 72 }, // Top right
-    { name: 'Passing', value: data.passing, angle: 144 }, // Bottom right
-    { name: 'Defending', value: data.defending, angle: 216 }, // Bottom left
-    { name: 'Physical', value: data.physical, angle: 288 }, // Top left
-  ];
+  const [isClient, setIsClient] = useState(false);
+  const [Highcharts, setHighcharts] = useState<any>(null);
 
-  // Generate polygon points
-  const points = attributes.map(attr => {
-    const angle = (attr.angle * Math.PI) / 180;
-    const r = (attr.value / 100) * radius;
-    const x = center + r * Math.sin(angle);
-    const y = center - r * Math.cos(angle);
-    return `${x},${y}`;
-  }).join(' ');
-
-  // Generate grid circles
-  const gridCircles = [20, 40, 60, 80, 100].map(value => {
-    const r = (value / 100) * radius;
-    return (
-      <circle
-        key={value}
-        cx={center}
-        cy={center}
-        r={r}
-        fill="none"
-        stroke="#374151"
-        strokeWidth="1"
-        opacity="0.3"
-      />
-    );
-  });
-
-  // Generate axis lines
-  const axisLines = attributes.map(attr => {
-    const angle = (attr.angle * Math.PI) / 180;
-    const x = center + radius * Math.sin(angle);
-    const y = center - radius * Math.cos(angle);
-    return (
-      <line
-        key={attr.name}
-        x1={center}
-        y1={center}
-        x2={x}
-        y2={y}
-        stroke="#374151"
-        strokeWidth="1"
-        opacity="0.3"
-      />
-    );
-  });
-
-  // Generate labels
-  const labels = attributes.map(attr => {
-    const angle = (attr.angle * Math.PI) / 180;
-    const labelRadius = radius + 20;
-    const x = center + labelRadius * Math.sin(angle);
-    const y = center - labelRadius * Math.cos(angle);
+  useEffect(() => {
+    setIsClient(true);
     
-    // Adjust text anchor and alignment based on angle
-    let textAnchor = 'middle';
-    let dominantBaseline = 'middle';
+    // Dynamically import Highcharts and initialize polar charts
+    const loadHighcharts = async () => {
+      try {
+        const HighchartsModule = await import('highcharts');
+        const highchartsMore = await import('highcharts/highcharts-more');
+        
+        // Initialize the more module properly
+        const HighchartsInstance = HighchartsModule.default;
+        
+        // Use a different approach to call the module
+        const moreModule = highchartsMore.default as any;
+        if (typeof moreModule === 'function') {
+          moreModule(HighchartsInstance);
+        }
+        
+        setHighcharts(HighchartsInstance);
+      } catch (error) {
+        console.error('Error loading Highcharts:', error);
+      }
+    };
     
-    if (attr.angle === 0) {
-      dominantBaseline = 'auto';
-    } else if (attr.angle === 180) {
-      dominantBaseline = 'hanging';
-    } else if (attr.angle < 90 || attr.angle > 270) {
-      textAnchor = 'start';
-    } else if (attr.angle > 90 && attr.angle < 270) {
-      textAnchor = 'end';
-    }
+    loadHighcharts();
+  }, []);
 
+  // Don't render until Highcharts is loaded
+  if (!isClient || !Highcharts) {
     return (
-      <text
-        key={attr.name}
-        x={x}
-        y={y}
-        textAnchor={textAnchor}
-        dominantBaseline={dominantBaseline}
-        className="text-xs text-gray-400 fill-current"
-      >
-        {attr.name}
-      </text>
+      <div className="w-full">
+        <div className="flex justify-center">
+          <div className="w-full max-w-xs h-64 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </div>
     );
-  });
+  }
 
-  // Generate data points
-  const dataPoints = attributes.map(attr => {
-    const angle = (attr.angle * Math.PI) / 180;
-    const r = (attr.value / 100) * radius;
-    const x = center + r * Math.sin(angle);
-    const y = center - r * Math.cos(angle);
-    
-    return (
-      <circle
-        key={attr.name}
-        cx={x}
-        cy={y}
-        r="4"
-        fill="#10B981"
-        className="drop-shadow-sm"
-      />
-    );
-  });
+  const chartOptions: any = {
+    chart: {
+      polar: true,
+      type: 'line',
+      backgroundColor: 'transparent',
+      height: 300,
+    },
+    title: {
+      text: '',
+    },
+    pane: {
+      startAngle: 0,
+      endAngle: 360,
+    },
+    xAxis: {
+      tickInterval: 72,
+      min: 0,
+      max: 360,
+      labels: {
+        format: '{value}°',
+      },
+      lineWidth: 0,
+      minorGridLineWidth: 0,
+      minorTickLength: 0,
+      tickLength: 0,
+      gridLineWidth: 1,
+      gridLineColor: '#F1F1F140',
+      gridLineDashStyle: 'Solid',
+    },
+    yAxis: {
+        gridLineInterpolation: 'polygon',
+      min: 0,
+      max: 100,
+      tickInterval: 20,
+      categories: [
+        'Shooting', 'Dribbling', 'Passing', 'Defending', 'Physical'
+      ],
+      lineWidth: 0,
+      minorGridLineWidth: 0,
+      minorTickLength: 0,
+      tickLength: 0,
+      gridLineWidth: 1,
+      gridLineColor: '#374151',
+      gridLineDashStyle: 'Solid',
+    },
+    plotOptions: {
+      series: {
+        pointStart: 0,
+        pointInterval: 72,
+      },
+      area: {
+        pointPlacement: 'on',
+      },
+    },
+    series: [
+      {
+        type: 'area',
+        name: 'Player Stats',
+        data: [
+          10,
+          20,
+          30,
+          40,
+          50,
+          60,
+          70,
+          80,
+        ],
+        color: '#10B981',
+        fillOpacity: 0.2,
+        lineWidth: 2,
+        marker: {
+          enabled: true,
+          radius: 4,
+          fillColor: '#10B981',
+          lineWidth: 0,
+        },
+      },
+    ],
+    legend: {
+      enabled: false,
+    },
+    credits: {
+      enabled: false,
+    },
+    tooltip: {
+      formatter: function(this: any) {
+        const categories = ['Shooting', 'Dribbling', 'Passing', 'Defending', 'Physical'];
+        const index = Math.floor(this.x / 72);
+        if (index < categories.length) {
+          return `<b>${categories[index]}</b><br/>Value: ${this.y}`;
+        }
+        return `<b>Shooting</b><br/>Value: ${this.y}`;
+      },
+    },
+  };
+
+//   const chartOptions = {
+
+//     chart: {
+//         polar: true,
+//         type: 'line',
+//         backgroundColor: 'transparent',
+//         height: 300,
+//     },
+
+//     title: null,
+
+//     pane: {
+//         size: '80%'
+//     },
+
+//     xAxis: {
+//         categories: [
+//             'Sales', 'Marketing', 'Development', 'Customer Support',
+//             'Information Technology', 'Administration'
+//         ],
+//         tickmarkPlacement: 'on',
+//         lineWidth: 0
+//     },
+
+//     yAxis: {
+//         gridLineInterpolation: 'polygon',
+//         lineWidth: 0,
+//         min: 0
+//     },
+
+//     tooltip: {
+//         shared: true,
+//         pointFormat: '<span style="color:{series.color}">{series.name}: <b>' +
+//             '${point.y:,.0f}</b><br/>'
+//     },
+
+//     legend: {
+//         align: 'right',
+//         verticalAlign: 'middle',
+//         layout: 'vertical'
+//     },
+
+//     series: [{
+//         name: 'Allocated Budget',
+//         data: [43000, 19000, 60000, 35000, 17000, 10000],
+//         pointPlacement: 'on'
+//     }, {
+//         name: 'Actual Spending',
+//         data: [50000, 39000, 42000, 31000, 26000, 14000],
+//         pointPlacement: 'on'
+//     }],
+
+//     responsive: {
+//         rules: [{
+//             condition: {
+//                 maxWidth: 500
+//             },
+//             chartOptions: {
+//                 title: {
+//                     x: 0
+//                 },
+//                 legend: {
+//                     align: 'center',
+//                     verticalAlign: 'bottom',
+//                     layout: 'horizontal'
+//                 },
+//                 pane: {
+//                     size: '70%'
+//                 }
+//             }
+//         }]
+//     }
+// }
 
   return (
     <div className="w-full">
-      <div className="text-center mb-4">
-        <h3 className="text-lg font-semibold text-white">Player Attributes</h3>
-      </div>
       <div className="flex justify-center">
-        <svg width={size} height={size} className="w-full max-w-xs">
-          {/* Grid circles */}
-          {gridCircles}
-          
-          {/* Axis lines */}
-          {axisLines}
-          
-          {/* Data polygon */}
-          <polygon
-            points={points}
-            fill="#10B981"
-            fillOpacity="0.2"
-            stroke="#10B981"
-            strokeWidth="2"
-          />
-          
-          {/* Data points */}
-          {dataPoints}
-          
-          {/* Labels */}
-          {labels}
-        </svg>
+        <div className="w-full max-w-xs">
+          <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+        </div>
       </div>
     </div>
   );

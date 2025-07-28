@@ -23,7 +23,7 @@ export function ProfilePicture({
   const sizeClasses = {
     sm: 'w-24 h-24',
     md: 'w-32 h-32',
-    lg: 'w-40 h-40'
+    lg: 'w-40 h-50'
   };
 
   useEffect(() => {
@@ -95,10 +95,13 @@ export function ProfilePicture({
   }
 
   return (
-    <img
-      src={processedImage || imageUrl}
-      alt={userName}
-      className={`${sizeClasses[size]} rounded-lg object-cover ${className}`}
-    />
+    <div className={`${sizeClasses[size]}  relative overflow-hidden ${className}`}>
+      <img
+        src={processedImage || imageUrl}
+        alt={userName}
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-t from-black/60 to-transparent"></div>
+    </div>
   );
 } 

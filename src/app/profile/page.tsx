@@ -7,6 +7,7 @@ import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { StatsTab } from '@/components/profile/StatsTab';
 import { MatchHistoryTab } from '@/components/profile/MatchHistoryTab';
 import { CommonNavbar } from '@/components/common/CommonNavbar';
+import stats from '@/responses/profile.json';
 
 export default function ProfilePage() {
   const { userData, isLoading } = useUserData();
@@ -25,7 +26,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-500 mb-4">No user data found</p>
-          <p className="text-sm text-gray-400">Please complete onboarding</p>
+          <a href="/onboarding" className="underline text-md text-gray-400">Please login to continue</a>
         </div>
       </div>
     );
@@ -49,7 +50,7 @@ export default function ProfilePage() {
         {/* Tab Content */}
         <div className="flex-1">
           {activeTab === 'stats' ? (
-            <StatsTab userData={userData} />
+            <StatsTab userData={userData} stats={stats} />
           ) : (
             <MatchHistoryTab userData={userData} />
           )}

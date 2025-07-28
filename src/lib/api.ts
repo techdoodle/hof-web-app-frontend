@@ -2,7 +2,8 @@ import axios from 'axios';
 import { getAccessToken, getRefreshToken, storeAuthData, clearAuthData } from './utils/auth';
 
 const api = axios.create({
-  baseURL: 'https://hof-web-app-backend-production.up.railway.app',
+  // baseURL: 'https://hof-web-app-backend-production.up.railway.app',
+  baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : 'https://hof-web-app-backend-production.up.railway.app',
   withCredentials: true,
   // baseURL: 'http://localhost:8000',
 });

@@ -46,6 +46,7 @@ module.exports = {
       },
       backgroundImage: {
         'grid-pattern': "linear-gradient(rgba(0, 255, 133, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 133, 0.05) 1px, transparent 1px)",
+        'green-gradient': "linear-gradient(180deg, rgba(0, 0, 0, 0) 10%, rgba(7, 7, 7, 0.7) 40%, rgba(255, 167, 38, 0.85) 100%), linear-gradient(0deg, #0B1E19, #0B1E19)",
       },
       backgroundSize: {
         'grid': '20px 20px',

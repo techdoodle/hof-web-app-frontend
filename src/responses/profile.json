@@ -16,6 +16,8 @@
             "totalOnTargetShots": 12
         },
         "passing": {
+            "totalPasses": 10,
+            "successfulPasses": 8,
             "overallAccuracy": 68,
             "openPlayAccuracy": 69
         },
@@ -35,7 +37,12 @@
         "impact": {
             "goalsAndAssistsPerMatch": 7,
             "totalGoals": 6,
-            "totalAssists": 1
+            "totalAssists": 1,
+            "mvpCount": 2
+        },
+        "interceptions": {
+            "totalInterceptions": 10,
+            "successfulInterceptions": 8
         }
     }
 }

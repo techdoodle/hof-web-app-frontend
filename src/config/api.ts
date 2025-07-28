@@ -1,6 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 
+
+  baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : process.env.NEXT_PUBLIC_API_BASE_URL || 
            (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
              ? 'http://localhost:8000' 
              : 'https://your-backend-domain.com'), // Replace with your actual production API URL

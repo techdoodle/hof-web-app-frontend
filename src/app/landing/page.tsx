@@ -58,7 +58,7 @@ export default function LandingPage() {
         ) : (
           <div className="text-center">
             <p className="text-gray-500 mb-4">No user data found</p>
-            <p className="text-sm text-gray-400">Please complete onboarding</p>
+            <a href="/onboarding" className="underline text-md text-gray-400">Please login to continue</a>
           </div>
         )}
       </div>
