@@ -32,6 +32,8 @@ export function GenderSelectionScreen({
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isExtractingFace, setIsExtractingFace] = useState(false);
   const [extractionStatus, setExtractionStatus] = useState<string>('');
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
 
   const repository = OnboardingRepository.getInstance();
 
@@ -51,15 +53,28 @@ export function GenderSelectionScreen({
         if (cached) {
           const imageToUse = cached.processedUrl || cached.originalUrl;
           
-          // Try to extract face from cached image for display
+                    // Try to extract face from cached image using backend service
           try {
-                         const faceExtractionResult = await faceExtractor.extractFace(imageToUse, 0.08); // Much tighter padding
-            
-            if (faceExtractionResult.success && faceExtractionResult.faceImageUrl) {
-              setProfilePicture(faceExtractionResult.faceImageUrl);
-              await extractFacePreview(faceExtractionResult.faceImageUrl);
+            const token = getAccessToken();
+            if (token) {
+              try {
+                // Try backend face extraction
+                const faceExtractionResult = await repository.extractFaceFromImage(imageToUse, token);
+                
+                if (faceExtractionResult.url) {
+                  setProfilePicture(faceExtractionResult.url);
+                  await extractFacePreview(faceExtractionResult.url);
+                } else {
+                  throw new Error('Backend extraction failed');
+                }
+              } catch (backendError) {
+                console.error('Backend cached extraction failed:', backendError);
+                // Fallback to full cached image
+                setProfilePicture(imageToUse);
+                await extractFacePreview(cached.originalUrl);
+              }
             } else {
-              // Fallback to full cached image
+              // No token available, use cached image as-is
               setProfilePicture(imageToUse);
               await extractFacePreview(cached.originalUrl);
             }
@@ -112,6 +127,10 @@ export function GenderSelectionScreen({
     setShowCamera(false);
     setIsProcessingImage(true);
     setProcessingError(null);
+    
+    // Clear previous preview images
+    setOriginalImage(null);
+    setProcessedImage(null);
 
     try {
       const token = getAccessToken();
@@ -124,37 +143,48 @@ export function GenderSelectionScreen({
       // Use the processed image for better quality face extraction
       const imageToProcess = processedImage || originalImage;
       
+      // Store images for temporary preview
+      setOriginalImage(originalImage);
+      setProcessedImage(imageToProcess);
+      
       // Cache the original image first
       await imageCache.cacheImage(originalImage, user?.id);
       
-      // Extract ONLY the face+ears portion for display
-      setExtractionStatus('Extracting face...');
-      const faceExtractionResult = await faceExtractor.extractFace(imageToProcess, 0.08); // Much tighter padding
-      setExtractionStatus('');
+      // Use backend face extraction service for better results
+      setExtractionStatus('Extracting face with AI...');
       
-      if (faceExtractionResult.success && faceExtractionResult.faceImageUrl) {
-        // Display the extracted face+ears only
-        setProfilePicture(faceExtractionResult.faceImageUrl);
+      try {
+        // Use the existing backend face extraction service
+        const faceExtractionResult = await repository.extractFaceFromImage(imageToProcess, token);
         
-        // Also extract face for preview (smaller version)
-        await extractFacePreview(faceExtractionResult.faceImageUrl);
+        if (faceExtractionResult.url) {
+          // Display the backend-extracted face
+          setProfilePicture(faceExtractionResult.url);
+          
+          // Extract face for preview (smaller version)
+          await extractFacePreview(faceExtractionResult.url);
+          
+          // Update cache with the face-extracted URL
+          await imageCache.updateProcessedUrl(originalImage, faceExtractionResult.url, user?.id);
+        } else {
+          throw new Error('Backend face extraction failed');
+        }
+      } catch (error) {
+        console.error('Backend face extraction failed, using fallback:', error);
+        setExtractionStatus('Using fallback processing...');
         
-        // Send the extracted face image to backend for storage
-        const result = await repository.processOnlyProfilePictureBase64(faceExtractionResult.faceImageUrl, token);
-        
-        // Update cache with the face-only processed URL
-        await imageCache.updateProcessedUrl(originalImage, result.url, user?.id);
-      } else {
-        // Fallback: extract face for preview and use processed image
-        await extractFacePreview(imageToProcess);
-        
-        // Process the full image for backend storage
+        // Fallback: process the full image without face extraction
         const result = await repository.processOnlyProfilePictureBase64(imageToProcess, token);
         setProfilePicture(result.url);
+        
+        // Extract face for preview
+        await extractFacePreview(imageToProcess);
         
         // Update cache with processed URL
         await imageCache.updateProcessedUrl(originalImage, result.url, user?.id);
       }
+      
+      setExtractionStatus('');
       
       setIsProcessingImage(false);
     } catch (error) {
@@ -165,21 +195,31 @@ export function GenderSelectionScreen({
       // Fallback: extract face from the best available image
       const fallbackImage = processedImage || originalImage;
       
-      // Try to extract face even in fallback scenario
+      // Try to extract face even in fallback scenario using backend service
       try {
-        setExtractionStatus('Extracting face from fallback...');
-        const faceExtractionResult = await faceExtractor.extractFace(fallbackImage, 0.08); // Much tighter padding
-        setExtractionStatus('');
+        setExtractionStatus('Extracting face from fallback with backend AI...');
         
-        if (faceExtractionResult.success && faceExtractionResult.faceImageUrl) {
-          // Use the extracted face+ears only
-          setProfilePicture(faceExtractionResult.faceImageUrl);
-          await extractFacePreview(faceExtractionResult.faceImageUrl);
-        } else {
-          // If face extraction fails, use full image as last resort
-          setProfilePicture(fallbackImage);
-          await extractFacePreview(fallbackImage);
+        try {
+          // Try backend face extraction first
+          const token = getAccessToken();
+          if (token) {
+            const faceExtractionResult = await repository.extractFaceFromImage(fallbackImage, token);
+            
+            if (faceExtractionResult.url) {
+              setProfilePicture(faceExtractionResult.url);
+              await extractFacePreview(faceExtractionResult.url);
+              setExtractionStatus('');
+              return;
+            }
+          }
+        } catch (backendError) {
+          console.error('Backend fallback extraction failed:', backendError);
         }
+        
+        // Last resort: use the full image
+        setProfilePicture(fallbackImage);
+        await extractFacePreview(fallbackImage);
+        setExtractionStatus('');
               } catch (extractError) {
           console.error('Face extraction failed in fallback:', extractError);
           setExtractionStatus('');
@@ -239,20 +279,6 @@ export function GenderSelectionScreen({
         <h2 className="text-lg mb-4">Want your teammates to recognize you?</h2>
         
         <div className="flex flex-col items-center">
-          {/* Face Preview Section */}
-          {/* {facePreviewUrl && (
-            <div className="mb-4 text-center">
-              <p className="text-sm text-gray-400 mb-2">Face Preview</p>
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/30 mx-auto">
-                <img
-                  src={facePreviewUrl}
-                  alt="Face preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          )} */}
-
           <div className="relative">
             <button
               onClick={() => setShowCamera(true)}
