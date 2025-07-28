@@ -64,9 +64,10 @@ export function UserInfoScreen({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const lcities = queryClient.getQueryData(['cities']);
-    let cityId = (lcities as any).find((city: any) => city.cityName === formData.city)?.id;
-    console.log("formData", formData, lcities, cityId);
+    // Since we removed queryClient from repository, we'll use the cities array directly
+    // We need to find the city ID by name from the cities array
+    const cityId = cities.findIndex(city => city === formData.city) + 1; // Assuming city IDs start from 1
+    console.log("formData", formData, cities, cityId);
     // setCurrentStep('GENDER_SELECTION');
     await onSubmit({...formData, city: cityId});
   };

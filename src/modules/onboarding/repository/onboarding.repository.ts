@@ -1,13 +1,10 @@
 import api from '../../../lib/api';
 import { UserInfo, UserData, GenderSelection, PositionSelection, TeamSelection, FootballTeam } from '../types';
-import { useQueryClient } from '@tanstack/react-query';
-
 
 export class OnboardingRepository {
   private static instance: OnboardingRepository;
   private constructor() {
   }
-  private queryClient = useQueryClient();
 
   static getInstance(): OnboardingRepository {
     if (!OnboardingRepository.instance) {
@@ -127,7 +124,6 @@ export class OnboardingRepository {
   async getCurrentUser(): Promise<UserData> {
     const response = await api.get(`/auth/me`);
     console.log(" getCurrentUser response.data", response.data);
-    this.queryClient.setQueryData(['user'], response.data);
     return response.data;
   }
 
@@ -173,7 +169,6 @@ export class OnboardingRepository {
   async fetchCities(): Promise<string[]> {
     const response = await api.get('/cities');
     // Extract cityName from each city object
-    this.queryClient.setQueryData(['cities'], response.data);
     return response.data.map((city: any) => city.cityName);
   }
 } 

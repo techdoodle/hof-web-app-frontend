@@ -1,5 +1,6 @@
 import { UserData } from '@/modules/onboarding/types';
 import { MatchHistoryIcon } from '@/components/icons';
+import CardList from './CardList';
 
 interface MatchHistoryTabProps {
   userData: UserData;
@@ -15,6 +16,7 @@ export function MatchHistoryTab({ userData }: MatchHistoryTabProps) {
         <h3 className="text-lg font-semibold text-white mb-2">Match History</h3>
         <p className="text-gray-400">Your match history will appear here</p>
       </div>
+      <CardList />
     </div>
   );
 } 

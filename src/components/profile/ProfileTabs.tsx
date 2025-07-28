@@ -12,7 +12,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
       <div className="flex items-center justify-between">
         {/* Tabs Section */}
         <div 
-          className="p-1 backdrop-blur-[30px] rounded-2xl"
+          className="p-1 bg-black rounded-2xl"
           style={{
             border: '1px solid',
             borderImageSource: 'linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), linear-gradient(0deg, rgba(255, 255, 255, 0.4) -38.64%, rgba(255, 255, 255, 0) 135.23%)',
@@ -23,14 +23,14 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
             {activeTab === 'stats' ? (
               <Button
                 onClick={() => onTabChange('stats')}
-                className="px-6 py-2 rounded-lg font-medium bg-primary text-white shadow-lg shadow-primary/30"
+                className="px-6 py-2 rounded-lg font-medium bg-green-gradient-dark text-[#F9F9F9] shadow-lg shadow-primary/30"
               >
                 Stats
               </Button>
             ) : (
               <button
                 onClick={() => onTabChange('stats')}
-                className="px-6 py-2 font-medium text-gray-400 hover:text-white transition-colors"
+                className="px-6 py-2 font-medium text-[#F9F9F9] hover:text-white transition-colors"
               >
                 Stats
               </button>
@@ -39,7 +39,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
             {activeTab === 'matchHistory' ? (
               <Button
                 onClick={() => onTabChange('matchHistory')}
-                className="px-6 py-2 rounded-lg font-medium bg-primary text-white shadow-lg shadow-primary/30"
+                className="px-6 py-2 rounded-lg font-medium bg-green-gradient-dark text-white shadow-lg shadow-primary/30"
               >
                 Matches
               </Button>

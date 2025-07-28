@@ -51,28 +51,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${orbitron.className} h-full min-h-screen w-full`}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Clear service worker cache to force fresh API calls
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  for(let registration of registrations) {
-                    registration.unregister();
-                  }
-                });
-                // Clear all caches
-                if ('caches' in window) {
-                  caches.keys().then(function(names) {
-                    for (let name of names) {
-                      caches.delete(name);
-                    }
-                  });
-                }
-              }
-            `,
-          }}
-        />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         
