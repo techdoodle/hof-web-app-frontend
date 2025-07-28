@@ -24,11 +24,17 @@ export class FaceExtractor {
     try {
       return new Promise((resolve) => {
         const img = new Image();
+        
+        // Enable CORS for cross-origin images
+        img.crossOrigin = 'anonymous';
+        
         img.onload = async () => {
           try {
             const result = await this.processImageFaceOnly(img, padding);
             resolve(result);
           } catch (error) {
+            // If CORS fails, return the original image URL
+            console.warn('Face extraction failed due to CORS:', error);
             resolve({
               success: false,
               confidence: 0,
