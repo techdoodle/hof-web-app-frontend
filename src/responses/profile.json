@@ -1,0 +1,41 @@
+{
+    "playerId": 2,
+    "matchesPlayed": 1,
+    "spiderChart": {
+        "shooting": 68,
+        "passing": 69,
+        "dribbling": 60.9,
+        "tackling": 61.4,
+        "impact": 100
+    },
+    "detailedStats": {
+        "shooting": {
+            "shotAccuracy": 80,
+            "shotsPerMatch": 15,
+            "totalShots": 15,
+            "totalOnTargetShots": 12
+        },
+        "passing": {
+            "overallAccuracy": 68,
+            "openPlayAccuracy": 69
+        },
+        "dribbling": {
+            "successRate": 67,
+            "attemptsPerMatch": 3,
+            "totalAttempts": 3,
+            "totalSuccessful": 2
+        },
+        "tackling": {
+            "successRate": 80,
+            "defensiveActionsPerMatch": 12,
+            "totalDefensiveActions": 12,
+            "successfulTackles": 4,
+            "totalTackleAttempts": 5
+        },
+        "impact": {
+            "goalsAndAssistsPerMatch": 7,
+            "totalGoals": 6,
+            "totalAssists": 1
+        }
+    }
+}
