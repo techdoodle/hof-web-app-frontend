@@ -2,12 +2,12 @@
     "matches": [
         {
             "id": 1,
-            "timestamp": "2021-01-01 10:00:00IST",
+            "timestamp": "2021-01-01T10:00:00+05:30",
             "venue": "Stadium A"
         },
         {
-            "id": 1,
-            "timestamp": "2021-01-01 10:00:00IST",
+            "id": 2,
+            "timestamp": "2021-01-15T14:30:00+05:30",
             "venue": "Stadium B"
         }
     ]

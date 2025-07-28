@@ -6,9 +6,32 @@ import { StatsTable } from './StatsTable';
 interface StatsTabProps {
   userData: UserData;
   stats: any;
+  isLoading?: boolean;
+  error?: any;
 }
 
-export function StatsTab({ userData, stats }: StatsTabProps) {
+export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="flex-1 p-4 space-y-3 mt-[46px]">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">Loading stats...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="flex-1 p-4 space-y-3 mt-[46px]">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-400">Error loading stats: {error.message}</div>
+        </div>
+      </div>
+    );
+  }
 
   if (stats && Object.keys(stats).length === 0) {
     return <UncalibratedStats userData={userData} />;

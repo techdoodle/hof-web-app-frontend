@@ -7,11 +7,12 @@ import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { StatsTab } from '@/components/profile/StatsTab';
 import { MatchHistoryTab } from '@/components/profile/MatchHistoryTab';
 import { CommonNavbar } from '@/components/common/CommonNavbar';
-import stats from '@/responses/profile.json';
 import { UserData } from '@/modules/onboarding/types';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'stats' | 'matchHistory'>('stats');
+  const { userStats, userMatches, isLoading, error } = useProfile();
 
   return (
     <AuthWrapper>
@@ -33,9 +34,9 @@ export default function ProfilePage() {
             {/* Tab Content */}
             <div className="flex-1">
               {activeTab === 'stats' ? (
-                <StatsTab userData={userData} stats={stats} />
+                <StatsTab userData={userData} stats={userStats} isLoading={isLoading} error={error} />
               ) : (
-                <MatchHistoryTab userData={userData} />
+                <MatchHistoryTab userData={userData} matches={userMatches} isLoading={isLoading} error={error} />
               )}
             </div>
           </div>

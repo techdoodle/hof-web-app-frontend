@@ -38,7 +38,9 @@ module.exports = {
         'surface-accent': '#004D2B', // Even lighter dark green for hover states
       },
       fontFamily: {
-        sans: ['Orbitron', 'system-ui', 'sans-serif'],
+        sans: ['Rajdhani', 'system-ui', 'sans-serif'],
+        rajdhani: ['Rajdhani', 'system-ui', 'sans-serif'],
+        orbitron: ['Orbitron', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         'neon': '0 0 5px theme(colors.primary), 0 0 20px theme(colors.primary)',
