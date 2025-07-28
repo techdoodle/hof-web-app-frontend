@@ -2,8 +2,8 @@ import axios from 'axios';
 import { getAccessToken, getRefreshToken, storeAuthData, clearAuthData } from './utils/auth';
 
 const api = axios.create({
-  // baseURL: 'https://hof-web-app-backend-production.up.railway.app',
-  baseURL: 'http://localhost:8000',
+  baseURL: 'https://hof-web-app-backend-production.up.railway.app',
+  // baseURL: 'http://localhost:8000',
 });
 
 api.interceptors.request.use(config => {
