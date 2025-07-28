@@ -3,6 +3,7 @@ import { getAccessToken, getRefreshToken, storeAuthData, clearAuthData } from '.
 
 const api = axios.create({
   baseURL: 'https://hof-web-app-backend-production.up.railway.app',
+  withCredentials: true,
   // baseURL: 'http://localhost:8000',
 });
 
