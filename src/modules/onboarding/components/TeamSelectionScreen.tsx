@@ -132,12 +132,12 @@ export function TeamSelectionScreen({
             <>
               {showImages ? (
                 // Grid layout for top teams with images - fixed uniform size
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-4 mb-2">
                   {displayTeams.map((team, idx) => (
                     <button
                       key={team.id}
                       onClick={() => handleTeamSelect(team.id)}
-                      className={`relative w-full h-32 flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
+                      className={`relative w-full h-30 flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all ${
                         selectedTeam === team.id
                           ? 'border-primary bg-primary/10'
                           : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'

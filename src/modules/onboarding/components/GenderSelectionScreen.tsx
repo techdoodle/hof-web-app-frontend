@@ -192,15 +192,15 @@ export function GenderSelectionScreen({
 
   return (
     <div className="flex flex-col flex-1">
-      <h1 className="text-2xl font-bold mb-2">
+      <h1 className="text-2xl font-bold">
         Hello {userData?.firstName}!
       </h1>
-      <p className="text-gray-400 mb-8">Tell us more about you</p>
+      <p className="text-gray-400 mb-4">Tell us more about you</p>
 
-      <div className="mb-8">
-        <h2 className="text-lg mb-6">Select your gender</h2>
+      <div className="mb-4">
+        <h2 className="text-lg mb-2">Select your gender</h2>
         
-        <div className="space-y-4">
+        <div className="space-y-2">
           {[
             { value: 'MALE', label: 'Male' },
             { value: 'FEMALE', label: 'Female' },
@@ -235,8 +235,8 @@ export function GenderSelectionScreen({
         </div>
       </div>
 
-      <div className="mb-8">
-        <h2 className="text-lg mb-4">Want your teammates to recognize you?</h2>
+      <div className="mb-4">
+        <h2 className="text-mb mb-2">Click your photo</h2>
         
         <div className="flex flex-col items-center">
           {/* Face Preview Section */}
