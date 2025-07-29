@@ -12,7 +12,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
       <div className="flex items-center justify-between">
         {/* Tabs Section */}
         <div 
-          className="p-1 bg-black rounded-2xl"
+          className="p-1 bg-black rounded-[0.5rem]"
           style={{
             border: '1px solid',
             borderImageSource: 'linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), linear-gradient(0deg, rgba(255, 255, 255, 0.4) -38.64%, rgba(255, 255, 255, 0) 135.23%)',
@@ -55,7 +55,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
         </div>
 
         {/* Circular Icon */}
-        <div className="w-10 h-10 rounded-full border border-primary flex items-center justify-center bg-background">
+        <div className="w-10 h-10 rounded-full border border-primary flex items-center justify-center " style={{background:'rgba(0, 204, 102, 0.2)'}}>
           <LeaderboardIcon className="w-5 h-5 text-white" />
         </div>
       </div>

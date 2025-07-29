@@ -110,6 +110,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
             <h2 className="text-xl font-bold text-white" style={{
               fontSize: '30px',
               marginBottom: '10px',
+              marginLeft: '10px',
             }}>
               {userData.firstName} 
             </h2>
