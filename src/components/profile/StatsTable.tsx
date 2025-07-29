@@ -20,22 +20,20 @@ export function StatsTable({ stats }: StatsTableProps) {
   };
 
   return (
-    <div 
-      className="bg-[#0B1E19] p-4"
+    <div
+      className="p-1 rounded-2xl"
       style={{
-        borderRadius: '16px',
-        border: '1px solid',
-        borderImageSource: 'linear-gradient(169.22deg, rgba(169, 169, 169, 0) -1.94%, #FFFFFF 43.05%, #CBCBCB 66.97%, #747474 88.27%)',
-        borderImageSlice: '1',
-        borderImageWidth: '1px',
+        background: 'linear-gradient(169.22deg, rgba(169, 169, 169, 0) -1.94%, #FFFFFF 43.05%, #CBCBCB 66.97%, #747474 88.27%)',
       }}
     >
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-3">
-          {config.leftColumn.map(renderStatRow)}
-        </div>
-        <div className="space-y-3">
-          {config.rightColumn.map(renderStatRow)}
+      <div className="p-4 bg-[#0B1E19] rounded-2xl" >
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            {config.leftColumn.map(renderStatRow)}
+          </div>
+          <div className="space-y-3">
+            {config.rightColumn.map(renderStatRow)}
+          </div>
         </div>
       </div>
     </div>
