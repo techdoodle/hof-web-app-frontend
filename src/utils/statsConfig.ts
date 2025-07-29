@@ -19,7 +19,7 @@ export function generateStatsConfig(): StatsConfig {
       },
       {
         label: "Passes",
-        dataPath: "detailedStats.passing.successfulPasses"
+        dataPath: "detailedStats.passing.totalCompletePassingActions"
       },
       {
         label: "Tackles",
@@ -27,13 +27,13 @@ export function generateStatsConfig(): StatsConfig {
       },
       {
         label: "Interception",
-        dataPath: "detailedStats.interceptions.successfulInterceptions"
+        dataPath: "detailedStats.tackling.interceptions"
       }
     ],
     rightColumn: [
       {
         label: "MVPs",
-        dataPath: "detailedStats.impact.mvpCount"
+        dataPath: "detailedStats.totalMvpWins"
       },
       {
         label: "Pass Acc.",

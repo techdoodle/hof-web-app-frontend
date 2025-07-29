@@ -33,7 +33,7 @@ export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
     );
   }
 
-  if (stats && Object.keys(stats).length === 0) {
+  if (stats && Object.keys(stats?.detailedStats).length == 0) {
     return <UncalibratedStats userData={userData} />;
   }
 
