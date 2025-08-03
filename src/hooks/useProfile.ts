@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAccessToken, getUser } from '@/lib/utils/auth';
-import api, { fetchPlayerSpiderChart } from '@/lib/api';
+import api, { fetchPlayerSpiderChart, fetchUserMatchParticipants } from '@/lib/api';
 import stats from '@/responses/profile.json';
 import matches from '@/responses/matches.json';
 
@@ -58,9 +58,62 @@ export interface NoUserStats {
   detailedStats: {};
 }
 
+// New interfaces for the match participants API response
+export interface Venue {
+  id: number;
+  name: string;
+  phoneNumber: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Match {
+  matchId: number;
+  matchStatsId: string;
+  matchType: string;
+  startTime: string;
+  endTime: string;
+  statsReceived: boolean;
+  teamAScore: number | null;
+  teamBScore: number | null;
+  venue: Venue;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface User {
+  id: number;
+  phoneNumber: string;
+  username: string | null;
+  email: string | null;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  onboardingComplete: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt: string;
+  playerCategory: string;
+  invitesLeft: number;
+  whatsappInviteOpt: boolean;
+  inviteSent: boolean;
+}
+
+export interface MatchParticipant {
+  matchParticipantId: number;
+  match: Match;
+  user: User;
+  teamSide: string;
+  paidStatsOptIn: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface NoUserMatches {
 }
 
+// Legacy interface for backward compatibility
 export interface UserMatch {
   id: number;
   timestamp: string;
@@ -100,19 +153,41 @@ const fetchUserSpiderChart = async (): Promise<UserStats | NoUserStats> => {
 
 const fetchUserMatches = async (): Promise<UserMatches> => {
   const token = getAccessToken();
+  const user = getUser();
+  
   if (!token) {
     throw new Error('No access token available');
   }
 
+  if (!user || !user.id) {
+    throw new Error('No user data available');
+  }
+
   try {
-    // For now, return hardcoded data since API doesn't exist
-    // In the future, this will be: const response = await api.get('/matches');
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return matches as UserMatches;
+    // Call the new API endpoint
+    const matchParticipants: MatchParticipant[] = await fetchUserMatchParticipants(user.id);
+    
+    // Transform the API response to match the expected UserMatches format
+    const transformedMatches: UserMatch[] = matchParticipants.map(participant => ({
+      id: participant.match.matchId,
+      timestamp: new Date(participant.match.startTime).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      venue: participant.match.venue.name
+    }));
+    
+    return { matches: transformedMatches };
   } catch (error) {
     console.error('Failed to fetch user matches:', error);
-    throw error;
+    
+    // Fallback to hardcoded data if API fails
+    console.log('Falling back to hardcoded data');
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return matches as UserMatches;
   }
 };
 

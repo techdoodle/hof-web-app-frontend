@@ -46,4 +46,10 @@ export async function fetchPlayerSpiderChart(playerId: number) {
   return response.data;
 }
 
+// Helper function to fetch user match participants
+export async function fetchUserMatchParticipants(userId: number) {
+  const response = await api.get(`/match-participants/user/${userId}`);
+  return response.data;
+}
+
 export default api; 
