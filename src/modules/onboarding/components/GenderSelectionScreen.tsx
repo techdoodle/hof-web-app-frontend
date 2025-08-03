@@ -238,7 +238,7 @@ export function GenderSelectionScreen({
         </div>
 
         <div className="mb-4">
-          <h2 className="text-mb mb-2">Click your photo</h2>
+          <h2 className="text-mb mb-2">Click your photo *</h2>
           
           <div className="flex flex-col items-center">
             <div className="relative">
@@ -311,7 +311,7 @@ export function GenderSelectionScreen({
           isLoading={isLoading}
           size="lg"
           variant="gradient"
-          disabled={!selectedGender || isProcessingImage}
+          disabled={!selectedGender || !profilePicture || isProcessingImage}
           className="w-full"
         >
           Continue

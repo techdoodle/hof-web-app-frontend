@@ -64,6 +64,18 @@ export function UserInfoScreen({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate all required fields
+    if (!formData.firstName.trim()) {
+      return; // Button will be disabled, but add visual feedback
+    }
+    if (!formData.lastName.trim()) {
+      return;
+    }
+    if (!formData.city) {
+      return;
+    }
+    
     // Since we removed queryClient from repository, we'll use the cities array directly
     // We need to find the city ID by name from the cities array
     const cityId = cities.findIndex(city => city === formData.city) + 1; // Assuming city IDs start from 1
@@ -79,6 +91,9 @@ export function UserInfoScreen({
     }));
   };
 
+  // Check if all required fields are filled
+  const isFormValid = formData.firstName.trim() && formData.lastName.trim() && formData.city;
+
   return (
     <div className="flex flex-col h-full">
       {/* Scrollable Content */}
@@ -91,22 +106,26 @@ export function UserInfoScreen({
             type="text"
             value={formData.firstName}
             onChange={(e) => handleChange('firstName', e.target.value)}
-            placeholder="Enter First Name"
+            placeholder="Enter First Name *"
             className="w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+            required
           />
           <input
             type="text"
             value={formData.lastName}
             onChange={(e) => handleChange('lastName', e.target.value)}
-            placeholder="Enter Last Name"
+            placeholder="Enter Last Name *"
             className="w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+            required
           />
           <select
             value={formData.city}
             onChange={(e) => handleChange('city', e.target.value)}
             className="w-full max-w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
             disabled={citiesLoading}
+            required
           >
+            <option value="">Select your city *</option>
             {citiesLoading ? (
               <option>Loading cities...</option>
             ) : cities.length > 0 ? (
@@ -133,6 +152,7 @@ export function UserInfoScreen({
             size="lg" 
             variant="gradient"
             className="w-full"
+            disabled={!isFormValid || isLoading}
           >
             Continue
           </Button>

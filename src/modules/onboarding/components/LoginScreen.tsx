@@ -39,13 +39,16 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
     }
   };
 
+  // Check if phone number is valid (exactly 10 digits)
+  const isPhoneNumberValid = phoneNumber.length === 10;
+
   return (
     <div className="flex flex-col h-full">
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-20">
         <div className="flex flex-col items-start justify-center h-full">
           <div className="text-2xl font-boldtext-white text-left font-semibold mb-16">LOGIN</div>
-          <div className="text-white mb-2">Enter your mobile number</div>
+          <div className="text-white mb-2">Enter your mobile number *</div>
           <div className="w-full">
             <div>
               <div className="relative flex items-center w-full rounded-lg gradient-border p-2 bg-background">
@@ -57,10 +60,15 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
                     // Only allow numbers, max 10 digits
                     const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                     setPhoneNumber(val);
+                    // Clear validation error when user starts typing
+                    if (validationError) {
+                      setValidationError('');
+                    }
                   }}
                   placeholder="XXXXXXXXXX"
                   className="flex-1 p-2 pl-0 bg-transparent outline-none text-foreground placeholder-gray-500 input-gradient-border"
                   maxLength={10}
+                  required
                 />
               </div>
               
@@ -92,6 +100,7 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
             isLoading={isLoading} 
             size="lg" 
             className="w-full"
+            disabled={!isPhoneNumberValid || isLoading}
           >
             Continue
           </Button>

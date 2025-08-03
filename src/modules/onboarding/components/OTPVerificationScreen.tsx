@@ -109,7 +109,7 @@ export function OTPVerificationScreen({
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-20">
         <h1 className="text-2xl font-bold mb-4">
-          Enter the 6-digit code
+          Enter the 6-digit code *
           <br />
           sent to you at
           <br />
