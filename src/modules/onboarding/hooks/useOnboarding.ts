@@ -49,7 +49,7 @@ export function useOnboarding() {
           });
           
           if (freshUserData.onboardingComplete) {
-            console.log('Onboarding complete, redirecting to landing...');
+            console.log('Onboarding complete, redirecting to profile...');
             router.replace('/profile');
           } else {
             console.log('Onboarding not complete, starting from USER_INFO...');
@@ -61,8 +61,8 @@ export function useOnboarding() {
           // Fallback to cached data
           console.log('Using cached user data as fallback...');
           if (user.onboardingComplete) {
-            console.log('Cached data shows onboarding complete, redirecting to landing...');
-            router.replace('/landing');
+            console.log('Cached data shows onboarding complete, redirecting to profile...');
+            router.replace('/profile');
           } else {
             console.log('Cached data shows onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
@@ -98,8 +98,8 @@ export function useOnboarding() {
       }
       setOtpAttempts(0); // reset on success
       setRequestOTPData(null);
-      setCurrentStep('USER_INFO');
       setInvalidOtpError(null);
+      
       // Store tokens and user data
       const { accessToken, refreshToken, ...userData } = data;
       if (accessToken && refreshToken) {
@@ -107,8 +107,18 @@ export function useOnboarding() {
         setToken(accessToken);
         setUserId(userData.id);
       }
+      
       // Save user info in React Query cache
       queryClient.setQueryData(['user'], userData);
+      
+      // Check if user has already completed onboarding
+      if (userData.onboardingComplete) {
+        console.log('User already validated, redirecting to profile...');
+        router.replace('/profile');
+      } else {
+        console.log('User not validated, starting onboarding...');
+        setCurrentStep('USER_INFO');
+      }
     },
   });
 
