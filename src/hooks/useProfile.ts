@@ -8,6 +8,7 @@ import matches from '@/responses/matches.json';
 export interface UserStats {
   playerId: number;
   matchesPlayed: number;
+  totalMvpWins: number;
   spiderChart: {
     shooting: number;
     passing: number;
@@ -23,8 +24,7 @@ export interface UserStats {
       totalOnTargetShots: number;
     };
     passing: {
-      totalPasses: number;
-      successfulPasses: number;
+      totalCompletePassingActions: number;
       overallAccuracy: number;
       openPlayAccuracy: number;
     };
@@ -40,18 +40,25 @@ export interface UserStats {
       totalDefensiveActions: number;
       successfulTackles: number;
       totalTackleAttempts: number;
+      interceptions: number;
     };
     impact: {
       goalsAndAssistsPerMatch: number;
       totalGoals: number;
       totalAssists: number;
-      mvpCount: number;
-    };
-    interceptions: {
-      totalInterceptions: number;
-      successfulInterceptions: number;
     };
   };
+}
+
+export interface NoUserStats {
+  playerId: number;
+  matchesPlayed: number;
+  totalMvpWins: number;
+  spiderChart: any;
+  detailedStats: {};
+}
+
+export interface NoUserMatches {
 }
 
 export interface UserMatch {
@@ -65,7 +72,7 @@ export interface UserMatches {
 }
 
 // API functions
-const fetchUserStats = async (): Promise<UserStats> => {
+const fetchUserStats = async (): Promise<UserStats | NoUserStats> => {
   const token = getAccessToken();
   if (!token) {
     throw new Error('No access token available');
@@ -76,7 +83,7 @@ const fetchUserStats = async (): Promise<UserStats> => {
     // In the future, this will be: const response = await api.get('/stats');
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
-    return stats as UserStats;
+    return stats as UserStats | NoUserStats;
   } catch (error) {
     console.error('Failed to fetch user stats:', error);
     throw error;

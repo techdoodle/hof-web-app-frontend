@@ -1,6 +1,7 @@
 {
     "playerId": 2,
     "matchesPlayed": 1,
+    "totalMvpWins": 1,
     "spiderChart": {
         "shooting": 68,
         "passing": 69,
@@ -16,10 +17,9 @@
             "totalOnTargetShots": 12
         },
         "passing": {
-            "totalPasses": 10,
-            "successfulPasses": 8,
             "overallAccuracy": 68,
-            "openPlayAccuracy": 69
+            "openPlayAccuracy": 69,
+            "totalCompletePassingActions": 10
         },
         "dribbling": {
             "successRate": 67,
@@ -32,17 +32,13 @@
             "defensiveActionsPerMatch": 12,
             "totalDefensiveActions": 12,
             "successfulTackles": 4,
-            "totalTackleAttempts": 5
+            "totalTackleAttempts": 5,
+            "interceptions": 2
         },
         "impact": {
             "goalsAndAssistsPerMatch": 7,
             "totalGoals": 6,
-            "totalAssists": 1,
-            "mvpCount": 2
-        },
-        "interceptions": {
-            "totalInterceptions": 10,
-            "successfulInterceptions": 8
+            "totalAssists": 1
         }
     }
 }

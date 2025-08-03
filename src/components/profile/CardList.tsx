@@ -1,11 +1,14 @@
 import { UserMatch } from '@/hooks/useProfile';
 import { ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface CardListProps {
   matches?: UserMatch[];
 }
 
 const CardList = ({ matches }: CardListProps) => {
+
+  const router = useRouter();
   if (!matches || matches.length === 0) {
     return (
       <div className="text-center py-8">
@@ -20,6 +23,9 @@ const CardList = ({ matches }: CardListProps) => {
         <div
           key={`${match.id}-${index}`}
           className="bg-[#0D1F1E] rounded-lg p-4 border border-gray-700 cursor-pointer"
+          onClick={() => {
+            router.push(`/match/${match.id}`);
+          }}
         >
           <div className="flex justify-between items-center">
             <div>

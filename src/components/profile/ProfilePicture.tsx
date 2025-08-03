@@ -1,9 +1,8 @@
 import { UserIcon } from '@/components/icons';
-
 interface ProfilePictureProps {
   imageUrl?: string;
   userName: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
@@ -16,13 +15,18 @@ export function ProfilePicture({
   const sizeClasses = {
     sm: 'w-24 h-24',
     md: 'w-32 h-32',
-    lg: 'w-40 h-50'
+    lg: 'w-40 h-50',
+    xl: 'w-50 h-50'
   };
 
   if (!imageUrl) {
     return (
-      <div className={`${sizeClasses[size]} rounded-lg bg-gray-700 flex items-center justify-center ${className}`}>
-        <UserIcon className="w-1/2 h-1/2 text-gray-500" />
+      <div className={`${sizeClasses[size]} rounded-lg flex items-center justify-center ${className}`}>
+        <img 
+            src="/skeleton.png" 
+            alt="Player Skeleton" 
+            className="w-full h-auto rounded-lg shadow-sm"
+          />
       </div>
     );
   }
