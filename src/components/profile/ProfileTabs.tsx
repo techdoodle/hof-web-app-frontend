@@ -55,9 +55,9 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
         </div>
 
         {/* Circular Icon */}
-        <div className="w-10 h-10 rounded-full border border-primary flex items-center justify-center " style={{background:'rgba(0, 204, 102, 0.2)'}}>
+        {/* <div className="w-10 h-10 rounded-full border border-primary flex items-center justify-center " style={{background:'rgba(0, 204, 102, 0.2)'}}>
           <LeaderboardIcon className="w-5 h-5 text-white" />
-        </div>
+        </div> */}
       </div>
     </div>
   );
