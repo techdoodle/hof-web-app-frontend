@@ -7,7 +7,7 @@ interface WelcomeScreenProps {
 
 export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
   return (
-    <div className="relative h-full w-full flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Background image */}
       <div
         className="absolute inset-0 z-0"
@@ -19,8 +19,9 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
       />
       {/* Overlay */}
       <div className="absolute inset-0 z-10 bg-black opacity-40" />
-      {/* Main content */}
-      <div className="relative z-20 flex-1 flex flex-col items-center justify-center text-center px-4">
+      
+      {/* Scrollable Content */}
+      <div className="relative z-20 flex-1 flex flex-col items-center justify-center text-center px-4 overflow-y-auto pb-20">
         <div className="logo-container">
           <Image src="/logo.svg" alt="Humans of Football Logo" width={100} height={100} />
         </div>
@@ -38,13 +39,14 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
         </p>
       </div>
 
-      {/* Bottom button */}
-      <div className="z-10 w-full p-4 h-100">
+      {/* Fixed Continue Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-20">
         <Button
           variant="gradient"
           onClick={onContinue}
           size="lg"
-         >
+          className="w-full"
+        >
           Continue
         </Button>
       </div>

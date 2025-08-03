@@ -80,11 +80,12 @@ export function UserInfoScreen({
   };
 
   return (
-    <div className="flex flex-col flex-1">
-      <h1 className="text-2xl font-bold mb-2">What's your name?</h1>
-      <p className="text-gray-400 mb-8">Let us know how to properly address you</p>
+    <div className="flex flex-col h-full">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pb-20">
+        <h1 className="text-2xl font-bold mb-2">What's your name?</h1>
+        <p className="text-gray-400 mb-8">Let us know how to properly address you</p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div className="space-y-4 w-full max-w-full overflow-x-auto">
           <input
             type="text"
@@ -119,20 +120,24 @@ export function UserInfoScreen({
         </div>
 
         {error && (
-          <p className="text-sm text-red-600">{error.message}</p>
+          <p className="text-sm text-red-600 mt-4">{error.message}</p>
         )}
+      </div>
 
-        <div className="mt-auto">
+      {/* Fixed Continue Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4">
+        <form onSubmit={handleSubmit}>
           <Button 
             type="submit" 
             isLoading={isLoading} 
             size="lg" 
             variant="gradient"
+            className="w-full"
           >
             Continue
           </Button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 } 
