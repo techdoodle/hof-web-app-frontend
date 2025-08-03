@@ -10,7 +10,7 @@ export function ProfileHeader({ userData }: ProfileHeaderProps) {
     <div className="border-gray-800 px-4 py-3">
       <div className="flex items-center justify-between">
         {/* Left side - empty for balance */}
-        <div className="w-8"></div>
+        <div className="w-16"></div>
         
         {/* Center - Title */}
         <h1 className="text-lg font-semibold text-white">Profile</h1>

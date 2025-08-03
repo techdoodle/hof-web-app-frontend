@@ -23,27 +23,30 @@ export default function ProfilePage() {
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           }}>
-          {/* Header */}
-          <ProfileHeader userData={userData} />
-          
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col">
-            {/* Tabs */}
-            <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
-            
-            {/* Tab Content */}
-            <div className="flex-1">
-              {activeTab === 'stats' ? (
-                <StatsTab userData={userData} stats={userStats} isLoading={isLoading} error={error} />
-              ) : (
-                <MatchHistoryTab userData={userData} matches={userMatches} isLoading={isLoading} error={error} />
-              )}
+            {/* Mobile container with max-width for larger screens */}
+            <div className="relative h-full w-full mx-auto flex flex-col max-w-md">
+              {/* Header */}
+              <ProfileHeader userData={userData} />
+              
+              {/* Main Content */}
+              <div className="flex-1 flex flex-col">
+                {/* Tabs */}
+                <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+                
+                {/* Tab Content */}
+                <div className="flex-1">
+                  {activeTab === 'stats' ? (
+                    <StatsTab userData={userData} stats={userStats} isLoading={isLoading} error={error} />
+                  ) : (
+                    <MatchHistoryTab userData={userData} matches={userMatches} isLoading={isLoading} error={error} />
+                  )}
+                </div>
+              </div>
+              
+              {/* Common Navbar */}
+              <CommonNavbar activeTab="profile" />
             </div>
           </div>
-          
-          {/* Common Navbar */}
-          <CommonNavbar activeTab="profile" />
-        </div>
       )}
     </AuthWrapper>
   );
