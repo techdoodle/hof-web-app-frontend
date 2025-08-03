@@ -37,15 +37,13 @@ export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
     return <UncalibratedStats userData={userData} />;
   }
 
-  return <UncalibratedStats userData={userData}  />;
+  return <CalibratedStats userData={userData}  stats={stats} />;
 }
 
 function UncalibratedStats({ userData }: { userData: UserData }) {
   return (
-    <div className="flex-1 p-4 space-y-3 mt-[46px]">
-      {/* Player Info Section */}
-      <div className="flex items-start justify-between">
-        <div className="flex-1 mt-[-46px]">
+    <div className="flex-1 p-4 space-y-3">
+      <div className="flex-1" style={{zIndex: 100,position:"relative",marginLeft:"10px"}}>
           <div className="text-4xl font-bold text-white mb-2">
             {userData.playerCategory?.toUpperCase() || 'FWD'}
           </div>
@@ -54,9 +52,12 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
             <span className=" text-md">Matches</span>
           </div>
         </div>
+      {/* Player Info Section */}
+      <div className="flex items-start justify-between" style={{marginTop: '-120px',display:'flex',justifyContent:'end'}}>
+        
         
         {/* Player Image with Jersey Overlay */}
-          <div className="relative flex flex-col items-center">
+          <div className="relative flex flex-col items-center" >
             {userData.profilePicture ? (
               <ProfilePicture
                 imageUrl={userData.profilePicture || undefined}
@@ -82,6 +83,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
         </div>
  
       {/* Calibration Message */}
+      
       <div 
         className="rounded-lg p-10  flex flex-col items-center justify-center text-center !mt-0"
         style={{
