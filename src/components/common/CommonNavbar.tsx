@@ -32,13 +32,20 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
       <nav 
         className="rounded-full px-6 py-3"
         style={{
+          borderRadius:"30px",
+          display:"flex",
+          justifyContent:"center",
+          alignItems:"center",
+          padding:"0px",
+          width:"310px",
+          height:"77px",
           background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%)',
           backdropFilter: 'blur(30px)',
           boxShadow: '0px 20px 30px 0px #00000040',
           border: '0.5px solid',
         //   borderImageSource: 'linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%)',
           borderImageSlice: '1',
-          borderRadius: '100px',
+          // borderRadius: '100px',
           borderImageWidth: '1px',
         }}
       >
@@ -49,6 +56,7 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
               <Link
                 key={item.id}
                 href={item.href}
+                style={item.id === 'play' ? {marginLeft:'-14px'} : {}}
                 className={`flex flex-col items-center gap-1 transition-all duration-300 ${
                   isActive
                     ? 'text-primary'

@@ -37,7 +37,7 @@ export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
     return <UncalibratedStats userData={userData} />;
   }
 
-  return <CalibratedStats userData={userData} stats={stats} />;
+  return <UncalibratedStats userData={userData}  />;
 }
 
 function UncalibratedStats({ userData }: { userData: UserData }) {
@@ -153,10 +153,24 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
 function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }) {
   return (
     <div className="flex-1 p-4 space-y-3">
-
+ <div className="flex-1" style={{zIndex: 100,position:"relative",marginLeft:"10px"}}>
+          <div className="text-4xl font-bold text-white mb-4">
+            {userData.playerCategory?.toUpperCase()}
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-baseline">
+              <span className="text-3xl text-[#FFA726] font-bold " style={{width:'22px',textAlign:'center'}}>{stats?.detailedStats?.impact?.totalGoals || 0}</span>
+              <span className="text-sm font-bold text-[#FFA726] ml-2">Goals</span>
+            </div>
+            <div className="flex items-baseline">
+              <span className="text-3xl text-[#FFA726] font-bold" style={{width:'22px',textAlign:'center'}}>{stats?.detailedStats?.impact?.totalAssists || 0}</span>
+              <span className="text-sm font-bold text-[#FFA726] ml-2">Assists</span>
+            </div>
+          </div>
+        </div>
       {/* Player Info Section */}
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
+      <div className="flex items-start justify-between" style={{marginTop: '-140px',display: 'flex',justifyContent:'end'}}> 
+        {/* <div className="flex-1">
           <div className="text-4xl font-bold text-white mb-4">
             {userData.playerCategory?.toUpperCase()}
           </div>
@@ -170,7 +184,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
               <span className="text-sm font-bold text-[#FFA726] ml-2">Assists</span>
             </div>
           </div>
-        </div>
+        </div> */}
         
         {/* Player Image */}
         <div className="relative">
@@ -181,19 +195,20 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
           />
         </div>
       </div>
-      <div className="text-center !mt-[-45px]" style={{
+      <div className="text-center " style={{
   position: 'absolute',
-  left: '10px',
+  marginTop: '-50px',
+  left: '24px',
   gap: '5px',
  }}>
             <h2 className="text-xl font-bold text-white" style={{
-              fontSize: '30px',
+              fontSize: '50px',
               marginBottom: '10px',
             }}>
               {userData.firstName} 
             </h2>
             <h2 className="text-xl font-bold text-white"  style={{
-              fontSize: '30px',
+              fontSize: '50px',
             }}>
                {userData.lastName}
             </h2>

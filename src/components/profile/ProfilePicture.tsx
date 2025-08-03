@@ -32,13 +32,14 @@ export function ProfilePicture({
   }
 
   return (
-    <div className={`${sizeClasses[size]} relative overflow-hidden ${className}`}>
+    <div className={`${sizeClasses[size]}  relative overflow-hidden ${className}`} style={{width: '240px',height: '240px'}}>
       <img
         src={imageUrl}
         alt={userName}
         className="w-full h-full object-cover"
         style={{
-          maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%'
+          maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%',
+         
         }}
       />
       <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-t from-black/60 to-transparent"></div>
