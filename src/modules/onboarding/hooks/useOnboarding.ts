@@ -50,7 +50,7 @@ export function useOnboarding() {
           
           if (freshUserData.onboardingComplete) {
             console.log('Onboarding complete, redirecting to landing...');
-            router.replace('/landing');
+            router.replace('/profile');
           } else {
             console.log('Onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
