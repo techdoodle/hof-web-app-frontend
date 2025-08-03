@@ -218,7 +218,7 @@ export function TeamSelectionScreen({
         )}
       </div>
 
-      <div className="pb-4 mt-4">
+      <div className="mt-4 fixed bottom-0 left-0 right-0 p-4">
         <Button
           onClick={handleSubmit}
           disabled={!selectedTeam || isLoading}
