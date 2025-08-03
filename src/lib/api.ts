@@ -40,4 +40,10 @@ api.interceptors.response.use(
   }
 );
 
+// Helper function to fetch player spider chart stats
+export async function fetchPlayerSpiderChart(playerId: number) {
+  const response = await api.get(`/match-participant-stats/player/${playerId}/spider-chart`);
+  return response.data;
+}
+
 export default api; 

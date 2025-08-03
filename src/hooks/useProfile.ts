@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAccessToken } from '@/lib/utils/auth';
-import api from '@/lib/api';
+import { getAccessToken, getUser } from '@/lib/utils/auth';
+import api, { fetchPlayerSpiderChart } from '@/lib/api';
 import stats from '@/responses/profile.json';
 import matches from '@/responses/matches.json';
 
@@ -72,21 +72,29 @@ export interface UserMatches {
 }
 
 // API functions
-const fetchUserStats = async (): Promise<UserStats | NoUserStats> => {
+const fetchUserSpiderChart = async (): Promise<UserStats | NoUserStats> => {
   const token = getAccessToken();
+  const user = getUser();
+  
   if (!token) {
     throw new Error('No access token available');
   }
 
+  if (!user || !user.id) {
+    throw new Error('No user data available');
+  }
+
   try {
-    // For now, return hardcoded data since API doesn't exist
-    // In the future, this will be: const response = await api.get('/stats');
-    // Simulate API delay
+    // Call the actual backend API using the helper function
+    const data = await fetchPlayerSpiderChart(user.id);
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch user spider chart:', error);
+    
+    // Fallback to hardcoded data if API fails
+    console.log('Falling back to hardcoded data');
     await new Promise(resolve => setTimeout(resolve, 500));
     return stats as UserStats | NoUserStats;
-  } catch (error) {
-    console.error('Failed to fetch user stats:', error);
-    throw error;
   }
 };
 
@@ -109,6 +117,9 @@ const fetchUserMatches = async (): Promise<UserMatches> => {
 };
 
 export function useProfile() {
+  const user = getUser();
+  const playerId = user?.id;
+
   // Query for user stats
   const {
     data: userStats,
@@ -116,8 +127,9 @@ export function useProfile() {
     error: statsError,
     refetch: refetchStats,
   } = useQuery({
-    queryKey: ['userStats'],
-    queryFn: fetchUserStats,
+    queryKey: ['userSpiderChart', playerId],
+    queryFn: fetchUserSpiderChart,
+    enabled: !!playerId, // Only run query if playerId is available
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error: any) => {
@@ -136,8 +148,9 @@ export function useProfile() {
     error: matchesError,
     refetch: refetchMatches,
   } = useQuery({
-    queryKey: ['userMatches'],
+    queryKey: ['userMatches', playerId],
     queryFn: fetchUserMatches,
+    enabled: !!playerId, // Only run query if playerId is available
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error: any) => {
