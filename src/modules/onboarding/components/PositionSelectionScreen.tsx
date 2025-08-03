@@ -36,8 +36,8 @@ export function PositionSelectionScreen({
   };
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 flex flex-col justify-center">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 flex flex-col justify-start overflow-y-auto">
         <h1 className="text-2xl font-bold mb-2 text-white">
           How do you usually play?
         </h1>
@@ -84,7 +84,7 @@ export function PositionSelectionScreen({
         )}
       </div>
 
-      <div className="pb-4">
+      <div className="fixed bottom-0 left-0 right-0 p-4">
         <Button
           onClick={handleSubmit}
           disabled={!selectedPosition || isLoading}
