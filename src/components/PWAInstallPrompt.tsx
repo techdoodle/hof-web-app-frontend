@@ -73,9 +73,6 @@ export default function PWAInstallPrompt() {
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900">Install Humans of Football</h3>
-          <p className="text-sm text-gray-600">
-            Get the full experience with our mobile app
-          </p>
         </div>
         <div className="flex gap-2 ml-4">
           <button

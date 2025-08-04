@@ -60,7 +60,7 @@ export type UserData = {
   lastName: string;
   city: any;
   gender: string;
-  preferredTeam: number | null;
+  preferredTeam: FootballTeam | null;
 };
 
 export type FootballTeam = {

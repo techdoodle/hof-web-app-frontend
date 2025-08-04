@@ -78,13 +78,16 @@ export function UserInfoScreen({
     
     // Since we removed queryClient from repository, we'll use the cities array directly
     // We need to find the city ID by name from the cities array
-    const cityId = cities.findIndex(city => city === formData.city) + 1; // Assuming city IDs start from 1
+    const cityId = cities.findIndex(city => city === formData.city);
     console.log("formData", formData, cities, cityId);
     // setCurrentStep('GENDER_SELECTION');
     await onSubmit({...formData, city: cityId});
   };
 
   const handleChange = (field: keyof UserInfo, value: string) => {
+    console.log('debugging handleChange', field, value);
+    console.log('debugging formData', formData);
+    console.log('debugging cities', cities, cities.findIndex(city => city === value));
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -120,7 +123,7 @@ export function UserInfoScreen({
           />
           <select
             value={formData.city}
-            onChange={(e) => handleChange('city', e.target.value)}
+            onChange={(e) => handleChange('city' as keyof UserInfo, e.target.value)}
             className="w-full max-w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
             disabled={citiesLoading}
             required

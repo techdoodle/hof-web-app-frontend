@@ -18,8 +18,12 @@ export function TeamSelectionScreen({
   userData,
 }: TeamSelectionScreenProps) {
   const [selectedTeam, setSelectedTeam] = useState<number | null>(
-    userData?.preferredTeam || null
+    userData?.preferredTeam?.id || null
   );
+
+  console.log('debugging selectedTeam', selectedTeam);
+  console.log('debugging userData', userData?.preferredTeam);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [topTeams, setTopTeams] = useState<FootballTeam[]>([]);
   const [searchResults, setSearchResults] = useState<FootballTeam[]>([]);
