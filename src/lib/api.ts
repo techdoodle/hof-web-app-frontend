@@ -52,4 +52,9 @@ export async function fetchUserMatchParticipants(userId: number) {
   return response.data;
 }
 
+export async function fetchUserMatchStats(playerId: number, matchStatsId: string | number) {
+  const response = await api.get(`/match-participant-stats/player/${playerId}/match/${matchStatsId}`);
+  return response.data;
+}
+
 export default api; 

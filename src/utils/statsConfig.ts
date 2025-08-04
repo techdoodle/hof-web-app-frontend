@@ -1,3 +1,5 @@
+import { generateMatchStatsConfig } from "@/lib/utils/matchStatConfig";
+
 export interface StatConfig {
   label: string;
   dataPath: string;
@@ -113,8 +115,14 @@ export function formatStatValue(value: any, config: StatConfig): string {
 }
 
 // Utility function to detect data structure and choose appropriate config
-export function detectAndGenerateConfig(stats: any): StatsConfig {
+export function detectAndGenerateConfig(stats: any, screenName: undefined | string): StatsConfig {
   // Check if stats has the detailedStats structure
+
+  if (screenName === "matchStats") {
+    return generateMatchStatsConfig(stats);
+  }
+
+  console.log('debugging stats', stats);
   if (stats?.detailedStats) {
     return generateStatsConfig();
   }

@@ -3,7 +3,7 @@
 import { ChevronLeftIcon, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const MatchDetailsHeader = () => {
+const MatchDetailsHeader = ({ matchStats }: { matchStats: any }) => {
     const router = useRouter();
 
     return (<div className="flex flex-col gap-4">

@@ -1,18 +1,34 @@
 import { UserData } from '@/modules/onboarding/types';
 import { MatchHistoryIcon } from '@/components/icons';
 import CardList from './CardList';
-import { UserMatches } from '@/hooks/useProfile';
+import { UserMatches, useMatchParticipants } from '@/hooks/useProfile';
 
 interface MatchHistoryTabProps {
   userData: UserData;
   matches?: UserMatches;
   isLoading?: boolean;
   error?: any;
+  // Optional: if not provided, the component will use the hook directly
+  useHookDirectly?: boolean;
 }
 
-export function MatchHistoryTab({ userData, matches, isLoading, error }: MatchHistoryTabProps) {
+export function MatchHistoryTab({ 
+  userData, 
+  matches, 
+  isLoading, 
+  error, 
+  useHookDirectly = false 
+}: MatchHistoryTabProps) {
+  // Optionally use the hook directly for better caching
+  const hookData = useHookDirectly ? useMatchParticipants() : null;
+  
+  // Use hook data if available, otherwise use props
+  const finalMatches = hookData?.userMatches || matches;
+  const finalIsLoading = hookData?.isLoading || isLoading;
+  const finalError = hookData?.error || error;
+
   // Handle loading state
-  if (isLoading) {
+  if (finalIsLoading) {
     return (
       <div className="flex-1 p-4">
         <div className="flex items-center justify-center h-64">
@@ -23,18 +39,18 @@ export function MatchHistoryTab({ userData, matches, isLoading, error }: MatchHi
   }
 
   // Handle error state
-  if (error) {
+  if (finalError) {
     return (
       <div className="flex-1 p-4">
         <div className="flex items-center justify-center h-64">
-          <div className="text-red-400">Error loading matches: {error.message}</div>
+          <div className="text-red-400">Error loading matches: {finalError.message}</div>
         </div>
       </div>
     );
   }
 
   // Handle empty matches
-  if (!matches || !matches.matches || matches.matches.length === 0) {
+  if (!finalMatches || !finalMatches.matches || finalMatches.matches.length === 0) {
     return (
       <div className="flex-1 p-4">
         <div className="text-center py-12">
@@ -53,9 +69,9 @@ export function MatchHistoryTab({ userData, matches, isLoading, error }: MatchHi
   return (
     <div className="flex-1 p-4">
       <div className="text-left pb-2">
-        <p className="text-gray-400">{matches.matches.length} matches played</p>
+        <p className="text-gray-400">{finalMatches.matches.length} matches played</p>
       </div>
-      <CardList matches={matches.matches} />
+      <CardList matches={finalMatches.matches} />
     </div>
   );
 } 

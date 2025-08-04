@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAccessToken, getUser } from '@/lib/utils/auth';
-import api, { fetchPlayerSpiderChart, fetchUserMatchParticipants } from '@/lib/api';
+import api, { fetchPlayerSpiderChart, fetchUserMatchParticipants, fetchUserMatchStats } from '@/lib/api';
 import stats from '@/responses/profile.json';
 import matches from '@/responses/matches.json';
 
@@ -118,6 +118,12 @@ export interface UserMatch {
   id: number;
   timestamp: string;
   venue: string;
+  // Add all the match data for complete information
+  match: Match;
+  teamSide: string;
+  paidStatsOptIn: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserMatches {
@@ -151,6 +157,63 @@ const fetchUserSpiderChart = async (): Promise<UserStats | NoUserStats> => {
   }
 };
 
+// Separate function for fetching match participants with proper caching
+const fetchUserMatchParticipantsData = async (userId: number): Promise<MatchParticipant[]> => {
+  const token = getAccessToken();
+  
+  if (!token) {
+    throw new Error('No access token available');
+  }
+
+  try {
+    // Call the actual backend API using the helper function
+    const data = await fetchUserMatchParticipants(userId);
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch user match participants:', error);
+    throw error; // Let React Query handle the error
+  }
+};
+
+// Transform match participants to the expected format
+const transformMatchParticipants = (matchParticipants: MatchParticipant[]): UserMatches => {
+  const transformedMatches: UserMatch[] = matchParticipants.map(participant => ({
+    id: participant.match.matchId,
+    timestamp: new Date(participant.match.startTime).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    venue: participant.match.venue.name,
+    // Include all the original match data
+    match: {
+      ...participant.match,
+      startTime: new Date(participant.match.startTime).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      endTime: new Date(participant.match.endTime).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    },
+    teamSide: participant.teamSide,
+    paidStatsOptIn: participant.paidStatsOptIn,
+    createdAt: participant.createdAt,
+    updatedAt: participant.updatedAt
+  }));
+  
+  return { matches: transformedMatches };
+};
+
 const fetchUserMatches = async (): Promise<UserMatches> => {
   const token = getAccessToken();
   const user = getUser();
@@ -168,19 +231,7 @@ const fetchUserMatches = async (): Promise<UserMatches> => {
     const matchParticipants: MatchParticipant[] = await fetchUserMatchParticipants(user.id);
     
     // Transform the API response to match the expected UserMatches format
-    const transformedMatches: UserMatch[] = matchParticipants.map(participant => ({
-      id: participant.match.matchId,
-      timestamp: new Date(participant.match.startTime).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
-      venue: participant.match.venue.name
-    }));
-    
-    return { matches: transformedMatches };
+    return transformMatchParticipants(matchParticipants);
   } catch (error) {
     console.error('Failed to fetch user matches:', error);
     
@@ -216,15 +267,15 @@ export function useProfile() {
     },
   });
 
-  // Query for user matches
+  // Query for user match participants with proper caching
   const {
-    data: userMatches,
-    isLoading: isMatchesLoading,
-    error: matchesError,
-    refetch: refetchMatches,
+    data: matchParticipants,
+    isLoading: isMatchParticipantsLoading,
+    error: matchParticipantsError,
+    refetch: refetchMatchParticipants,
   } = useQuery({
-    queryKey: ['userMatches', playerId],
-    queryFn: fetchUserMatches,
+    queryKey: ['userMatchParticipants', playerId],
+    queryFn: () => fetchUserMatchParticipantsData(playerId!),
     enabled: !!playerId, // Only run query if playerId is available
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
@@ -237,6 +288,9 @@ export function useProfile() {
     },
   });
 
+  // Transform match participants to the expected format
+  const userMatches = matchParticipants ? transformMatchParticipants(matchParticipants) : undefined;
+
   return {
     // Stats data
     userStats,
@@ -244,22 +298,67 @@ export function useProfile() {
     statsError,
     refetchStats,
     
-    // Matches data
+    // Raw match participants data (cached)
+    matchParticipants,
+    isMatchParticipantsLoading,
+    matchParticipantsError,
+    refetchMatchParticipants,
+    
+    // Transformed matches data
     userMatches,
-    isMatchesLoading,
-    matchesError,
-    refetchMatches,
+    isMatchesLoading: isMatchParticipantsLoading,
+    matchesError: matchParticipantsError,
+    refetchMatches: refetchMatchParticipants,
     
     // Combined loading state
-    isLoading: isStatsLoading || isMatchesLoading,
+    isLoading: isStatsLoading || isMatchParticipantsLoading,
     
     // Combined error state
-    error: statsError || matchesError,
+    error: statsError || matchParticipantsError,
     
     // Combined refetch function
     refetch: () => {
       refetchStats();
-      refetchMatches();
+      refetchMatchParticipants();
     },
+  };
+}
+
+// Separate hook for match participants data - more modular and reusable
+export function useMatchParticipants(userId?: number) {
+  const user = getUser();
+  const playerId = userId || user?.id;
+
+  const {
+    data: matchParticipants,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['userMatchParticipants', playerId],
+    queryFn: () => fetchUserMatchParticipantsData(playerId!),
+    enabled: !!playerId, // Only run query if playerId is available
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    retry: (failureCount, error: any) => {
+      // Don't retry if it's a 401 (unauthorized)
+      if (error?.response?.status === 401) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+  });
+
+  // Transform match participants to the expected format
+  const userMatches = matchParticipants ? transformMatchParticipants(matchParticipants) : undefined;
+
+  return {
+    // Raw match participants data (cached)
+    matchParticipants,
+    // Transformed matches data
+    userMatches,
+    isLoading,
+    error,
+    refetch,
   };
 } 
