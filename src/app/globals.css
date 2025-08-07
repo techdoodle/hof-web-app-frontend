@@ -123,6 +123,9 @@
     color: #fff;
     border-radius: 16px;
   }
+  .text-gradient-bg {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(7, 7, 7, 0.8) 50%, #0E0E0E 100%);
+  }
 
   /* Font utilities for specific elements */
   .font-heading {

@@ -33,20 +33,12 @@ const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
                 display: 'flex',
                 justifyContent: 'center',
             }}>
-                {/* <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> 2 </div>
-                    <div className="text-lg text-[#FFA726] font-bold"> Goals </div>
-                </div> */}
 
                 <div className="relative">
-                    <ProfilePicture imageUrl={user?.profilePicture || undefined} size="xl" userName={user?.firstName + " " + user?.lastName} />
+                    <ProfilePicture imageUrl={user?.profilePicture || 'undefined'} size="xl" userName={user?.firstName + " " + user?.lastName} />
                 </div>
-                {/* <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> - </div>
-                    <div className="text-lg text-[#FFA726] font-bold"> Assists </div>
-                </div> */}
             </div>
-            <div className={"flex flex-col items-center "} style={{
+            <div className={"flex flex-col items-center text-gradient-bg max-w-full"} style={{
                 marginTop: '-65px',
                 position: 'relative',
                 zIndex: 100,

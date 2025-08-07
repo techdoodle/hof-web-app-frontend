@@ -103,7 +103,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
           borderImageWidth: '1px',
         }}
       >
-        <div className="text-center mt-2" style={{
+        <div className="text-center mt-2 text-gradient-bg" style={{
           position: 'absolute',
           top: '-65px',
           left: '10px',
@@ -183,7 +183,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
           />
         </div>
       </div>
-      <div className="text-center " style={{
+      <div className="text-center text-gradient-bg" style={{
         position: 'absolute',
         marginTop: '-50px',
         left: '24px',
