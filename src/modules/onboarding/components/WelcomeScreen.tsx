@@ -1,4 +1,5 @@
 import { Button } from '@/lib/ui/components/Button/Button';
+import { ArrowRightIcon } from 'lucide-react';
 import Image from 'next/image';
 
 interface WelcomeScreenProps {
@@ -47,7 +48,7 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
           size="lg"
           className="w-full"
         >
-          Continue
+          Get Started <ArrowRightIcon className="w-4 h-4" />
         </Button>
       </div>
     </div>

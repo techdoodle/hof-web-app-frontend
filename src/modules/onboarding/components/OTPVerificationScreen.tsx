@@ -58,6 +58,23 @@ export function OTPVerificationScreen({
     // }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
+    
+    if (pastedData.length > 0) {
+      const newOtp = [...otp];
+      for (let i = 0; i < 6; i++) {
+        newOtp[i] = pastedData[i] || '';
+      }
+      setOtp(newOtp);
+      
+      // Focus the last filled input or the next empty one
+      const lastFilledIndex = Math.min(pastedData.length - 1, 5);
+      inputRefs[lastFilledIndex].current?.focus();
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs[index - 1].current?.focus();
@@ -116,7 +133,7 @@ export function OTPVerificationScreen({
           {phoneNumber}
         </h1>
 
-        <div className="mt-8 grid grid-cols-6 gap-1 sm:gap-5 w-full max-w-sm sm:max-w-md mx-auto">
+        <div className="pr-4 mt-8 grid grid-cols-6 gap-1 sm:gap-5 w-full max-w-sm sm:max-w-md mx-auto">
           {otp.map((digit, index) => (
             <input
               key={index}
@@ -128,6 +145,7 @@ export function OTPVerificationScreen({
               value={digit}
               onChange={(e) => handleChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
+              onPaste={handlePaste}
               className="otp-input w-10 h-12 sm:w-14 sm:h-14 text-center text-white text-2xl font-bold rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-transparent"
               disabled={attemptsExceeded}
             />
@@ -147,10 +165,13 @@ export function OTPVerificationScreen({
 
         <button
           onClick={handleResend}
-          className="mt-4 text-sm text-primary hover:underline disabled:opacity-50"
+          className="mt-4 text-sm text-primary disabled:opacity-50"
           disabled={isLoading || timer > 0 || resendLimitReached}
         >
-          I haven't received a code ({`0:${timer.toString().padStart(2, '0')}`})
+          {timer > 0 
+            ? `I haven't received a code (0:${timer.toString().padStart(2, '0')})`
+            : "Resend code"
+          }
         </button>
         {resendLimitReached && (
           <p className="mt-2 text-sm text-red-600">
