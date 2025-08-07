@@ -194,7 +194,7 @@ export function GenderSelectionScreen({
     <div className="flex flex-col h-full">
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-20">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl font-bold font-orbitron">
           Hello {userData?.firstName}!
         </h1>
         <p className="text-gray-400 mb-4">Tell us more about you</p>
@@ -281,8 +281,8 @@ export function GenderSelectionScreen({
               <p className="mt-2 text-sm text-red-500 text-center">{processingError}</p>
             )}
             
-            {profilePicture && !isProcessingImage && !extractionStatus && (
-              <p className="mt-2 text-xs text-green-500 text-center">
+            {profilePicture && !isProcessingImage && !extractionStatus && !processingError && !error && (
+              <p className="mt-2 text-md text-green-500 text-center">
                 ✓ Face extracted and processed successfully
               </p>
             )}

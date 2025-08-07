@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/lib/ui/components/Button/Button';
+import { CityDropdown } from '@/components/common/CityDropdown';
 import { OnboardingStep, UserData, UserInfo } from '../types';
 import { OnboardingRepository } from '../repository/onboarding.repository';
 import { useQueryClient } from '@tanstack/react-query';
@@ -27,7 +28,7 @@ export function UserInfoScreen({
     city: userData.city ? userData.city.cityName : '',
     gender: 'MALE',
   });
-  const [cities, setCities] = useState<string[]>([]);
+  const [cities, setCities] = useState<Array<{id: number, cityName: string}>>([]);
   const [citiesLoading, setCitiesLoading] = useState(true);
 
   useEffect(() => {
@@ -35,11 +36,18 @@ export function UserInfoScreen({
       try {
         const repo = OnboardingRepository.getInstance();
         const cityList = await repo.fetchCities();
-        setCities(cityList);
+        // Convert string array to object array with id and cityName
+        const citiesWithIds = cityList.map((cityName, index) => ({
+          id: index,
+          cityName: cityName
+        }));
+        setCities(citiesWithIds);
         // Default to Pune if available, else first city
+        const defaultCity = userData.city ? userData.city.cityName : 
+          (cityList.includes('Pune') ? 'Pune' : (cityList[0] || ''));
         setFormData((prev) => ({
           ...prev,
-          city: userData.city ? userData.city.cityName :  (cityList.includes('Pune') ? 'Pune' : (cityList[0] || '')),
+          city: defaultCity,
         }));
       } catch (e) {
         setCities([]);
@@ -76,18 +84,18 @@ export function UserInfoScreen({
       return;
     }
     
-    // Since we removed queryClient from repository, we'll use the cities array directly
-    // We need to find the city ID by name from the cities array
-    const cityId = cities.findIndex(city => city === formData.city);
+    // Find the city ID by name from the cities array
+    const cityData = cities.find(city => city.cityName === formData.city);
+    const cityId = cityData ? cityData.id : -1;
     console.log("formData", formData, cities, cityId);
     // setCurrentStep('GENDER_SELECTION');
-    await onSubmit({...formData, city: cityId});
+    await onSubmit({...formData, city: cityId as any});
   };
 
   const handleChange = (field: keyof UserInfo, value: string) => {
     console.log('debugging handleChange', field, value);
     console.log('debugging formData', formData);
-    console.log('debugging cities', cities, cities.findIndex(city => city === value));
+    console.log('debugging cities', cities, cities.findIndex(city => city.cityName === value));
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -129,24 +137,13 @@ export function UserInfoScreen({
           </div>
           <div>
             <label htmlFor="city" className="text-white text-md font-semibold">City</label>
-            <select
-              value={formData.city}
-              onChange={(e) => handleChange('city' as keyof UserInfo, e.target.value)}
-              className="w-full max-w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-lg"
+            <CityDropdown
+              cities={cities}
+              selectedCity={formData.city as string}
+              onCityChange={(cityName) => handleChange('city' as keyof UserInfo, cityName)}
               disabled={citiesLoading}
-              required
-            >
-              <option value="">Select your city *</option>
-              {citiesLoading ? (
-                <option>Loading cities...</option>
-              ) : cities.length > 0 ? (
-                cities.map((city) => (
-                  <option key={city} value={city} className="bg-background text-white">{city}</option>
-                ))
-              ) : (
-                <option>No cities found</option>
-              )}
-            </select>
+              className="w-full"
+            />
           </div>
         </div>
 

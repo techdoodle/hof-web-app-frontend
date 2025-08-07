@@ -113,6 +113,16 @@
       linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%);
     border-image-slice: 1;
   }
+  .gradient-border-selected {
+    border: 1px solid transparent;
+    background: 
+      linear-gradient(#0c1c14, #0c1c14) padding-box,
+      linear-gradient(90deg, #00ff84, #005a34) border-box;
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #fff;
+    border-radius: 16px;
+  }
 
   /* Font utilities for specific elements */
   .font-heading {

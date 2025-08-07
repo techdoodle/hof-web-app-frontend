@@ -125,7 +125,7 @@ export function OTPVerificationScreen({
     <div className="flex flex-col h-full">
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-20">
-        <h1 className="text-2xl font-bold mb-4">
+        <h1 className="text-2xl font-bold mb-4 font-orbitron">
           Enter the 6-digit code *
           <br />
           sent to you at
@@ -165,7 +165,7 @@ export function OTPVerificationScreen({
 
         <button
           onClick={handleResend}
-          className="mt-4 text-sm text-primary disabled:opacity-50"
+          className="mt-4 text-md font-semibold text-primary disabled:opacity-50"
           disabled={isLoading || timer > 0 || resendLimitReached}
         >
           {timer > 0 

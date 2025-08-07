@@ -38,8 +38,8 @@ export function PositionSelectionScreen({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 flex flex-col justify-start overflow-y-auto">
-        <h1 className="text-2xl font-bold mb-2 text-white">
-          How do you usually play?
+        <h1 className="text-2xl font-bold mb-2 text-white font-orbitron">
+          What do you usually play?
         </h1>
         <p className="text-gray-400 mb-8">
           Knowing your preferences help us tailor your experience
@@ -52,7 +52,8 @@ export function PositionSelectionScreen({
               onClick={() => setSelectedPosition(position.value)}
               className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
                 selectedPosition === position.value
-                  ? 'border-primary bg-primary/10 text-primary'
+                  // ? 'border-primary bg-primary/10 text-primary'
+                  ? 'gradient-border-selected'
                   : 'border-gray-700 bg-gray-800/50 text-white hover:border-gray-600'
               }`}
             >

@@ -2,6 +2,7 @@ import { UserData } from '@/modules/onboarding/types';
 import { RadarChart } from './RadarChart';
 import { ProfilePicture } from './ProfilePicture';
 import { StatsTable } from './StatsTable';
+import { positionAbbreviationMapping } from '@/utils/positionMapping';
 
 interface StatsTabProps {
   userData: UserData;
@@ -45,7 +46,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
     <div className="flex-1 p-4 space-y-3">
       <div className="flex-1" style={{ zIndex: 100, position: "relative", marginLeft: "10px" }}>
         <div className="text-4xl font-bold text-white mb-2">
-          {userData.playerCategory?.toUpperCase() || 'FWD'}
+          {positionAbbreviationMapping[userData.playerCategory?.toUpperCase() as keyof typeof positionAbbreviationMapping] || 'STRIKER'}
         </div>
         <div className="text-yellow-400 flex items-baseline gap-2 text-yellow-400 mb-4">
           <span className=" text-4xl">0</span>
@@ -157,7 +158,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
     <div className="flex-1 p-4 space-y-3">
       <div className="flex-1" style={{ zIndex: 100, position: "relative", marginLeft: "10px" }}>
         <div className="text-4xl font-bold text-white mb-4 font-orbitron">
-          {userData.playerCategory?.toUpperCase()}
+          {positionAbbreviationMapping[userData.playerCategory?.toUpperCase() as keyof typeof positionAbbreviationMapping] || 'STRIKER'}
         </div>
         <div className="space-y-2">
           <div className="flex items-baseline">

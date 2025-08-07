@@ -47,11 +47,11 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-20">
         <div className="flex flex-col items-start justify-center h-full">
-          <div className="text-2xl font-boldtext-white text-left font-semibold mb-16">LOGIN</div>
+          <div className="text-2xl font-boldtext-white text-left font-semibold mb-4 font-orbitron">LOGIN</div>
           <div className="text-white mb-2">Enter your mobile number *</div>
           <div className="w-full">
             <div>
-              <div className="relative flex items-center w-full rounded-lg gradient-border p-2 bg-background">
+              <div className="relative flex items-center w-full rounded-lg gradient-border p-2 bg-background focus-within:gradient-border-selected">
                 <span className="pl-4 pr-2 text-foreground/80 select-none">+91</span>
                 <input
                   type="tel"
@@ -66,7 +66,7 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
                     }
                   }}
                   placeholder="XXXXXXXXXX"
-                  className="flex-1 p-2 pl-0 bg-transparent outline-none text-foreground placeholder-gray-500 input-gradient-border"
+                  className="flex-1 p-2 pl-0 bg-transparent outline-none text-foreground placeholder-gray-500 input-gradient-border text-lg"
                   maxLength={10}
                   required
                 />
@@ -77,7 +77,7 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
                 <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-black text-xs font-bold">i</span>
                 </div>
-                <span className="text-green-400 text-sm">Please provide Whatsapp number</span>
+                <span className="text-green-400 text-md">Please provide Whatsapp number</span>
               </div>
               
               {validationError && (
