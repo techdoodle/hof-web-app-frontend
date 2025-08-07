@@ -71,7 +71,7 @@ export function RadarChart({ data }: RadarChartProps) {
       endAngle: 360,
     },
     xAxis: {
-      categories: Object.keys(data) ?? [],
+      categories: Object.keys(data).map(key => key.charAt(0).toUpperCase() + key.slice(1)) ?? [],
       tickmarkPlacement: 'on',
       lineWidth: 0,
       minorGridLineWidth: 0,

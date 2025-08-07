@@ -22,11 +22,11 @@ const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
             }}>
                 <div className="flex flex-col items-center justify-start">
                     <div className="text-3xl text-[#FFA726] font-bold"> {matchStats?.totalGoal ?? "-"}  </div>
-                    <div className="text-lg text-[#FFA726] font-bold"> Goals </div>
+                    <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Goals </div>
                 </div>
                 <div className="flex flex-col items-center justify-start">
                     <div className="text-3xl text-[#FFA726] font-bold"> {matchStats?.totalAssist ?? "-"} </div>
-                    <div className="text-lg text-[#FFA726] font-bold"> Assists </div>
+                    <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Assists </div>
                 </div>
             </div>
             <div className="flex flex-row align-center justify-between" style={{
@@ -51,8 +51,8 @@ const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
                 position: 'relative',
                 zIndex: 100,
             }}>
-                <div className={cn("text-4xl font-bold", !user?.profilePicture ? "text-yellow-500" : "text-white")}>{user?.firstName}</div>
-                <div className={"text-4xl font-bold text-[#AAAAAA]"}> {user?.lastName}</div>
+                <div className={cn("text-4xl font-bold font-orbitron", !user?.profilePicture ? "text-yellow-500" : "text-white")}>{user?.firstName}</div>
+                <div className={"text-4xl font-bold font-orbitron text-[#AAAAAA]"}> {user?.lastName}</div>
             </div>
         </div>);
 };

@@ -37,54 +37,54 @@ export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
     return <UncalibratedStats userData={userData} />;
   }
 
-  return <CalibratedStats userData={userData}  stats={stats} />;
+  return <CalibratedStats userData={userData} stats={stats} />;
 }
 
 function UncalibratedStats({ userData }: { userData: UserData }) {
   return (
     <div className="flex-1 p-4 space-y-3">
-      <div className="flex-1" style={{zIndex: 100,position:"relative",marginLeft:"10px"}}>
-          <div className="text-4xl font-bold text-white mb-2">
-            {userData.playerCategory?.toUpperCase() || 'FWD'}
-          </div>
-          <div className="text-yellow-400 flex items-baseline gap-2 text-yellow-400 mb-4">
-            <span className=" text-4xl">0</span>
-            <span className=" text-md">Matches</span>
-          </div>
+      <div className="flex-1" style={{ zIndex: 100, position: "relative", marginLeft: "10px" }}>
+        <div className="text-4xl font-bold text-white mb-2">
+          {userData.playerCategory?.toUpperCase() || 'FWD'}
         </div>
+        <div className="text-yellow-400 flex items-baseline gap-2 text-yellow-400 mb-4">
+          <span className=" text-4xl">0</span>
+          <span className=" text-md">Matches</span>
+        </div>
+      </div>
       {/* Player Info Section */}
-      <div className="flex items-start justify-between" style={{marginTop: '-120px',display:'flex',justifyContent:'end'}}>
-        
-        
+      <div className="flex items-start justify-between" style={{ marginTop: '-120px', display: 'flex', justifyContent: 'end' }}>
+
+
         {/* Player Image with Jersey Overlay */}
-          <div className="relative flex flex-col items-center" >
-            {userData.profilePicture ? (
-              <ProfilePicture
-                imageUrl={userData.profilePicture || undefined}
-                userName={`${userData.firstName} ${userData.lastName}`}
-                size="lg"
-              />
-            ) : (
-              <button
-                onClick={() => {
-                  // TODO: Implement add profile picture functionality
-                  console.log('Add profile picture clicked');
-                }}
-                className="absolute -top-12 left-1/2 transform -translate-x-1/2 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-dashed border-gray-400 flex flex-col items-center justify-center bg-black/60 hover:border-primary/50 transition-colors"
-              >
-                <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mb-2">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                  <circle cx="12" cy="13" r="3"/>
-                </svg>
-                <span className="text-sm text-white">Add Photo</span>
-              </button>
-            )}
-          </div>
+        <div className="relative flex flex-col items-center" >
+          {userData.profilePicture ? (
+            <ProfilePicture
+              imageUrl={userData.profilePicture || undefined}
+              userName={`${userData.firstName} ${userData.lastName}`}
+              size="lg"
+            />
+          ) : (
+            <button
+              onClick={() => {
+                // TODO: Implement add profile picture functionality
+                console.log('Add profile picture clicked');
+              }}
+              className="absolute -top-12 left-1/2 transform -translate-x-1/2 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-dashed border-gray-400 flex flex-col items-center justify-center bg-black/60 hover:border-primary/50 transition-colors"
+            >
+              <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mb-2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="3" />
+              </svg>
+              <span className="text-sm text-white">Add Photo</span>
+            </button>
+          )}
         </div>
- 
+      </div>
+
       {/* Calibration Message */}
-      
-      <div 
+
+      <div
         className="rounded-lg p-10  flex flex-col items-center justify-center text-center !mt-0"
         style={{
           position: 'relative',
@@ -103,39 +103,39 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
         }}
       >
         <div className="text-center mt-2" style={{
-  position: 'absolute',
-  top: '-65px',
-  left: '10px',
-  gap: '5px',
-  // left: '100px',
- }}>
-            <h2 className="text-xl font-bold text-white" style={{
-              fontSize: '30px',
-              marginBottom: '10px',
-              marginLeft: '10px',
-            }}>
-              {userData.firstName} 
-            </h2>
-            <h2 className="text-xl font-bold text-white"  style={{
-              fontSize: '30px',
-            }}>
-               {userData.lastName}
-            </h2>
-          </div>
+          position: 'absolute',
+          top: '-65px',
+          left: '10px',
+          gap: '5px',
+          // left: '100px',
+        }}>
+          <h2 className="text-xl font-bold text-white" style={{
+            fontSize: '30px',
+            marginBottom: '10px',
+            marginLeft: '10px',
+          }}>
+            {userData.firstName}
+          </h2>
+          <h2 className="text-xl font-bold text-white" style={{
+            fontSize: '30px',
+          }}>
+            {userData.lastName}
+          </h2>
+        </div>
         <div className="text-orange-400 text-sm font-bold">Your profile is uncalibrated</div>
         <div className="text-white text-sm ">Play a match to calibrate</div>
       </div>
 
       {/* Locked Stats */}
-      <div 
+      <div
         className="flex flex-col items-center justify-center py-12 space-y-2"
-       
+
       >
         <div className="w-16 h-16  rounded-full flex items-center justify-center">
           <img src="/lock.svg" alt="Lock" className="w-12 h-12" />
         </div>
         <div className="text-white text-center">
-          <div 
+          <div
             className="font-medium"
             style={{
               fontWeight: 500,
@@ -155,39 +155,24 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
 function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }) {
   return (
     <div className="flex-1 p-4 space-y-3">
- <div className="flex-1" style={{zIndex: 100,position:"relative",marginLeft:"10px"}}>
-          <div className="text-4xl font-bold text-white mb-4">
-            {userData.playerCategory?.toUpperCase()}
+      <div className="flex-1" style={{ zIndex: 100, position: "relative", marginLeft: "10px" }}>
+        <div className="text-4xl font-bold text-white mb-4 font-orbitron">
+          {userData.playerCategory?.toUpperCase()}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-baseline">
+            <span className="text-3xl text-[#FFA726] font-bold " style={{ width: '22px', textAlign: 'center' }}>{stats?.detailedStats?.impact?.totalGoals || 0}</span>
+            <span className="text-lg font-bold text-[#FFA726] ml-2 font-orbitron">Goals</span>
           </div>
-          <div className="space-y-2">
-            <div className="flex items-baseline">
-              <span className="text-3xl text-[#FFA726] font-bold " style={{width:'22px',textAlign:'center'}}>{stats?.detailedStats?.impact?.totalGoals || 0}</span>
-              <span className="text-sm font-bold text-[#FFA726] ml-2">Goals</span>
-            </div>
-            <div className="flex items-baseline">
-              <span className="text-3xl text-[#FFA726] font-bold" style={{width:'22px',textAlign:'center'}}>{stats?.detailedStats?.impact?.totalAssists || 0}</span>
-              <span className="text-sm font-bold text-[#FFA726] ml-2">Assists</span>
-            </div>
+          <div className="flex items-baseline">
+            <span className="text-3xl text-[#FFA726] font-bold" style={{ width: '22px', textAlign: 'center' }}>{stats?.detailedStats?.impact?.totalAssists || 0}</span>
+            <span className="text-lg font-bold text-[#FFA726] ml-2 font-orbitron">Assists</span>
           </div>
         </div>
+      </div>
       {/* Player Info Section */}
-      <div className="flex items-start justify-between" style={{marginTop: '-140px',display: 'flex',justifyContent:'end'}}> 
-        {/* <div className="flex-1">
-          <div className="text-4xl font-bold text-white mb-4">
-            {userData.playerCategory?.toUpperCase()}
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <span className="text-3xl text-[#FFA726] font-bold">{stats?.detailedStats?.impact?.totalGoals || 0}</span>
-              <span className="text-sm font-bold text-[#FFA726] ml-2">Goals</span>
-            </div>
-            <div className="flex items-center">
-              <span className="text-3xl text-[#FFA726] font-bold">{stats?.detailedStats?.impact?.totalAssists || 0}</span>
-              <span className="text-sm font-bold text-[#FFA726] ml-2">Assists</span>
-            </div>
-          </div>
-        </div> */}
-        
+      <div className="flex items-start justify-between" style={{ marginTop: '-140px', display: 'flex', justifyContent: 'end' }}>
+
         {/* Player Image */}
         <div className="relative">
           <ProfilePicture
@@ -198,23 +183,23 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
         </div>
       </div>
       <div className="text-center " style={{
-  position: 'absolute',
-  marginTop: '-50px',
-  left: '24px',
-  gap: '5px',
- }}>
-            <h2 className="text-xl font-bold text-white" style={{
-              fontSize: '50px',
-              marginBottom: '10px',
-            }}>
-              {userData.firstName} 
-            </h2>
-            <h2 className="text-xl font-bold text-white"  style={{
-              fontSize: '50px',
-            }}>
-               {userData.lastName}
-            </h2>
-          </div>
+        position: 'absolute',
+        marginTop: '-50px',
+        left: '24px',
+        gap: '5px',
+      }}>
+        <h2 className="text-xl font-bold text-white font-orbitron" style={{
+          fontSize: '50px',
+          marginBottom: '10px',
+        }}>
+          {userData.firstName}
+        </h2>
+        <h2 className="text-xl font-bold text-[#AAAAAA] font-orbitron" style={{
+          fontSize: '50px',
+        }}>
+          {userData.lastName}
+        </h2>
+      </div>
 
       {/* Stats Table */}
       <StatsTable stats={stats} />

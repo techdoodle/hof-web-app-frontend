@@ -12,7 +12,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
       <div className="flex items-center justify-between">
         {/* Tabs Section */}
         <div 
-          className="p-1 bg-black rounded-[0.5rem]"
+          className="p-1 bg-opacity-80 rounded-[0.5rem]"
           style={{
             border: '1px solid',
             borderImageSource: 'linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), linear-gradient(0deg, rgba(255, 255, 255, 0.4) -38.64%, rgba(255, 255, 255, 0) 135.23%)',

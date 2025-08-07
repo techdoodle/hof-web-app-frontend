@@ -101,44 +101,53 @@ export function UserInfoScreen({
     <div className="flex flex-col h-full">
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-20">
-        <h1 className="text-2xl font-bold mb-2">What's your name?</h1>
-        <p className="text-gray-400 mb-8">Let us know how to properly address you</p>
+        <h1 className="text-2xl font-bold mb-2 font-orbitron">What's your name?</h1>
+        <p className="text-gray mb-8">Let us know how to properly address you</p>
 
         <div className="space-y-4 w-full max-w-full overflow-x-auto">
-          <input
-            type="text"
-            value={formData.firstName}
-            onChange={(e) => handleChange('firstName', e.target.value)}
-            placeholder="Enter First Name *"
-            className="w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-            required
-          />
-          <input
-            type="text"
-            value={formData.lastName}
-            onChange={(e) => handleChange('lastName', e.target.value)}
-            placeholder="Enter Last Name *"
-            className="w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-            required
-          />
-          <select
-            value={formData.city}
-            onChange={(e) => handleChange('city' as keyof UserInfo, e.target.value)}
-            className="w-full max-w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-            disabled={citiesLoading}
-            required
-          >
-            <option value="">Select your city *</option>
-            {citiesLoading ? (
-              <option>Loading cities...</option>
-            ) : cities.length > 0 ? (
-              cities.map((city) => (
-                <option key={city} value={city} className="bg-background text-white">{city}</option>
-              ))
-            ) : (
-              <option>No cities found</option>
-            )}
-          </select>
+          <div>
+            <label htmlFor="firstName" className="text-white text-md font-semibold">First Name</label>
+            <input
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => handleChange('firstName', e.target.value)}
+              placeholder="ex: John"
+              className="w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-lg"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="lastName" className="text-white text-md font-semibold">Last Name</label>
+            <input
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => handleChange('lastName', e.target.value)}
+              placeholder="ex: Doe"
+              className="w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-lg"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="city" className="text-white text-md font-semibold">City</label>
+            <select
+              value={formData.city}
+              onChange={(e) => handleChange('city' as keyof UserInfo, e.target.value)}
+              className="w-full max-w-full p-4 rounded-lg border border-gray-600 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-lg"
+              disabled={citiesLoading}
+              required
+            >
+              <option value="">Select your city *</option>
+              {citiesLoading ? (
+                <option>Loading cities...</option>
+              ) : cities.length > 0 ? (
+                cities.map((city) => (
+                  <option key={city} value={city} className="bg-background text-white">{city}</option>
+                ))
+              ) : (
+                <option>No cities found</option>
+              )}
+            </select>
+          </div>
         </div>
 
         {error && (

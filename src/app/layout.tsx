@@ -1,4 +1,4 @@
-import { Orbitron } from 'next/font/google';
+import { Orbitron, Rajdhani } from 'next/font/google';
 import { Providers } from './providers';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import './globals.css';
@@ -6,6 +6,14 @@ import './globals.css';
 const orbitron = Orbitron({
   subsets: ['latin'],
   display: 'swap',
+  variable: '--font-orbitron',
+});
+
+const rajdhani = Rajdhani({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-rajdhani',
+  weight: ['300', '400', '500', '600', '700'],
 });
 
 export const metadata = {
@@ -49,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${orbitron.className} h-full min-h-screen w-full`}>
+    <html lang="en" className={`${rajdhani.variable} ${orbitron.variable} h-full min-h-screen w-full`}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
