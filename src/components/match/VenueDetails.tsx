@@ -1,4 +1,4 @@
-export const VenueDetails = () => {
+export const VenueDetails = ({ matchStats }: { matchStats: any }) => {
     return (
         <div className="venue-details">
             <div className="venue-details-header">

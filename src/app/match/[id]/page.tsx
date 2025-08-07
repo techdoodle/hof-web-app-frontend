@@ -55,7 +55,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
           <MatchDetailsHeader matchStats={matchStats} />
           <MatchPlayerProfile matchStats={matchStats} />
           <StatsTable stats={matchStats} screenName="matchStats" />
-          <VenueDetails />
+          <VenueDetails matchStats={matchStats} />
       </div>
       )}
     </AuthWrapper>

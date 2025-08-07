@@ -2,12 +2,12 @@ import { detectAndGenerateConfig, getValueFromPath, formatStatValue, type StatCo
 
 interface StatsTableProps {
   stats: any;
-  screenName: undefined | string;
+  screenName?: undefined | string;
 }
 
 export function StatsTable({ stats, screenName }: StatsTableProps) {
   const config = detectAndGenerateConfig(stats, screenName);
-  console.log('debugging config', config, stats);
+  console.log('debugging config', config, stats, screenName);
 
   const renderStatRow = (statConfig: StatConfig) => {
     const value = getValueFromPath(stats, statConfig.dataPath);
