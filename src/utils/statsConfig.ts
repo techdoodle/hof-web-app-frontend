@@ -164,7 +164,7 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
         dataPath: "totalMvpWins"
       },
       {
-        label: "Dribbles Attempted",
+        label: "Dribbles",
         dataPath: "detailedStats.dribbling.totalAttempts"
       },
       {

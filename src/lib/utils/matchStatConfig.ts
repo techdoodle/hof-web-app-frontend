@@ -141,7 +141,7 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
     //     dataPath: "totalMvpWins"
     //   },
       {
-        label: "Dribbles Attempted",
+        label: "Dribbles",
         dataPath: "detailedStats.dribbling.totalAttempts"
       },
       {
