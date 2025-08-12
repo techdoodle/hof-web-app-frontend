@@ -5,9 +5,10 @@ interface StatsTableProps {
   stats: any;
   screenName?: undefined | string;
   playerPosition?: 'GK' | 'DEF' | 'FWD';
+  loading?: boolean;
 }
 
-export function StatsTable({ stats, screenName, playerPosition }: StatsTableProps) {
+export function StatsTable({ loading, stats, screenName, playerPosition }: StatsTableProps) {
   const config = detectAndGenerateConfig(stats, screenName, playerPosition);
   console.log('debugging config', config, stats, screenName, playerPosition);
 

@@ -45,12 +45,12 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
   return (
     <div className="flex-1 p-4 space-y-3">
       <div className="flex-1" style={{ zIndex: 100, position: "relative", marginLeft: "10px" }}>
-        <div className="text-4xl font-bold text-white mb-2">
+        <div className="text-4xl font-bold text-white mb-2 font-orbitron">
           {positionAbbreviationMapping[userData.playerCategory?.toUpperCase() as keyof typeof positionAbbreviationMapping] || 'STRIKER'}
         </div>
         <div className="text-yellow-400 flex items-baseline gap-2 text-yellow-400 mb-4">
-          <span className=" text-4xl">0</span>
-          <span className=" text-md">Matches</span>
+          <span className=" text-4xl font-orbitron">0</span>
+          <span className=" text-md font-orbitron">Matches</span>
         </div>
       </div>
       {/* Player Info Section */}
@@ -84,53 +84,44 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
       </div>
 
       {/* Calibration Message */}
-
       <div
-        className="rounded-lg p-10  flex flex-col items-center justify-center text-center !mt-0"
+        className="p-[1px] rounded-2xl w-full"
         style={{
+          // marginTop: '-30px',
           position: 'relative',
-          width: '100%',
-          height: '141px',
-          // top: '261px',
-          // left: '7px',
-          // borderRadius: '16px',
-          borderWidth: '1px',
-          borderStyle: 'solid',
-          borderColor: '#374151',
-          backgroundColor: '#0B1E19',
-          borderImageSource: 'linear-gradient(169.22deg, rgba(169, 169, 169, 0) -1.94%, #FFFFFF 43.05%, #CBCBCB 66.97%, #747474 88.27%)',
-          borderImageSlice: '1',
-          borderImageWidth: '1px',
+          background: 'linear-gradient(169.22deg, rgba(169, 169, 169, 0) -1.94%, #FFFFFF 43.05%, #CBCBCB 66.97%, #747474 88.27%)',
         }}
       >
-        <div className="text-left mt-2 text-gradient-bg" style={{
-          position: 'absolute',
-          top: '-65px',
-          left: '10px',
-          gap: '5px',
-          // left: '100px',
-        }}>
-          <h2 className="text-xl font-bold text-white" style={{
-            fontSize: '30px',
-            // marginBottom: '10px',
-            // marginLeft: '10px',
+        <div className="py-8 px-4 text-center bg-[#0B1E19] rounded-2xl" >
+          <div className="text-left mt-2 text-gradient-bg" style={{
+            position: 'absolute',
+            top: '-55px',
+            left: '10px',
+            gap: '5px',
+            // left: '100px',
           }}>
-            {userData.firstName}
-          </h2>
-          <h2 className="text-xl font-bold text-white" style={{
-            fontSize: '30px',
-          }}>
-            {userData.lastName}
-          </h2>
+            <h2 className="text-xxl font-bold text-white font-orbitron" style={{
+              fontSize: '30px',
+              // marginBottom: '10px',
+              // marginLeft: '10px',
+            }}>
+              {userData.firstName}
+            </h2>
+            <h2 className="text-xl font-bold text-white font-orbitron" style={{
+              fontSize: '30px',
+            }}>
+              {userData.lastName}
+            </h2>
+          </div>
+          <div className="text-orange-400 text-sm font-bold">Your profile is uncalibrated</div>
+          <div className="text-white text-sm ">Play a match to calibrate</div>
+
         </div>
-        <div className="text-orange-400 text-sm font-bold">Your profile is uncalibrated</div>
-        <div className="text-white text-sm ">Play a match to calibrate</div>
       </div>
 
       {/* Locked Stats */}
       <div
-        className="flex flex-col items-center justify-center py-12 space-y-2"
-
+        className="flex flex-col items-center justify-center py-6 space-y-2"
       >
         <div className="w-16 h-16  rounded-full flex items-center justify-center">
           <img src="/lock.svg" alt="Lock" className="w-12 h-12" />
@@ -203,9 +194,9 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
         left: '24px',
         gap: '9px',
         flexWrap: "wrap",
-    display: "flex",
-    alignItems: "flex-start",
-    flexDirection: "column",
+        display: "flex",
+        alignItems: "flex-start",
+        flexDirection: "column",
       }}>
         <h2 className="text-xl font-bold text-white font-orbitron" style={{
           fontSize: '50px',

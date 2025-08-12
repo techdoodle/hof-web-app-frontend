@@ -1,13 +1,10 @@
 "use client";
 
 import { ProfilePicture } from "../profile/ProfilePicture";
-import { User } from "@/types/user";
-import { useQueryClient } from "@tanstack/react-query";
+import { UserData } from "@/modules/onboarding/types";
 import { cn } from "@/lib/utils/styles";
 
-const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
-    const queryClient = useQueryClient();
-    const user = queryClient.getQueryData(['user']) as User;
+const MatchPlayerProfile = ({ matchStats, userData }: { matchStats: any; userData: UserData }) => {
     console.log("matchStatsmatchStats", matchStats);
     const goals = matchStats?.detailedStats?.impact?.totalGoals ?? "-";
     const assists = matchStats?.detailedStats?.impact?.totalAssists ?? "-";
@@ -36,7 +33,7 @@ const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
             }}>
 
                 <div className="relative">
-                    <ProfilePicture imageUrl={user?.profilePicture || 'undefined'} size="xl" userName={user?.firstName + " " + user?.lastName} />
+                    <ProfilePicture imageUrl={userData?.profilePicture || 'undefined'} size="xl" userName={userData?.firstName + " " + userData?.lastName} />
                 </div>
             </div>
             <div className={"flex flex-col items-center text-gradient-bg max-w-full"} style={{
@@ -44,8 +41,8 @@ const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
                 position: 'relative',
                 zIndex: 100,
             }}>
-                <div className={cn("text-4xl font-bold font-orbitron", !user?.profilePicture ? "text-yellow-500" : "text-white")}>{user?.firstName}</div>
-                <div className={"text-4xl font-bold font-orbitron text-[#AAAAAA]"}> {user?.lastName}</div>
+                <div className={cn("text-4xl font-bold font-orbitron", !userData?.profilePicture ? "text-yellow-500" : "text-white")}>{userData?.firstName}</div>
+                <div className={"text-4xl font-bold font-orbitron text-[#AAAAAA]"}> {userData?.lastName}</div>
             </div>
         </div>);
 };

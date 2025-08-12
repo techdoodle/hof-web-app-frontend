@@ -255,6 +255,7 @@ export function formatStatValue(value: any, config: StatConfig): string {
 export function detectAndGenerateConfig(stats: any, screenName: undefined | string, playerPosition?: 'GK' | 'DEF' | 'FWD'): StatsConfig {
   // Check if stats has the detailedStats structure
 
+  console.log('screenName', screenName, stats, playerPosition);
   if (screenName === "matchStats") {
     return generateMatchStatsConfig(stats, playerPosition);
   }
@@ -263,12 +264,12 @@ export function detectAndGenerateConfig(stats: any, screenName: undefined | stri
   if (stats?.detailedStats) {
     return generateStatsConfig(playerPosition);
   }
-  
+
   // Check if stats has flat structure
   if (stats && typeof stats === 'object' && !stats.detailedStats) {
     return generateAlternativeStatsConfig();
   }
-  
+
   // Default to detailed structure
   return generateStatsConfig(playerPosition);
 }
@@ -278,13 +279,13 @@ export function validateStatsData(stats: any): boolean {
   if (!stats || typeof stats !== 'object') {
     return false;
   }
-  
+
   // Check for required fields in detailed structure
   if (stats.detailedStats) {
     const requiredSections = ['shooting', 'passing', 'tackling', 'impact', 'interceptions'];
     return requiredSections.every(section => stats.detailedStats[section]);
   }
-  
+
   // Check for required fields in flat structure
   const requiredFields = ['matches', 'passes', 'tackles', 'interceptions', 'mvps'];
   return requiredFields.every(field => stats.hasOwnProperty(field));

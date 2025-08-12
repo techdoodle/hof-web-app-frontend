@@ -25,9 +25,9 @@ export function useAuth() {
   // Check if user is authenticated on mount
   useEffect(() => {
     if (!isClient) return;
-    
+
     const storedUser = getUser();
-    
+
     if (token && storedUser) {
       setIsAuthenticated(true);
       setUser(storedUser);
@@ -35,7 +35,7 @@ export function useAuth() {
     setIsInitialLoading(false);
   }, [token, isClient]);
 
-  // Query to fetch current user data - only enabled if token exists and we haven't loaded from cache
+  // Query to fetch current user data - always enabled if token exists
   const { data: currentUser, isLoading: isRefreshing, error, refetch } = useQuery({
     queryKey: ['user'],
     queryFn: async (): Promise<UserData> => {
@@ -43,7 +43,7 @@ export function useAuth() {
       const result = await repository.getCurrentUser();
       return result;
     },
-    enabled: !!token && !user && isClient, // Only run if token exists, no user data, and we're on client
+    enabled: !!token && isClient, // Always run if token exists and we're on client
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false, // Don't refetch on mount if we have data
