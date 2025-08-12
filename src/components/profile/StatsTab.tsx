@@ -154,11 +154,25 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
 }
 
 function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }) {
+  // Get player position from userData
+  const getPlayerPosition = (): 'GK' | 'DEF' | 'FWD' | undefined => {
+    if (userData?.playerCategory) {
+      const category = userData.playerCategory.toUpperCase();
+      if (category === 'GOALKEEPER') return 'GK';
+      if (category === 'DEFENDER') return 'DEF';
+      if (category === 'FORWARD' || category === 'FWD') return 'FWD';
+    }
+    return undefined;
+  };
+
+  const playerPosition = getPlayerPosition();
+
   return (
     <div className="flex-1 p-4 space-y-3">
       <div className="flex-1" style={{ zIndex: 100, position: "relative", marginLeft: "10px" }}>
         <div className="text-4xl font-bold text-white mb-4 font-orbitron">
-          {positionAbbreviationMapping[userData.playerCategory?.toUpperCase() as keyof typeof positionAbbreviationMapping] || 'STRIKER'}
+          {playerPosition}
+          {/* {positionAbbreviationMapping[userData.playerCategory?.toUpperCase() as keyof typeof positionAbbreviationMapping] || 'STRIKER'} */}
         </div>
         <div className="space-y-2">
           <div className="flex items-baseline">
@@ -185,9 +199,13 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       </div>
       <div className="text-center text-gradient-bg" style={{
         position: 'absolute',
-        marginTop: '-50px',
+        marginTop: '-58px',
         left: '24px',
-        gap: '5px',
+        gap: '9px',
+        flexWrap: "wrap",
+    display: "flex",
+    alignItems: "flex-start",
+    flexDirection: "column",
       }}>
         <h2 className="text-xl font-bold text-white font-orbitron" style={{
           fontSize: '50px',
@@ -203,7 +221,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       </div>
 
       {/* Stats Table */}
-      <StatsTable stats={stats} />
+      <StatsTable stats={stats} playerPosition={playerPosition} />
 
       {/* Radar Chart */}
       <div className="radar chart">

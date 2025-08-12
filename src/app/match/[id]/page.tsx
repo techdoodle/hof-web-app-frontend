@@ -40,6 +40,25 @@ const MatchPage = ({ params }: MatchPageProps) => {
     }
   }, [userData]);
 
+  // Get player position from matchStats or userData
+  const getPlayerPosition = (): 'GK' | 'DEF' | 'FWD' | undefined => {
+    if (matchStats?.player?.playerCategory) {
+      const category = matchStats.player.playerCategory.toUpperCase();
+      if (category === 'GOALKEEPER') return 'GK';
+      if (category === 'DEFENDER') return 'DEF';
+      if (category === 'FORWARD' || category === 'FWD') return 'FWD';
+    }
+    if (userData?.playerCategory) {
+      const category = userData.playerCategory.toUpperCase();
+      if (category === 'GOALKEEPER') return 'GK';
+      if (category === 'DEFENDER') return 'DEF';
+      if (category === 'FORWARD' || category === 'FWD') return 'FWD';
+    }
+    return undefined;
+  };
+
+  const playerPosition = getPlayerPosition();
+
   return (
     <AuthWrapper>
       {(userData: UserData) => (
@@ -54,7 +73,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
       >
           <MatchDetailsHeader matchStats={matchStats} />
           <MatchPlayerProfile matchStats={matchStats} />
-          <StatsTable stats={matchStats} screenName="matchStats" />
+          <StatsTable stats={matchStats} screenName="matchStats" playerPosition={playerPosition} />
           <VenueDetails matchStats={matchStats} />
       </div>
       )}

@@ -9,7 +9,8 @@ const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
     const queryClient = useQueryClient();
     const user = queryClient.getQueryData(['user']) as User;
     console.log("matchStatsmatchStats", matchStats);
-
+    const goals = matchStats?.detailedStats?.impact?.totalGoals ?? "-";
+    const assists = matchStats?.detailedStats?.impact?.totalAssists ?? "-";
     return (
         <div className="match-player-profile relative">
             <div style={{
@@ -21,11 +22,11 @@ const MatchPlayerProfile = ({ matchStats }: { matchStats: any }) => {
                 justifyContent: 'space-between',
             }}>
                 <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> {matchStats?.totalGoal ?? "-"}  </div>
+                    <div className="text-3xl text-[#FFA726] font-bold"> {goals}  </div>
                     <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Goals </div>
                 </div>
                 <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> {matchStats?.totalAssist ?? "-"} </div>
+                    <div className="text-3xl text-[#FFA726] font-bold"> {assists} </div>
                     <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Assists </div>
                 </div>
             </div>

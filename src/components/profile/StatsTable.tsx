@@ -4,11 +4,12 @@ import { detectAndGenerateConfig, getValueFromPath, formatStatValue, type StatCo
 interface StatsTableProps {
   stats: any;
   screenName?: undefined | string;
+  playerPosition?: 'GK' | 'DEF' | 'FWD';
 }
 
-export function StatsTable({ stats, screenName }: StatsTableProps) {
-  const config = detectAndGenerateConfig(stats, screenName);
-  console.log('debugging config', config, stats, screenName);
+export function StatsTable({ stats, screenName, playerPosition }: StatsTableProps) {
+  const config = detectAndGenerateConfig(stats, screenName, playerPosition);
+  console.log('debugging config', config, stats, screenName, playerPosition);
 
   const renderStatRow = (statConfig: StatConfig, index?: number) => {
     const value = getValueFromPath(stats, statConfig.dataPath);
