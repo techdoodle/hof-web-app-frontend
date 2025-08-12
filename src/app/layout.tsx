@@ -61,33 +61,40 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        
+
         {/* PWA Meta Tags */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#001F10" />
         <meta name="background-color" content="#ffffff" />
-        
+
         {/* Apple Touch Icon */}
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="HOF" />
-        
+
         {/* Microsoft Tiles */}
         <meta name="msapplication-TileImage" content="/icons/icon-192x192.svg" />
         <meta name="msapplication-TileColor" content="#001F10" />
         <meta name="msapplication-tap-highlight" content="no" />
-        
+
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" type="image/svg+xml" href="/icons/icon-192x192.svg" />
-        
+
         {/* Disable automatic detection */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="format-detection" content="address=no" />
         <meta name="format-detection" content="email=no" />
       </head>
-      <body className="h-full min-h-screen w-full overflow-x-hidden bg-background text-foreground antialiased">
+      <body className="h-full min-h-screen w-full overflow-x-hidden bg-background text-foreground antialiased"
+        style={{
+          backgroundImage: 'url(/hof-background.svg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <Providers>
           {children}
           <PWAInstallPrompt />

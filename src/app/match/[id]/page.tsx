@@ -47,15 +47,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
         console.log('debugging playerPosition', playerPosition);
 
         return (
-          <div
-            className="match-details-page min-h-screen overflow-y-auto p-4 flex flex-col gap-4"
-            style={{
-              backgroundImage: 'url(/hof-background.svg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
-          >
+          <div className="match-details-page min-h-screen overflow-y-auto p-4 flex flex-col gap-4">
             <MatchDetailsHeader matchStats={matchStats} />
             <MatchPlayerProfile matchStats={matchStats} userData={userData} />
             <StatsTable loading={isMatchStatsLoading} stats={matchStats} screenName="matchStats" playerPosition={playerPosition} />
