@@ -128,7 +128,6 @@ If you encounter issues:
 ### **Documentation**
 
 📚 **Complete Documentation**: `IMAGE_PROCESSING_WORKFLOW.md`
-🚀 **Setup Script**: `setup_image_processing.sh`
 🔧 **Python Service**: Multiple versions for different Python versions
 
 ---
