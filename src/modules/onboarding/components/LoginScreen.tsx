@@ -29,13 +29,14 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
       setValidationError('Please enter a valid 10-digit phone number.');
       return;
     }
-    
+
     try {
       PhoneNumberSchema.parse(phoneNumber);
       setValidationError('');
       await onSubmit(phoneNumber);
     } catch (err) {
-      setValidationError('Please enter a valid phone number with country code (e.g. +91)');
+      console.log("in catchhh", err);
+      setValidationError('Network Error! Please try again later.');
     }
   };
 
@@ -71,7 +72,7 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
                   required
                 />
               </div>
-              
+
               {/* WhatsApp number information */}
               <div className="flex items-center gap-2 mt-3">
                 <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0">
@@ -79,13 +80,13 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
                 </div>
                 <span className="text-green-400 text-md">Please provide Whatsapp number</span>
               </div>
-              
+
               {validationError && (
                 <p className="mt-2 text-sm text-red-500">{validationError}</p>
               )}
-              {error && (
+              {/* {error && (
                 <p className="mt-2 text-sm text-red-500">{error.message}</p>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -94,11 +95,11 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
       {/* Fixed Continue Button */}
       <div className="fixed bottom-0 left-0 right-0 p-4">
         <form onSubmit={handleSubmit}>
-          <Button 
+          <Button
             variant="gradient"
-            type="submit" 
-            isLoading={isLoading} 
-            size="lg" 
+            type="submit"
+            isLoading={isLoading}
+            size="lg"
             className="w-full"
             disabled={!isPhoneNumberValid || isLoading}
           >

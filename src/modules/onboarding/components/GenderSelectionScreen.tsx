@@ -51,7 +51,7 @@ export function GenderSelectionScreen({
     try {
       GenderSelectionSchema.parse({ gender: selectedGender });
       setValidationError('');
-      await onSubmit({ 
+      await onSubmit({
         gender: selectedGender,
         ...(profilePicture && { profilePicture })
       });
@@ -60,7 +60,7 @@ export function GenderSelectionScreen({
     }
   };
 
-  const handleCameraCapture = async (originalImage: string, processedImage: string, faceBounds: {x: number, y: number, width: number, height: number}) => {
+  const handleCameraCapture = async (originalImage: string, processedImage: string, faceBounds: { x: number, y: number, width: number, height: number }) => {
     setShowCamera(false);
     setIsProcessingImage(true);
     setProcessingError(null);
@@ -68,14 +68,14 @@ export function GenderSelectionScreen({
     try {
       const token = getAccessToken();
       const user = getUser();
-      
+
       if (!token) {
         throw new Error('No authentication token available');
       }
 
       // Send the original image to backend for processing
       const result = await repository.processOnlyProfilePictureBase64(originalImage, token);
-      
+
       // Set the processed image URL
       setProfilePicture(result.url);
       setIsProcessingImage(false);
@@ -83,7 +83,7 @@ export function GenderSelectionScreen({
       console.error('Image processing failed:', error);
       setProcessingError('Failed to process image. Please try again.');
       setIsProcessingImage(false);
-      
+
       // Fallback: use the original image
       setProfilePicture(originalImage);
     }
@@ -100,7 +100,7 @@ export function GenderSelectionScreen({
 
         <div className="mb-4">
           <h2 className="text-lg mb-2">Select your gender</h2>
-          
+
           <div className="space-y-2">
             {[
               { value: 'MALE', label: 'Male' },
@@ -121,11 +121,10 @@ export function GenderSelectionScreen({
                     onChange={(e) => setSelectedGender(e.target.value as 'MALE' | 'FEMALE' | 'OTHER')}
                     className="sr-only"
                   />
-                  <div className={`w-6 h-6 rounded-full border-2 ${
-                    selectedGender === option.value
-                      ? 'border-primary bg-primary'
-                      : 'border-gray-400'
-                  } flex items-center justify-center`}>
+                  <div className={`w-6 h-6 rounded-full border-2 ${selectedGender === option.value
+                    ? 'border-primary bg-primary'
+                    : 'border-gray-400'
+                    } flex items-center justify-center`}>
                     {selectedGender === option.value && (
                       <div className="w-2 h-2 rounded-full bg-white"></div>
                     )}
@@ -138,7 +137,7 @@ export function GenderSelectionScreen({
 
         <div className="mb-4">
           <h2 className="text-mb mb-2">Click your photo *</h2>
-          
+
           <div className="flex flex-col items-center">
             <div className="relative">
               <button
@@ -160,20 +159,23 @@ export function GenderSelectionScreen({
                 ) : (
                   <>
                     <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mb-2">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                      <circle cx="12" cy="13" r="3"/>
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                      <circle cx="12" cy="13" r="3" />
                     </svg>
                     <span className="text-sm text-gray-400">Take Selfie!</span>
                   </>
                 )}
               </button>
             </div>
-            
+
             {processingError && (
-              <p className="mt-2 text-sm text-red-500 text-center">{processingError}</p>
+              <>
+                {/* <p className="mt-2 text-sm text-red-500 text-center">{processingError}</p> */}
+                <p className="mt-2 text-sm text-yellow-500 text-center">Click on continue, we will process your photo in the background</p>
+              </>
             )}
-            
-            {profilePicture && !isProcessingImage && (
+
+            {!processingError && profilePicture && !isProcessingImage && (
               <p className="mt-2 text-md text-green-500 text-center">
                 ✓ Photo captured successfully
               </p>

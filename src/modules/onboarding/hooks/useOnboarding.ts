@@ -26,28 +26,28 @@ export function useOnboarding() {
   useEffect(() => {
     const token = getAccessToken();
     const user = getUser();
-    
+
     if (token && user) {
       setToken(token);
       setUserId(user.id);
-      
+
       // Refresh user data from server on page load
       const refreshUserData = async () => {
         try {
           console.log('Refreshing user data from /auth/me...');
           const repository = OnboardingRepository.getInstance();
           const freshUserData = await repository.getCurrentUser();
-          
+
           // Update local storage with fresh data
           localStorage.setItem('user', JSON.stringify(freshUserData));
           queryClient.setQueryData(['user'], freshUserData);
-          
+
           // Check onboarding status with fresh data
-          console.log('Fresh user data:', { 
-            id: freshUserData.id, 
-            onboardingComplete: freshUserData.onboardingComplete 
+          console.log('Fresh user data:', {
+            id: freshUserData.id,
+            onboardingComplete: freshUserData.onboardingComplete
           });
-          
+
           if (freshUserData.onboardingComplete) {
             console.log('Onboarding complete, redirecting to profile...');
             router.replace('/profile');
@@ -57,7 +57,7 @@ export function useOnboarding() {
           }
         } catch (error) {
           console.error('Failed to refresh user data:', error);
-          
+
           // Fallback to cached data
           console.log('Using cached user data as fallback...');
           if (user.onboardingComplete) {
@@ -69,7 +69,7 @@ export function useOnboarding() {
           }
         }
       };
-      
+
       refreshUserData();
     } else {
       console.log('No token or user found, staying on current step');
@@ -85,6 +85,9 @@ export function useOnboarding() {
       setRequestOTPData(data);
       setCurrentStep('OTP_VERIFICATION');
     },
+    onError: (error) => {
+      console.log("requestOTPMutation error", error);
+    },
   });
 
   const verifyOTPMutation = useMutation({
@@ -99,7 +102,7 @@ export function useOnboarding() {
       setOtpAttempts(0); // reset on success
       setRequestOTPData(null);
       setInvalidOtpError(null);
-      
+
       // Store tokens and user data
       const { accessToken, refreshToken, ...userData } = data;
       if (accessToken && refreshToken) {
@@ -107,10 +110,10 @@ export function useOnboarding() {
         setToken(accessToken);
         setUserId(userData.id);
       }
-      
+
       // Save user info in React Query cache
       queryClient.setQueryData(['user'], userData);
-      
+
       // Check if user has already completed onboarding
       if (userData.onboardingComplete) {
         console.log('User already validated, redirecting to profile...');
@@ -185,10 +188,10 @@ export function useOnboarding() {
     onSuccess: (data) => {
       console.log("updateTeamSelectionMutation", data);
       queryClient.setQueryData(['user'], data);
-      
+
       // Track onboarding completion
       console.log('Onboarding completed successfully');
-      
+
       // Optional: Send analytics event
       // analytics.track('onboarding_completed', {
       //   userId: userId,
@@ -196,7 +199,7 @@ export function useOnboarding() {
       //   totalSteps: 8,
       //   method: 'full_completion'
       // });
-      
+
       // Complete onboarding flow
       router.push('/profile');
     },
@@ -204,7 +207,8 @@ export function useOnboarding() {
 
   const handleRequestOTP = async (otp: string) => {
     setPhoneNumber(otp);
-    await requestOTPMutation.mutateAsync(otp);
+    let res = await requestOTPMutation.mutateAsync(otp);
+    console.log("requestOTPMutation", requestOTPMutation);
   };
 
   const handleVerifyOTP = async (otp: string) => {

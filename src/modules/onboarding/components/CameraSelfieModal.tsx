@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { faceValidator, FaceValidationResult } from '@/lib/utils/faceValidation';
+import { SwitchCamera, X } from 'lucide-react';
 
 interface CameraSelfieModalProps {
   onCapture: (originalImage: string, processedImage: string, faceBounds: { x: number, y: number, width: number, height: number }) => void;
@@ -67,26 +68,92 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
   };
 
   const startCamera = async () => {
-    try {
-      stopCamera(); // Stop existing stream first
+    const mapFacingMode = (mode: 'front' | 'back') => (mode === 'front' ? 'user' : 'environment');
 
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: cameraMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      });
-
+    const attachStream = (mediaStream: MediaStream) => {
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         setStream(mediaStream);
         setIsLoading(false);
+        setError(null);
       }
+    };
+
+    const getDeviceIdForMode = async (mode: 'front' | 'back'): Promise<string | null> => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+        if (videoInputs.length === 0) return null;
+
+        const isFrontPreference = (label: string) => /front|user|face/i.test(label);
+        const isBackPreference = (label: string) => /back|rear|environment/i.test(label);
+
+        const preferred = videoInputs.find((d) =>
+          mode === 'front' ? isFrontPreference(d.label) : isBackPreference(d.label)
+        );
+
+        if (preferred) return preferred.deviceId;
+
+        // Fallback to first (front) or last (back)
+        return mode === 'front' ? videoInputs[0].deviceId : videoInputs[videoInputs.length - 1].deviceId;
+      } catch (_e) {
+        return null;
+      }
+    };
+
+    try {
+      stopCamera(); // Stop existing stream first
+
+      // Try strict facingMode first
+      const targetFacing = mapFacingMode(cameraMode);
+      try {
+        const strictStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { exact: targetFacing },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        });
+        attachStream(strictStream);
+        return;
+      } catch (_strictError) {
+        // ignore and try ideal
+      }
+
+      try {
+        const idealStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: targetFacing },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        });
+        attachStream(idealStream);
+        return;
+      } catch (_idealError) {
+        // ignore and try deviceId selection
+      }
+
+      const deviceId = await getDeviceIdForMode(cameraMode);
+      if (deviceId) {
+        const deviceStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            deviceId: { exact: deviceId },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        });
+        attachStream(deviceStream);
+        return;
+      }
+
+      throw new Error('No suitable camera device found');
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('Unable to access camera. Please check permissions.');
+      setError('Unable to access or switch camera. Please check permissions and camera availability.');
       setIsLoading(false);
     }
   };
@@ -193,21 +260,14 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
               }}
               className="p-2 text-white hover:bg-white/10 rounded-full transition-colors"
             >
-              <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18" />
-                <path d="M6 6l12 12" />
-              </svg>
+              <X />
             </button>
             {/* <h2 className="text-white text-lg font-semibold">Profile Photo</h2> */}
             <button
               onClick={switchCamera}
               className="p-2 text-white hover:bg-white/10 rounded-full transition-colors"
             >
-              <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
+              <SwitchCamera />
             </button>
           </div>
         </div>
@@ -246,7 +306,7 @@ export function CameraSelfieModal({ onCapture, onClose }: CameraSelfieModalProps
             playsInline
             muted
             className="w-full h-full object-cover"
-            style={{ transform: cameraMode === 'back' ? 'scaleX(-1)' : 'none' }}
+            style={{ transform: cameraMode === 'front' ? 'scaleX(-1)' : 'none' }}
           />
 
           {/* Skeleton Frame Guide */}

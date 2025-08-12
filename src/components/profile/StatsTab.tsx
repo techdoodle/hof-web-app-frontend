@@ -103,7 +103,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
           borderImageWidth: '1px',
         }}
       >
-        <div className="text-center mt-2 text-gradient-bg" style={{
+        <div className="text-left mt-2 text-gradient-bg" style={{
           position: 'absolute',
           top: '-65px',
           left: '10px',
@@ -112,8 +112,8 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
         }}>
           <h2 className="text-xl font-bold text-white" style={{
             fontSize: '30px',
-            marginBottom: '10px',
-            marginLeft: '10px',
+            // marginBottom: '10px',
+            // marginLeft: '10px',
           }}>
             {userData.firstName}
           </h2>
@@ -224,9 +224,9 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       <StatsTable stats={stats} playerPosition={playerPosition} />
 
       {/* Radar Chart */}
-      <div className="radar chart">
+      {stats?.spiderChart && <div className="radar chart">
         <RadarChart data={stats?.spiderChart} />
-      </div>
+      </div>}
     </div>
   );
 } 

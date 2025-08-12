@@ -17,6 +17,7 @@ export class OnboardingRepository {
     const response = await api.post(`/auth/send-otp`, {
       "mobile": phoneNumber,
     });
+    console.log(" requestOTP response.data", response.data);
     return response.data;
   }
 
