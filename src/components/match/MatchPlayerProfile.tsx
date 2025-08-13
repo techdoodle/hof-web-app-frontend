@@ -3,11 +3,12 @@
 import { ProfilePicture } from "../profile/ProfilePicture";
 import { UserData } from "@/modules/onboarding/types";
 import { cn } from "@/lib/utils/styles";
+import { determineMainStats } from "@/lib/utils/determineMainStats";
 
-const MatchPlayerProfile = ({ matchStats, userData }: { matchStats: any; userData: UserData }) => {
+const MatchPlayerProfile = ({ matchStats, userData, playerPosition }: { matchStats: any; userData: UserData; playerPosition: 'GK' | 'DEF' | 'FWD' }) => {
     console.log("matchStatsmatchStats", matchStats);
-    const goals = matchStats?.detailedStats?.impact?.totalGoals ?? "-";
-    const assists = matchStats?.detailedStats?.impact?.totalAssists ?? "-";
+
+    const KEY_STATS = determineMainStats(playerPosition, matchStats);
     return (
         <div className="match-player-profile relative">
             <div style={{
@@ -18,14 +19,20 @@ const MatchPlayerProfile = ({ matchStats, userData }: { matchStats: any; userDat
                 display: 'flex',
                 justifyContent: 'space-between',
             }}>
-                <div className="flex flex-col items-center justify-start">
+                {/* <div className="flex flex-col items-center justify-start">
                     <div className="text-3xl text-[#FFA726] font-bold"> {goals}  </div>
                     <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Goals </div>
                 </div>
                 <div className="flex flex-col items-center justify-start">
                     <div className="text-3xl text-[#FFA726] font-bold"> {assists} </div>
                     <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Assists </div>
-                </div>
+                </div> */}
+                {Object.entries(KEY_STATS).map(([key, value]) => (
+                    <div className="flex flex-col items-center justify-start">
+                        <div className="text-3xl text-[#FFA726] font-bold"> {value} </div>
+                        <div className="text-lg text-[#FFA726] font-bold font-orbitron"> {key} </div>
+                    </div>
+                ))}
             </div>
             <div className="flex flex-row align-center justify-between" style={{
                 display: 'flex',

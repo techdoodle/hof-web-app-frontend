@@ -29,16 +29,16 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
         label: 'Shots Acc.',
         dataPath: 'shotAccuracy',
         suffix: '%'
-      }        
+      }
     ],
   };
- // Goalkeeper Profile (GK) – Focus on saves, handling, and defensive actions
- const goalkeeperConfig = {
+  // Goalkeeper Profile (GK) – Focus on saves, handling, and defensive actions
+  const goalkeeperConfig = {
     leftColumn: [
-    //   {
-    //     label: "Matches",
-    //     dataPath: "matchesPlayed"
-    //   },
+      //   {
+      //     label: "Matches",
+      //     dataPath: "matchesPlayed"
+      //   },
       {
         label: "Save",
         dataPath: "detailedStats.goalkeeping.totalSave"
@@ -53,10 +53,10 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
       }
     ],
     rightColumn: [
-    //   {
-    //     label: "MVPs",
-    //     dataPath: "totalMvpWins"
-    //   },
+      //   {
+      //     label: "MVPs",
+      //     dataPath: "totalMvpWins"
+      //   },
       {
         label: "Clearance",
         dataPath: "detailedStats.goalkeeping.totalClearance"
@@ -76,32 +76,20 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
   // Defender Profile (DEF) – Focus on defensive interventions and passing under pressure
   const defenderConfig = {
     leftColumn: [
-    //   {
-    //     label: "Matches",
-    //     dataPath: "matchesPlayed"
-    //   },
       {
         label: "Interception",
         dataPath: "detailedStats.tackling.interceptions"
       },
       {
-        label: "Tackle",
-        dataPath: "detailedStats.tackling.successfulTackles"
-      },
-      {
         label: "Goals",
         dataPath: "detailedStats.impact.totalGoals"
+      },
+      {
+        label: "Defensive Actions",
+        dataPath: "detailedStats.tackling.totalDefensiveActions"
       }
     ],
     rightColumn: [
-    //   {
-    //     label: "MVPs",
-    //     dataPath: "totalMvpWins"
-    //   },
-      {
-        label: "Assists",
-        dataPath: "detailedStats.impact.totalAssists"
-      },
       {
         label: "Blocks",
         dataPath: "detailedStats.tackling.blocks"
@@ -110,6 +98,10 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
         label: "Passing Acc",
         dataPath: "detailedStats.passing.overallAccuracy",
         suffix: "%"
+      },
+      {
+        label: 'Steals',
+        dataPath: 'detailedStats.tackling.steals'
       }
     ]
   };
@@ -117,10 +109,6 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
   // Forward Profile (FWD) – Emphasize attacking contribution and efficiency
   const forwardConfig = {
     leftColumn: [
-    //   {
-    //     label: "Matches",
-    //     dataPath: "matchesPlayed"
-    //   },
       {
         label: "Total Shots",
         dataPath: "detailedStats.shooting.totalShots"
@@ -130,16 +118,20 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
         dataPath: "detailedStats.passing.overallAccuracy",
         suffix: "%"
       },
+      // {
+      //   label: "Total Goals",
+      //   dataPath: "detailedStats.impact.totalGoals"
+      // },
       {
-        label: "Total Goals",
-        dataPath: "detailedStats.impact.totalGoals"
+        label: "Passes",
+        dataPath: "detailedStats.passing.totalPasses"
       }
     ],
     rightColumn: [
-    //   {
-    //     label: "MVPs",
-    //     dataPath: "totalMvpWins"
-    //   },
+      //   {
+      //     label: "MVPs",
+      //     dataPath: "totalMvpWins"
+      //   },
       {
         label: "Dribbles",
         dataPath: "detailedStats.dribbling.totalAttempts"
@@ -149,9 +141,13 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
         dataPath: "detailedStats.shooting.shotAccuracy",
         suffix: "%"
       },
+      // {
+      //   label: "Assists",
+      //   dataPath: "detailedStats.impact.totalAssists"
+      // },
       {
-        label: "Assists",
-        dataPath: "detailedStats.impact.totalAssists"
+        label: "Successful Dribbles",
+        dataPath: "detailedStats.dribbling.totalSuccessful"
       }
     ]
   };

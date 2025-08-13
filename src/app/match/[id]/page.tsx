@@ -27,7 +27,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
         console.log('debugging matchStats', matchStats);
 
         // Get player position from matchStats or userData
-        const getPlayerPosition = (): 'GK' | 'DEF' | 'FWD' | undefined => {
+        const getPlayerPosition = (): 'GK' | 'DEF' | 'FWD' => {
           if (matchStats?.player?.playerCategory) {
             const category = matchStats.player.playerCategory.toUpperCase();
             if (category === 'GOALKEEPER') return 'GK';
@@ -40,7 +40,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
             if (category === 'DEFENDER') return 'DEF';
             if (category === 'FORWARD' || category === 'STRIKER' || category === 'FWD') return 'FWD';
           }
-          return undefined;
+          return 'FWD'; // Default fallback
         };
 
         const playerPosition = getPlayerPosition();
@@ -49,7 +49,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
         return (
           <div className="match-details-page min-h-screen overflow-y-auto p-4 flex flex-col gap-4">
             <MatchDetailsHeader matchStats={matchStats} />
-            <MatchPlayerProfile matchStats={matchStats} userData={userData} />
+            <MatchPlayerProfile matchStats={matchStats} userData={userData} playerPosition={playerPosition as 'GK' | 'DEF' | 'FWD'} />
             <StatsTable loading={isMatchStatsLoading} stats={matchStats} screenName="matchStats" playerPosition={playerPosition} />
             <VenueDetails matchStats={matchStats} />
           </div>

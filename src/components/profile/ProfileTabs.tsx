@@ -11,7 +11,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
     <div className="px-4 py-3">
       <div className="flex items-center justify-between">
         {/* Tabs Section */}
-        <div 
+        <div
           className="p-1 bg-opacity-80 rounded-[0.5rem]"
           style={{
             border: '1px solid',
@@ -19,7 +19,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
             borderImageSlice: '1',
           }}
         >
-          <div className="flex gap-6">
+          <div className="flex gap-0">
             {activeTab === 'stats' ? (
               <Button
                 onClick={() => onTabChange('stats')}
@@ -30,7 +30,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
             ) : (
               <button
                 onClick={() => onTabChange('stats')}
-                className="px-6 py-2 font-medium text-[#F9F9F9] hover:text-white transition-colors"
+                className="px-6 py-2 font-medium text-gray-400 hover:text-white transition-colors"
               >
                 Stats
               </button>

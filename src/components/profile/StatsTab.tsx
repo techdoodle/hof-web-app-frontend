@@ -100,15 +100,15 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
             gap: '5px',
             // left: '100px',
           }}>
-            <h2 className="text-xxl font-bold text-white font-orbitron" style={{
-              fontSize: '30px',
+            <h2 className="text-xxl font-bold text-[#AAAAAA] font-orbitron" style={{
+              fontSize: '50px',
               // marginBottom: '10px',
               // marginLeft: '10px',
             }}>
               {userData.firstName}
             </h2>
             <h2 className="text-xl font-bold text-white font-orbitron" style={{
-              fontSize: '30px',
+              fontSize: '50px',
             }}>
               {userData.lastName}
             </h2>
@@ -147,11 +147,12 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
 function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }) {
   // Get player position from userData
   const getPlayerPosition = (): 'GK' | 'DEF' | 'FWD' | undefined => {
+    console.log('debugging userData', userData);
     if (userData?.playerCategory) {
       const category = userData.playerCategory.toUpperCase();
       if (category === 'GOALKEEPER') return 'GK';
       if (category === 'DEFENDER') return 'DEF';
-      if (category === 'FORWARD' || category === 'FWD') return 'FWD';
+      if (category === 'FORWARD' || category === 'FWD' || category === 'STRIKER') return 'FWD';
     }
     return undefined;
   };
@@ -212,7 +213,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       </div>
 
       {/* Stats Table */}
-      <StatsTable stats={stats} playerPosition={playerPosition} />
+      <StatsTable stats={stats} screenName='matchStats' playerPosition={playerPosition} />
 
       {/* Radar Chart */}
       {stats?.spiderChart && <div className="radar chart">

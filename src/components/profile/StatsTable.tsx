@@ -17,7 +17,7 @@ export function StatsTable({ loading, stats, screenName, playerPosition }: Stats
     const formattedValue = formatStatValue(value, statConfig);
     const key = `${statConfig.label}-${index}`;
     return (
-      <div key={key} className="flex justify-between">
+      <div key={key} className="flex justify-between md:text-md text-sm">
         <span className={index === 0 ? "text-white font-bold" : "text-[#AAAAAA] font-bold"}>{statConfig.label}</span>
         <span className={index === 0 ? "text-[#00CC66] font-bold" : "text-white font-bold"}>{formattedValue}</span>
       </div>

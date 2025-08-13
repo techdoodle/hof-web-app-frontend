@@ -140,29 +140,33 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
   // Forward Profile (FWD) – Emphasize attacking contribution and efficiency
   const forwardConfig = {
     leftColumn: [
-      {
-        label: "Matches",
-        dataPath: "matchesPlayed"
-      },
+      // {
+      //   label: "Matches",
+      //   dataPath: "matchesPlayed"
+      // },
       {
         label: "Total Shots",
         dataPath: "detailedStats.shooting.totalShots"
       },
       {
-        label: "Passing Acc",
+        label: "Passing Acc.",
         dataPath: "detailedStats.passing.overallAccuracy",
         suffix: "%"
       },
       {
         label: "Total Goals",
         dataPath: "detailedStats.impact.totalGoals"
+      },
+      {
+        label: "Passes",
+        dataPath: "detailedStats.passing.totalPasses"
       }
     ],
     rightColumn: [
-      {
-        label: "MVPs",
-        dataPath: "totalMvpWins"
-      },
+      // {
+      //   label: "MVPs",
+      //   dataPath: "totalMvpWins"
+      // },
       {
         label: "Dribbles",
         dataPath: "detailedStats.dribbling.totalAttempts"
@@ -175,9 +179,15 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
       {
         label: "Assists",
         dataPath: "detailedStats.impact.totalAssists"
+      },
+      {
+        label: "Successful Dribbles",
+        dataPath: "detailedStats.dribbling.totalSuccessful"
       }
     ]
   };
+
+  console.log('debugging forwardConfig', playerPosition);
 
   // Return configuration based on player position
   switch (playerPosition) {
