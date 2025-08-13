@@ -57,4 +57,9 @@ export async function fetchUserMatchStats(playerId: number, matchStatsId: string
   return response.data;
 }
 
+export async function fetchLeaderBoard() {
+  const response = await api.get('/leaderboard');
+  return response.data;
+}
+
 export default api; 

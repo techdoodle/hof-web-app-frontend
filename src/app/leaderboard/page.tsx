@@ -4,6 +4,7 @@ import { AuthWrapper } from '@/components/auth/AuthWrapper';
 import { ComingSoon } from '@/components/common/ComingSoon';
 import { CommonNavbar } from '@/components/common/CommonNavbar';
 import { LeaderboardIcon } from '@/components/icons';
+import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 import { UserData } from '@/modules/onboarding/types';
 import { ChevronLeftIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -25,7 +26,7 @@ export default function LeaderboardPage() {
             </div>
           </div>
 
-          <ComingSoon />
+          <Leaderboard />
 
           {/* Common Navbar */}
           <CommonNavbar activeTab="leaderboard" />

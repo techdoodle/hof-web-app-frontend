@@ -14,7 +14,7 @@ const nextConfig = {
   },
   reactStrictMode: true,
   images: {
-    domains: ['api.hof.com'], // Add your API domain here
+    domains: ['api.hof.com', 'storage.googleapis.com'], // Add your API domain here
   },
 };
 
