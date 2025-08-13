@@ -83,8 +83,8 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
                   <Image
                     src={isActive ? item.iconSrc.active : item.iconSrc.inactive}
                     alt={item.label}
-                    width={24}
-                    height={24}
+                    width={36}
+                    height={36}
                     priority
                   />
                   {isActive && (
