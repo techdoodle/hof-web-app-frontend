@@ -213,7 +213,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       </div>
 
       {/* Stats Table */}
-      <StatsTable stats={stats} screenName='matchStats' playerPosition={playerPosition} />
+      <StatsTable stats={stats} screenName='profileStats' playerPosition={playerPosition} />
 
       {/* Radar Chart */}
       {stats?.spiderChart && <div className="radar chart">

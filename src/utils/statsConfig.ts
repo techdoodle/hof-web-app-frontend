@@ -1,4 +1,4 @@
-import { generateMatchStatsConfig } from "@/lib/utils/matchStatConfig";
+import { generateMatchStatsConfig, generateProfileStatsConfig } from "@/lib/utils/matchStatConfig";
 
 export interface StatConfig {
   label: string;
@@ -268,6 +268,8 @@ export function detectAndGenerateConfig(stats: any, screenName: undefined | stri
   console.log('screenName', screenName, stats, playerPosition);
   if (screenName === "matchStats") {
     return generateMatchStatsConfig(stats, playerPosition);
+  } else if (screenName === "profileStats") {
+    return generateProfileStatsConfig(stats, playerPosition);
   }
 
   console.log('debugging stats', stats);
