@@ -61,6 +61,7 @@ export type UserData = {
   city: any;
   gender: string;
   preferredTeam: FootballTeam | null;
+  isCalibrated?: boolean;
 };
 
 export type FootballTeam = {
