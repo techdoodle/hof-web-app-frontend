@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Podium } from "./Podium";
 import { useState, useEffect, useRef } from "react";
 import { LeaderBoardFilters } from "./LeaderBoardFilters";
+import { ComingSoon } from "../common/ComingSoon";
 
 type LeaderboardItemType = {
     id: number;
@@ -21,6 +22,7 @@ export function Leaderboard() {
     });
 
     const { leaderboard, isLeaderboardLoading, leaderboardError } = useLeaderBoard();
+    console.log("leaderboardui", leaderboard);
     const { userData, isLoading: isUserDataLoading } = useUserData();
     const [isUserVisible, setIsUserVisible] = useState(false);
     const userItemRef = useRef<HTMLDivElement>(null);
@@ -53,6 +55,10 @@ export function Leaderboard() {
     }
 
     const showBottomCard = userItem && !isUserVisible;
+
+    if (leaderboardError || !isLeaderboardLoading || !leaderboard || leaderboard.length === 0) {
+        return <ComingSoon />
+    }
 
     return (
         <div className="flex flex-col gap-1 p-4">
