@@ -11,7 +11,7 @@ interface PositionSelectionScreenProps {
 
 const positions = [
   // { value: 'MIDFIELDER', label: 'Midfielder', icon: '⚡' },
-  { value: 'STRIKER', label: 'Striker', icon: '⚡' },
+  { value: 'STRIKER', label: 'Striker/Midfielder', icon: '⚡' },
   { value: 'DEFENDER', label: 'Defender', icon: '⚡' },
   { value: 'GOALKEEPER', label: 'Goalkeeper', icon: '⚡' },
   // { value: 'CASUAL', label: 'Casual', icon: '⚡' },
