@@ -95,7 +95,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
         <div className="py-8 px-4 text-center bg-[#0B1E19] rounded-2xl" >
           <div className="text-left mt-2 text-gradient-bg" style={{
             position: 'absolute',
-            top: '-55px',
+            top: '-110px',
             left: '10px',
             gap: '5px',
             // left: '100px',
