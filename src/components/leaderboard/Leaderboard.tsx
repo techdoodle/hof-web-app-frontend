@@ -6,18 +6,27 @@ import { Podium } from "./Podium";
 import { useState, useEffect, useRef } from "react";
 import { LeaderBoardFilters } from "./LeaderBoardFilters";
 
+type LeaderboardItemType = {
+    id: number;
+    rank: number;
+    name: string;
+    score: number;
+    suffix: string;
+    imageUrl: string;
+};
+
 export function Leaderboard() {
     const [filters, setFilters] = useState({
         city: 'Gurugram'
     });
 
-    const { leaderboard, isLeaderboardLoading, leaderboardError } = useLeaderBoard({ filters });
+    const { leaderboard, isLeaderboardLoading, leaderboardError } = useLeaderBoard();
     const { userData, isLoading: isUserDataLoading } = useUserData();
     const [isUserVisible, setIsUserVisible] = useState(false);
     const userItemRef = useRef<HTMLDivElement>(null);
 
-    const userRank = leaderboard?.find((item) => item.id === userData?.id)?.rank;
-    const userItem = leaderboard?.find((item) => item.id === userData?.id);
+    const userRank = leaderboard?.find((item: LeaderboardItemType) => item.id === userData?.id)?.rank;
+    const userItem = leaderboard?.find((item: LeaderboardItemType) => item.id === userData?.id);
 
     console.log("userRank", userData?.id, userRank);
 
@@ -52,7 +61,7 @@ export function Leaderboard() {
                 <div className="text-center text-gray-400">No leaderboard data available</div>
             )}
             <Podium first={leaderboard?.[0]} second={leaderboard?.[1]} third={leaderboard?.[2]} />
-            {leaderboard && leaderboard.slice(3).map((item) => (
+            {leaderboard && leaderboard.slice(3).map((item: LeaderboardItemType) => (
                 <div key={item.name} ref={item.id === userData?.id ? userItemRef : null}>
                     <LeaderboardItem
                         item={item}

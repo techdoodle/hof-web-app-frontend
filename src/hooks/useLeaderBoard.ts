@@ -111,11 +111,11 @@ const DUMMY_LEADERBOARD = [
     }
 ]
 
-export const useLeaderBoard = ({ filters }: { filters: any }) => {
+export const useLeaderBoard = () => {
     const { data: leaderboard, isLoading: isLeaderboardLoading, error: leaderboardError, refetch: refetchLeaderboard } = useQuery({
         queryKey: [LEADERBOARD_QUERY_KEY],
-        // queryFn: () => fetchLeaderBoard(filters),
-        queryFn: () => DUMMY_LEADERBOARD,
+        queryFn: () => fetchLeaderBoard(),
+        // queryFn: () => DUMMY_LEADERBOARD,
         staleTime: LEADERBOARD_STALE_TIME,
         refetchOnWindowFocus: false,
     });
