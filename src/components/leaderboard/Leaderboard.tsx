@@ -56,7 +56,11 @@ export function Leaderboard() {
 
     const showBottomCard = userItem && !isUserVisible;
 
-    if (leaderboardError || !isLeaderboardLoading || !leaderboard || leaderboard.length === 0) {
+    if (leaderboardError) {
+        return <ComingSoon />
+    }
+
+    if (!isLeaderboardLoading && (!leaderboard || leaderboard.length === 0)) {
         return <ComingSoon />
     }
 

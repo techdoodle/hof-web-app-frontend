@@ -104,7 +104,7 @@ export interface MatchParticipant {
   matchParticipantId: number;
   match: Match;
   user: User;
-  teamSide: string;
+  teamName: string;
   paidStatsOptIn: boolean;
   createdAt: string;
   updatedAt: string;
@@ -120,7 +120,7 @@ export interface UserMatch {
   venue: string;
   // Add all the match data for complete information
   match: Match;
-  teamSide: string;
+  teamName: string;
   paidStatsOptIn: boolean;
   createdAt: string;
   updatedAt: string;
@@ -205,7 +205,7 @@ const transformMatchParticipants = (matchParticipants: MatchParticipant[]): User
         minute: '2-digit'
       })
     },
-    teamSide: participant.teamSide,
+    teamName: participant.teamName,
     paidStatsOptIn: participant.paidStatsOptIn,
     createdAt: participant.createdAt,
     updatedAt: participant.updatedAt
