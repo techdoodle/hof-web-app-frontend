@@ -52,8 +52,8 @@ export async function fetchUserMatchParticipants(userId: number) {
   return response.data;
 }
 
-export async function fetchUserMatchStats(playerId: number, matchStatsId: string | number) {
-  const response = await api.get(`/match-participant-stats/player/${playerId}/match/${matchStatsId}`);
+export async function fetchUserMatchStats(playerId: number, matchId: string | number) {
+  const response = await api.get(`/match-participant-stats/player/${playerId}/match/${matchId}`);
   return response.data;
 }
 

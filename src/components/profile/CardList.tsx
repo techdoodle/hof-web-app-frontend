@@ -26,7 +26,7 @@ const CardList = ({ matches }: CardListProps) => {
           key={`${match.id}-${index}`}
           className="bg-[#0D1F1E] rounded-lg p-4 border border-gray-700 cursor-pointer"
           onClick={() => {
-            router.push(`/match/${match.match.matchStatsId}`);
+            router.push(`/match/${match.match.matchId}`);
           }}
         >
           <div className="flex justify-between items-center">

@@ -15,15 +15,15 @@ interface MatchPageProps {
 }
 
 const MatchPage = ({ params }: MatchPageProps) => {
-  const { id: matchStatsId } = params;
-  console.log('debugging matchStatsId', matchStatsId);
+  const { id: matchId } = params;
+  console.log('debugging matchId', matchId);
 
   return (
     <AuthWrapper>
       {(userData: UserData) => {
         console.log('debugging user', userData);
 
-        const { matchStats, isMatchStatsLoading, matchStatsError, refetchMatchStats } = useMatchStats(userData?.id, parseInt(matchStatsId));
+        const { matchStats, isMatchStatsLoading, matchStatsError, refetchMatchStats } = useMatchStats(userData?.id, parseInt(matchId));
         console.log('debugging matchStats', matchStats);
 
         // Get player position from matchStats or userData
