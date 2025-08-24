@@ -24,24 +24,27 @@ export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
   }
 
   // Handle error state
-  if (error) {
-    return (
-      <div className="flex-1 p-4 space-y-3 mt-[46px]">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-red-400">Error loading stats: {error.message}</div>
-        </div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="flex-1 p-4 space-y-3 mt-[46px]">
 
-  if (stats && Object.keys(stats?.detailedStats).length == 0) {
-    return <UncalibratedStats userData={userData} />;
+  //       <div className="flex items-center justify-center h-64">
+  //         <div className="text-yellow-400">Error loading stats. Please try again later.</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  console.log('debugging statsssss', stats);
+
+  if ((stats && Object.keys(stats?.detailedStats).length == 0) || error) {
+    return <UncalibratedStats userData={userData} error={error || false} />;
   }
 
   return <CalibratedStats userData={userData} stats={stats} />;
 }
 
-function UncalibratedStats({ userData }: { userData: UserData }) {
+function UncalibratedStats({ userData, error }: { userData: UserData, error: any }) {
   return (
     <div className="flex-1 p-4 space-y-3">
       <div className="flex-1" style={{ zIndex: 100, position: "relative", marginLeft: "10px" }}>
@@ -49,7 +52,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
           {positionAbbreviationMapping[userData.playerCategory?.toUpperCase() as keyof typeof positionAbbreviationMapping] || 'STRIKER'}
         </div>
         <div className="text-yellow-400 flex items-baseline gap-2 text-yellow-400 mb-4">
-          <span className=" text-4xl font-orbitron">0</span>
+          <span className=" text-4xl font-orbitron">{error ? '--' : '0'}</span>
           <span className=" text-md font-orbitron">Matches</span>
         </div>
       </div>
@@ -113,14 +116,17 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
               {userData.lastName}
             </h2>
           </div>
-          <div className="text-orange-400 text-sm font-bold">Your profile is uncalibrated</div>
-          <div className="text-white text-sm ">Play a match to calibrate</div>
+          {!error && <>
+            <div className="text-orange-400 text-sm font-bold">Your profile is uncalibrated</div>
+            <div className="text-white text-sm ">Play a match to calibrate</div>
+          </>}
+          {error && <div className="text-orange-400 text-sm font-bold">Error loading stats. Please try again later.</div>}
 
         </div>
       </div>
 
       {/* Locked Stats */}
-      <div
+      {!error && <div
         className="flex flex-col items-center justify-center py-6 space-y-2"
       >
         <div className="w-16 h-16  rounded-full flex items-center justify-center">
@@ -139,7 +145,7 @@ function UncalibratedStats({ userData }: { userData: UserData }) {
             Calibrate to unlock stats
           </div>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

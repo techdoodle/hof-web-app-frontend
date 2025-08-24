@@ -12,16 +12,16 @@ interface MatchHistoryTabProps {
   useHookDirectly?: boolean;
 }
 
-export function MatchHistoryTab({ 
-  userData, 
-  matches, 
-  isLoading, 
-  error, 
-  useHookDirectly = false 
+export function MatchHistoryTab({
+  userData,
+  matches,
+  isLoading,
+  error,
+  useHookDirectly = false
 }: MatchHistoryTabProps) {
   // Optionally use the hook directly for better caching
   const hookData = useHookDirectly ? useMatchParticipants() : null;
-  
+
   // Use hook data if available, otherwise use props
   const finalMatches = hookData?.userMatches || matches;
   const finalIsLoading = hookData?.isLoading || isLoading;
@@ -39,18 +39,18 @@ export function MatchHistoryTab({
   }
 
   // Handle error state
-  if (finalError) {
-    return (
-      <div className="flex-1 p-4">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-red-400">Error loading matches: {finalError.message}</div>
-        </div>
-      </div>
-    );
-  }
+  // if (finalError) {
+  //   return (
+  //     <div className="flex-1 p-4">
+  //       <div className="flex items-center justify-center h-64">
+  //         <div className="text-red-400">Error loading matches: {finalError.message}</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Handle empty matches
-  if (!finalMatches || !finalMatches.matches || finalMatches.matches.length === 0) {
+  if (!finalMatches || !finalMatches.matches || finalMatches.matches.length === 0 || finalError) {
     return (
       <div className="flex-1 p-4">
         <div className="text-center py-12">
@@ -58,9 +58,10 @@ export function MatchHistoryTab({
             <MatchHistoryIcon className="w-8 h-8 text-gray-500" />
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">Match History</h3>
-          <p className="text-gray-400">Your match history will appear here</p>
+          {!finalError && <p className="text-gray-400">Your match history will appear here</p>}
+          {finalError && <p className="text-gray-400">Error loading matches. Please try again later.</p>}
         </div>
-        <CardList />
+        {!finalError && <CardList />}
       </div>
     );
   }
