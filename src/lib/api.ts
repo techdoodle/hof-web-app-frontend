@@ -1,8 +1,21 @@
 import axios from 'axios';
 import { getAccessToken, getRefreshToken, storeAuthData, clearAuthData } from './utils/auth';
 
+let environment = process.env.NODE_ENV;
+let baseURL = '';
+
+if (environment === 'development') {
+  baseURL = 'http://localhost:8000';
+} else if (environment === 'staging') {
+  baseURL = 'https://hof-web-app-backend-staging.up.railway.app';
+} else if (environment === 'production') {
+  baseURL = 'https://hof-web-app-backend-production.up.railway.app';
+} else {
+  baseURL = 'https://hof-web-app-backend-production.up.railway.app';
+}
+
 const api = axios.create({
-  baseURL: 'https://hof-web-app-backend-production.up.railway.app',
+  baseURL: baseURL,
   // baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : 'https://hof-web-app-backend-production.up.railway.app',
   withCredentials: true,
   // baseURL: 'http://localhost:8000',
@@ -26,7 +39,7 @@ api.interceptors.response.use(
       const refreshToken = getRefreshToken();
       if (refreshToken) {
         try {
-          const res = await axios.post(`${api.defaults.baseURL}/auth/refresh-token`, { refreshToken });
+          const res = await axios.post(`${api.defaults.baseURL}/auth/refresh`, { refreshToken });
           storeAuthData(res.data); // assumes res.data has new tokens and user data
           originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
           return api(originalRequest);
