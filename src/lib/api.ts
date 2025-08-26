@@ -2,15 +2,17 @@ import axios from 'axios';
 import { getAccessToken, getRefreshToken, storeAuthData, clearAuthData } from './utils/auth';
 
 let environment = process.env.NODE_ENV;
+let deploymentEnv = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV || process.env.DEPLOYMENT_ENV;
 let baseURL = '';
+
+console.log("environment DEBUG", environment, "deployment:", deploymentEnv);
 
 if (environment === 'development') {
   baseURL = 'http://localhost:8000';
-} else if (environment === 'staging') {
+} else if (deploymentEnv === 'staging') {
   baseURL = 'https://hof-web-app-backend-staging.up.railway.app';
-} else if (environment === 'production') {
-  baseURL = 'https://hof-web-app-backend-production.up.railway.app';
 } else {
+  // Default to production for any production build
   baseURL = 'https://hof-web-app-backend-production.up.railway.app';
 }
 
