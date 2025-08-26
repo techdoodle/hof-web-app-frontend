@@ -312,7 +312,7 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
       // },
       {
         label: "Passes",
-        dataPath: "detailedStats.passing.totalPasses"
+        dataPath: "detailedStats.passing.totalPassingActions"
       }
     ],
     rightColumn: [
