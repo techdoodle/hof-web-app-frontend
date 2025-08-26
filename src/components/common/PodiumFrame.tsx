@@ -38,8 +38,8 @@ export const PodiumFrame = ({ category, img, name, score, rank, inverse }: { cat
                     <Image
                         src={imageSrc}
                         alt={`${category} Position`}
-                        width={32}
-                        height={32}
+                        width={112}
+                        height={112}
                         onError={handleImageError}
                         onLoad={handleImageLoad}
                         className={`${imageLoading ? 'opacity-50' : 'opacity-100'} bg-black rounded-full w-10 h-10 transition-opacity duration-200 ${sizeClass[category ?? 'gold']}`}

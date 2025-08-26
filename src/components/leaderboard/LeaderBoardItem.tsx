@@ -42,8 +42,8 @@ export function LeaderboardItem({
                     <Image
                         src={imageSrc}
                         alt={item.name}
-                        width={32}
-                        height={32}
+                        width={40}
+                        height={40}
                         onError={handleImageError}
                         onLoad={handleImageLoad}
                         className={`${imageLoading ? 'opacity-50' : 'opacity-100'} rounded-full w-10 h-10 transition-opacity duration-200`}
