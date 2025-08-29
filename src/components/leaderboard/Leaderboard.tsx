@@ -6,6 +6,7 @@ import { Podium } from "./Podium";
 import { useState, useEffect, useRef } from "react";
 import { LeaderBoardFilters } from "./LeaderBoardFilters";
 import { ComingSoon } from "../common/ComingSoon";
+import { InfiniteScrollTrigger } from "../common/InfiniteScrollTrigger";
 
 type LeaderboardItemType = {
     id: number;
@@ -20,9 +21,19 @@ export function Leaderboard() {
     const [filters, setFilters] = useState({
         city: 'Gurugram'
     });
+    const itemsPerPage = 50;
 
-    const { leaderboard, isLeaderboardLoading, leaderboardError } = useLeaderBoard();
-    console.log("leaderboardui", leaderboard);
+    const {
+        leaderboard,
+        pagination,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLeaderboardLoading,
+        leaderboardError,
+        prefetchNextPage
+    } = useLeaderBoard(itemsPerPage);
+    console.log("leaderboardui", leaderboard, "pagination:", pagination, "error:", leaderboardError, "loading:", isLeaderboardLoading, "hasNextPage:", hasNextPage);
     const { userData, isLoading: isUserDataLoading } = useUserData();
     const [isUserVisible, setIsUserVisible] = useState(false);
     const userItemRef = useRef<HTMLDivElement>(null);
@@ -71,15 +82,24 @@ export function Leaderboard() {
                 <div className="text-center text-gray-400">No leaderboard data available</div>
             )}
             <Podium first={leaderboard?.[0]} second={leaderboard?.[1]} third={leaderboard?.[2]} />
-            {leaderboard && leaderboard.slice(3).map((item: LeaderboardItemType) => (
-                <div key={item.name} ref={item.id === userData?.id ? userItemRef : null}>
-                    <LeaderboardItem
-                        item={item}
-                        isUser={item.id === userData?.id}
-                        isVisible={isUserVisible}
-                    />
-                </div>
-            ))}
+
+            <InfiniteScrollTrigger
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                fetchNextPage={fetchNextPage}
+                prefetchNextPage={prefetchNextPage}
+            >
+                {leaderboard && leaderboard.slice(3).map((item: LeaderboardItemType, index) => (
+                    <div key={`${item.id}-${index}`} ref={item.id === userData?.id ? userItemRef : null}>
+                        <LeaderboardItem
+                            item={item}
+                            isUser={item.id === userData?.id}
+                            isVisible={isUserVisible}
+                        />
+                    </div>
+                ))}
+            </InfiniteScrollTrigger>
+
             {showBottomCard && (
                 <div className="fixed bottom-[125px] p-[1px] rounded-2xl bg-[#00CC6661] transition-all duration-500 ease-in-out">
                     <div className="text-center flex items-center gap-4 justify-center text-gray-400 p-1 bg-[#0B1E19] rounded-2xl">
