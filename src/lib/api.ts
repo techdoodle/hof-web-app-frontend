@@ -73,7 +73,7 @@ export async function fetchUserMatchStats(playerId: number, matchId: string | nu
 }
 
 export async function fetchLeaderBoard() {
-  const response = await api.get('/match-participant-stats/leaderboard/overall?limit=20');
+  const response = await api.get('/match-participant-stats/leaderboard/overall?limit=1000');
   console.log("leaderboard", response, response.data);
   return response.data;
 }
