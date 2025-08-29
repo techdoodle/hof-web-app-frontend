@@ -133,17 +133,17 @@
 
   .gold-border {
     background: linear-gradient(205.04deg, #F8F1CA 8.48%, #DDA944 50%, #EFD77E 91.52%);
-    padding: 1px;
+    padding: 4px;
   }
 
   .silver-border {
     background: linear-gradient(205.04deg, #A9A9A9 8.48%, #FFFFFF 31.24%, #CBCBCB 50%, #747474 91.52%);
-    padding: 1px;
+    padding: 4px;
   }
 
   .bronze-border {
     background: linear-gradient(205.04deg, #BCAD9C 8.48%, #93643E 50%, #89735A 91.52%);
-    padding: 1px;
+    padding: 4px;
   }
 
 

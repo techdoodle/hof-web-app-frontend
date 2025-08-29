@@ -1,118 +1,46 @@
 import { fetchLeaderBoard } from "@/lib/api";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 const LEADERBOARD_QUERY_KEY = 'leaderboard';
-const LEADERBOARD_STALE_TIME = 5 * 60 * 1000; // 5 minutes
+const LEADERBOARD_STALE_TIME = 60 * 60 * 1000; // 5 minutes
 
-const DUMMY_LEADERBOARD = [
-    {
-        id: 111,
-        rank: 1,
-        name: "Daksh Taneja Fake",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures/1/a0d3ba40-cb39-46fc-93e6-c27b042cad3a.png",
-    },
-    {
-        id: 2,
-        rank: 2,
-        name: "Jane Doe",
-        score: 90,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 3,
-        id: 3,
-        name: "John Doe 2",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures/1/a0d3ba40-cb39-46fc-93e6-c27b042cad3b.png",
-    },
-    {
-        rank: 4,
-        id: 4,
-        name: "John Doe 3",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures/1/a0d3ba40-cb39-46fc-93e6-c27b042cad3c.png",
-    },
-    {
-        rank: 5,
-        id: 5,
-        name: "John Doe 4",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 6,
-        id: 6,
-        name: "John Doe 5",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 7,
-        id: 7,
-        name: "John Doe 6",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 8,
-        id: 8,
-        name: "John Doe 7",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 9,
-        id: 9,
-        name: "John Doe 8",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 13,
-        id: 1,
-        name: "Daksh Taneja",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures/1/a0d3ba40-cb39-46fc-93e6-c27b042cad3a.png"
-    },
-    {
-        rank: 10,
-        id: 10,
-        name: "John Doe 9",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 11,
-        id: 11,
-        name: "John Doe 10",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    },
-    {
-        rank: 12,
-        id: 12,
-        name: "John Doe 11",
-        score: 100,
-        suffix: 'xp',
-        imageUrl: "",
-    }
-]
+const LEADERBOARD_TYPES = {
+    'Overall': 'overall',
+    'G+A': 'g+a',
+}
+
+const LEADERBOARD_CITIES = {
+    'INDIA': 'India',
+    'GURUGRAM': 'Gurugram',
+    'DELHI': 'Delhi',
+    'MUMBAI': 'Mumbai',
+    'CHENNAI': 'Chennai',
+}
+
+const LEADERBOARD_CUMULATIVE_FILTERS = {
+    'leaderboard_types': LEADERBOARD_TYPES,
+    'leaderboard_cities': LEADERBOARD_CITIES,
+}
+
+const defaultFilters = {
+    city: 'India',
+    type: 'overall',
+    limit: 50
+};
 
 export const useLeaderBoard = (limit: number = 20) => {
     const queryClient = useQueryClient();
+    const [filters, setFilters] = useState(defaultFilters);
+
+    const handleFilterClick = (key: string, value: string) => {
+        console.log("handleFilterClick", key, value);
+        if (key === "type") {
+            setFilters({ ...filters, type: value });
+        } else if (key === "city") {
+            setFilters({ ...filters, city: value, type: 'overall' });
+        } else return;
+    }
 
     const {
         data,
@@ -123,8 +51,8 @@ export const useLeaderBoard = (limit: number = 20) => {
         error,
         refetch
     } = useInfiniteQuery({
-        queryKey: [LEADERBOARD_QUERY_KEY, limit],
-        queryFn: ({ pageParam = 1 }) => fetchLeaderBoard(pageParam, limit),
+        queryKey: [LEADERBOARD_QUERY_KEY, limit, filters],
+        queryFn: ({ pageParam = 1 }) => fetchLeaderBoard(pageParam, limit, filters),
         getNextPageParam: (lastPage) => {
             // Handle both old format (direct array) and new format (with pagination)
             if (Array.isArray(lastPage)) {
@@ -157,7 +85,7 @@ export const useLeaderBoard = (limit: number = 20) => {
 
             queryClient.prefetchQuery({
                 queryKey: [LEADERBOARD_QUERY_KEY, limit, nextPage],
-                queryFn: () => fetchLeaderBoard(nextPage, limit),
+                queryFn: () => fetchLeaderBoard(nextPage, limit, filters),
                 staleTime: LEADERBOARD_STALE_TIME,
             });
         }
@@ -188,6 +116,9 @@ export const useLeaderBoard = (limit: number = 20) => {
     });
 
     return {
+        LEADERBOARD_CUMULATIVE_FILTERS,
+        filters,
+        handleFilterClick,
         leaderboard,
         pagination,
         fetchNextPage,
