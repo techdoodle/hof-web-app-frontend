@@ -18,9 +18,6 @@ type LeaderboardItemType = {
 };
 
 export function Leaderboard() {
-    const [filters, setFilters] = useState({
-        city: 'Gurugram'
-    });
     const itemsPerPage = 50;
 
     const {
@@ -31,7 +28,10 @@ export function Leaderboard() {
         isFetchingNextPage,
         isLeaderboardLoading,
         leaderboardError,
-        prefetchNextPage
+        prefetchNextPage,
+        filters,
+        handleFilterClick,
+        LEADERBOARD_CUMULATIVE_FILTERS
     } = useLeaderBoard(itemsPerPage);
     console.log("leaderboardui", leaderboard, "pagination:", pagination, "error:", leaderboardError, "loading:", isLeaderboardLoading, "hasNextPage:", hasNextPage);
     const { userData, isLoading: isUserDataLoading } = useUserData();
@@ -77,7 +77,7 @@ export function Leaderboard() {
 
     return (
         <div className="flex flex-col gap-1 p-4">
-            {/* <LeaderBoardFilters selectedCity={filters.city} setSelectedCity={(city) => setFilters({ ...filters, city })} /> */}
+            {/* <LeaderBoardFilters filter_data={LEADERBOARD_CUMULATIVE_FILTERS} filters={filters} handleFilterClick={handleFilterClick} /> */}
             {leaderboard && leaderboard.length === 0 && !isLeaderboardLoading && (
                 <div className="text-center text-gray-400">No leaderboard data available</div>
             )}
