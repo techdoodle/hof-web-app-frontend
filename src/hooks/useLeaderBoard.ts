@@ -1,5 +1,5 @@
 import { fetchLeaderBoard } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const LEADERBOARD_QUERY_KEY = 'leaderboard';
 const LEADERBOARD_STALE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -111,14 +111,91 @@ const DUMMY_LEADERBOARD = [
     }
 ]
 
-export const useLeaderBoard = () => {
-    const { data: leaderboard, isLoading: isLeaderboardLoading, error: leaderboardError, refetch: refetchLeaderboard } = useQuery({
-        queryKey: [LEADERBOARD_QUERY_KEY],
-        queryFn: () => fetchLeaderBoard(),
-        // queryFn: () => DUMMY_LEADERBOARD,
+export const useLeaderBoard = (limit: number = 20) => {
+    const queryClient = useQueryClient();
+
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        error,
+        refetch
+    } = useInfiniteQuery({
+        queryKey: [LEADERBOARD_QUERY_KEY, limit],
+        queryFn: ({ pageParam = 1 }) => fetchLeaderBoard(pageParam, limit),
+        getNextPageParam: (lastPage) => {
+            // Handle both old format (direct array) and new format (with pagination)
+            if (Array.isArray(lastPage)) {
+                // Old format - if we got a full page, there might be more
+                return lastPage.length === limit ? 2 : undefined;
+            } else if (lastPage?.pagination?.hasNextPage) {
+                // New format with pagination
+                return lastPage.pagination.currentPage + 1;
+            }
+            return undefined;
+        },
         staleTime: LEADERBOARD_STALE_TIME,
         refetchOnWindowFocus: false,
+        initialPageParam: 1,
     });
 
-    return { leaderboard, isLeaderboardLoading, leaderboardError };
+    // Prefetch next page when user is near the end
+    const prefetchNextPage = () => {
+        if (hasNextPage && !isFetchingNextPage && data?.pages) {
+            const lastPage = data.pages[data.pages.length - 1];
+            let nextPage = 2;
+
+            if (Array.isArray(lastPage)) {
+                // Old format - assume we're on page 1, next is page 2
+                nextPage = 2;
+            } else if (lastPage?.pagination?.currentPage) {
+                // New format with pagination
+                nextPage = lastPage.pagination.currentPage + 1;
+            }
+
+            queryClient.prefetchQuery({
+                queryKey: [LEADERBOARD_QUERY_KEY, limit, nextPage],
+                queryFn: () => fetchLeaderBoard(nextPage, limit),
+                staleTime: LEADERBOARD_STALE_TIME,
+            });
+        }
+    };
+
+    // Flatten all pages into a single array
+    // Check if the page structure has 'data' property or if it's a direct array
+    const leaderboard = data?.pages?.flatMap(page => {
+        if (Array.isArray(page)) {
+            // If page is directly an array (old format)
+            return page;
+        } else if (page?.data && Array.isArray(page.data)) {
+            // If page has data property (new paginated format)
+            return page.data;
+        }
+        return [];
+    }) || [];
+
+    const pagination = data?.pages?.[data.pages.length - 1]?.pagination;
+
+    console.log("useLeaderBoard debug:", {
+        rawData: data,
+        pages: data?.pages,
+        leaderboard,
+        pagination,
+        hasNextPage,
+        error
+    });
+
+    return {
+        leaderboard,
+        pagination,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLeaderboardLoading: isLoading,
+        leaderboardError: error,
+        refetchLeaderboard: refetch,
+        prefetchNextPage
+    };
 }
