@@ -62,7 +62,12 @@ export function Leaderboard() {
     }, [userItem]);
 
     if (isLeaderboardLoading) {
-        return <div>Loading...</div>;
+        return <div className="flex justify-center items-center h-screen">
+            <div className="flex flex-col gap-4">
+                <div className="text-center text-gray-400">Loading...</div>
+                <div className="text-center text-gray-400">Please wait while we load the leaderboard...</div>
+            </div>
+        </div>;
     }
 
     const showBottomCard = userItem && !isUserVisible;
@@ -77,7 +82,7 @@ export function Leaderboard() {
 
     return (
         <div className="flex flex-col gap-1 p-4">
-            {/* <LeaderBoardFilters filter_data={LEADERBOARD_CUMULATIVE_FILTERS} filters={filters} handleFilterClick={handleFilterClick} /> */}
+            <LeaderBoardFilters filter_data={LEADERBOARD_CUMULATIVE_FILTERS} filters={filters} handleFilterClick={handleFilterClick} />
             {leaderboard && leaderboard.length === 0 && !isLeaderboardLoading && (
                 <div className="text-center text-gray-400">No leaderboard data available</div>
             )}
