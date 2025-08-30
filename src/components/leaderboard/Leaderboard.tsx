@@ -95,7 +95,7 @@ export function Leaderboard() {
                 prefetchNextPage={prefetchNextPage}
             >
                 {leaderboard && leaderboard.slice(3).map((item: LeaderboardItemType, index) => (
-                    <div key={`${item.id}-${index}`} ref={item.id === userData?.id ? userItemRef : null}>
+                    <div key={`${item.id}-${index}`} ref={item.id === userData?.id ? userItemRef : null} className="max-w-full">
                         <LeaderboardItem
                             item={item}
                             isUser={item.id === userData?.id}
@@ -105,13 +105,13 @@ export function Leaderboard() {
                 ))}
             </InfiniteScrollTrigger>
 
-            {showBottomCard && (
+            {/* {showBottomCard && (
                 <div className="fixed bottom-[125px] p-[1px] rounded-2xl bg-[#00CC6661] transition-all duration-500 ease-in-out">
                     <div className="text-center flex items-center gap-4 justify-center text-gray-400 p-1 bg-[#0B1E19] rounded-2xl">
                         <LeaderboardItem floating={true} item={userItem} isUser={true} isVisible={isUserVisible} />
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }
