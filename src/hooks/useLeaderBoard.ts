@@ -7,7 +7,7 @@ const LEADERBOARD_STALE_TIME = 60 * 60 * 1000; // 5 minutes
 
 const LEADERBOARD_TYPES = {
     'Overall': 'overall',
-    'G+A': 'gna',
+    'Goals + Assists': 'gna',
 }
 
 const LEADERBOARD_CITIES = {
