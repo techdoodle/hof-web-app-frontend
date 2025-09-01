@@ -1,4 +1,7 @@
+'use client';
+
 import { UserIcon } from '@/components/icons';
+import { useState } from 'react';
 interface ProfilePictureProps {
   imageUrl?: string;
   userName: string;
@@ -18,13 +21,14 @@ export function ProfilePicture({
     lg: 'w-40 h-50',
     xl: 'w-50 h-50'
   };
+  const [imageError, setImageError] = useState(false);
 
-  if (!imageUrl) {
+  if (!imageUrl || imageError) {
     return (
       <div className={`${sizeClasses[size]} rounded-lg flex items-center justify-center ${className}`}>
         <img
           src="/skeleton.png"
-          alt="Player Skeleton"
+          alt={userName ? `${userName}` : 'User Skeleton'}
           className="w-full h-auto rounded-lg shadow-sm"
         />
       </div>
@@ -35,6 +39,7 @@ export function ProfilePicture({
     <div className={`${sizeClasses[size]}  relative overflow-hidden ${className}`} style={{ maxWidth: '200px' }}>
       <img
         src={imageUrl}
+        onError={() => setImageError(true)}
         alt={userName}
         className="w-full h-full object-cover"
         style={{

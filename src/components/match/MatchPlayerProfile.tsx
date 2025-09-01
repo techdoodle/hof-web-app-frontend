@@ -19,16 +19,8 @@ const MatchPlayerProfile = ({ matchStats, userData, playerPosition }: { matchSta
                 display: 'flex',
                 justifyContent: 'space-between',
             }}>
-                {/* <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> {goals}  </div>
-                    <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Goals </div>
-                </div>
-                <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> {assists} </div>
-                    <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Assists </div>
-                </div> */}
                 {Object.entries(KEY_STATS).map(([key, value]) => (
-                    <div className="flex flex-col items-center justify-start">
+                    <div key={key} className="flex flex-col items-center justify-start">
                         <div className="text-3xl text-[#FFA726] font-bold"> {value} </div>
                         <div className="text-lg text-[#FFA726] font-bold font-orbitron"> {key} </div>
                     </div>
