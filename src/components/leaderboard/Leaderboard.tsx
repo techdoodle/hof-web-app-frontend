@@ -62,7 +62,12 @@ export function Leaderboard() {
     }, [userItem]);
 
     if (isLeaderboardLoading) {
-        return <div>Loading...</div>;
+        return <div className="flex justify-center items-center h-screen">
+            <div className="flex flex-col gap-4">
+                <div className="text-center text-gray-400">Loading...</div>
+                <div className="text-center text-gray-400">Please wait while we load the leaderboard...</div>
+            </div>
+        </div>;
     }
 
     const showBottomCard = userItem && !isUserVisible;
@@ -77,7 +82,7 @@ export function Leaderboard() {
 
     return (
         <div className="flex flex-col gap-1 p-4">
-            {/* <LeaderBoardFilters filter_data={LEADERBOARD_CUMULATIVE_FILTERS} filters={filters} handleFilterClick={handleFilterClick} /> */}
+            <LeaderBoardFilters filter_data={LEADERBOARD_CUMULATIVE_FILTERS} filters={filters} handleFilterClick={handleFilterClick} />
             {leaderboard && leaderboard.length === 0 && !isLeaderboardLoading && (
                 <div className="text-center text-gray-400">No leaderboard data available</div>
             )}
@@ -90,7 +95,7 @@ export function Leaderboard() {
                 prefetchNextPage={prefetchNextPage}
             >
                 {leaderboard && leaderboard.slice(3).map((item: LeaderboardItemType, index) => (
-                    <div key={`${item.id}-${index}`} ref={item.id === userData?.id ? userItemRef : null}>
+                    <div key={`${item.id}-${index}`} ref={item.id === userData?.id ? userItemRef : null} className="max-w-full">
                         <LeaderboardItem
                             item={item}
                             isUser={item.id === userData?.id}
@@ -100,13 +105,13 @@ export function Leaderboard() {
                 ))}
             </InfiniteScrollTrigger>
 
-            {showBottomCard && (
+            {/* {showBottomCard && (
                 <div className="fixed bottom-[125px] p-[1px] rounded-2xl bg-[#00CC6661] transition-all duration-500 ease-in-out">
                     <div className="text-center flex items-center gap-4 justify-center text-gray-400 p-1 bg-[#0B1E19] rounded-2xl">
                         <LeaderboardItem floating={true} item={userItem} isUser={true} isVisible={isUserVisible} />
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }

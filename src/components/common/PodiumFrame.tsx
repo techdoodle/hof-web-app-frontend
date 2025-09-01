@@ -48,8 +48,8 @@ export const PodiumFrame = ({ category, img, name, score, rank, inverse }: { cat
                 <div className={`text-white text-md rounded-full w-8 h-8 flex items-center justify-center mt-[-20px] z-10 ${categoryMapClass[category ?? 'gold']}`}>{rank}</div>
             </div>
             <div className="flex flex-col items-center justify-center">
-                <div className="text-white text-md truncate max-w-[15ch]">{name}</div>
-                <div className="text-gray-400 text-sm">{score}</div>
+                <div className="text-white text-lg truncate max-w-[15ch]">{name}</div>
+                <div className="text-gray-400 text-lg font-semibold">{score}</div>
             </div>
         </div>
 
