@@ -143,6 +143,18 @@ export const BottomDrawer = ({
             ref={overlayRef}
             className="fixed inset-0 z-50 flex items-end"
             onClick={handleOverlayClick}
+            style={{
+                // iOS-specific fixes
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: '100dvh',
+                // Fix for iOS viewport issues
+                minHeight: '-webkit-fill-available',
+                WebkitOverflowScrolling: 'touch'
+            } as React.CSSProperties}
         >
             {/* Overlay Background */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300" />
@@ -156,8 +168,18 @@ export const BottomDrawer = ({
                     background: 'linear-gradient(0deg, var(--Dark-Background, #0D1F1E), var(--Dark-Background, #0D1F1E)), linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%)',
                     border: '1px solid',
                     borderImageSource: 'linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%)',
-                    borderImageSlice: 1
-                }}
+                    borderImageSlice: 1,
+                    // iOS-specific fixes for drawer
+                    WebkitTransform: isOpen ? 'translateY(0)' : 'translateY(100%)',
+                    WebkitTransition: 'transform 300ms ease-out, -webkit-transform 300ms ease-out',
+                    // Prevent scrolling issues on iOS
+                    WebkitOverflowScrolling: 'touch',
+                    // Fix border rendering issues on iOS
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
+                    // Ensure proper layering on iOS
+                    isolation: 'isolate'
+                } as React.CSSProperties}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -165,11 +187,30 @@ export const BottomDrawer = ({
             >
                 {/* Drag Handle */}
                 {showHandle && (
-                    <div className="w-12 h-1 bg-gray-400 rounded-full mx-auto mt-3 mb-3 cursor-grab active:cursor-grabbing" />
+                    <div
+                        className="w-12 h-1 bg-gray-400 rounded-full mx-auto mt-3 mb-3 cursor-grab active:cursor-grabbing"
+                        style={{
+                            // Prevent handle distortion on iOS
+                            WebkitTouchCallout: 'none',
+                            WebkitUserSelect: 'none',
+                            userSelect: 'none'
+                        } as React.CSSProperties}
+                    />
                 )}
 
                 {/* Content */}
-                <div className={`${showHandle ? 'p-6 pt-0' : 'p-6'} h-full overflow-y-auto`}>
+                <div
+                    className={`${showHandle ? 'p-6 pt-0' : 'p-6'} h-full overflow-y-auto`}
+                    style={{
+                        // iOS-specific content fixes
+                        WebkitOverflowScrolling: 'touch',
+                        // Prevent content from being distorted
+                        WebkitTransform: 'translateZ(0)',
+                        transform: 'translateZ(0)',
+                        // Fix for iOS safe area
+                        paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))'
+                    } as React.CSSProperties}
+                >
                     {children}
                 </div>
             </div>

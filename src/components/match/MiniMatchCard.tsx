@@ -69,6 +69,11 @@ export const MiniMatchCard = ({ playerId, playerName, playerProfilePicture, matc
                 marginTop: '-35px',
                 position: 'relative',
                 zIndex: 100,
+                // iOS-specific fixes
+                WebkitTransform: 'translateZ(0)',
+                transform: 'translateZ(0)',
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
             }}>
                 <div className={cn("text-4xl font-bold font-orbitron text-gradient-bg", !playerProfilePicture ? "text-yellow-500" : "text-white")}>{firstName}</div>
                 <div className={"text-4xl font-bold font-orbitron text-[#AAAAAA] text-gradient-bg"}> {lastName}</div>
