@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface BottomDrawerProps {
     isOpen: boolean;
@@ -22,6 +23,21 @@ export const BottomDrawer = ({
     const startY = useRef<number>(0);
     const currentY = useRef<number>(0);
     const isDragging = useRef<boolean>(false);
+
+    // Handle iOS viewport height issues
+    useEffect(() => {
+        const setViewportHeight = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+
+        return () => {
+            window.removeEventListener('resize', setViewportHeight);
+        };
+    }, []);
 
     // Handle touch/mouse events for swipe down
     const handleStart = (clientY: number) => {
@@ -130,7 +146,7 @@ export const BottomDrawer = ({
     const getHeightClass = () => {
         switch (height) {
             case 'half':
-                return 'h-1/2';
+                return 'h-55/100'; // Increased from h-1/2 (50%) to h-3/5 (60%)
             case 'full':
                 return 'h-full';
             default:
@@ -138,7 +154,8 @@ export const BottomDrawer = ({
         }
     };
 
-    return (
+    // Create drawer content
+    const drawerContent = (
         <div
             ref={overlayRef}
             className="fixed inset-0 z-50 flex items-end"
@@ -150,14 +167,34 @@ export const BottomDrawer = ({
                 left: 0,
                 right: 0,
                 bottom: 0,
-                height: '100dvh',
+                height: 'calc(var(--vh, 1vh) * 100)',
                 // Fix for iOS viewport issues
-                minHeight: '-webkit-fill-available',
-                WebkitOverflowScrolling: 'touch'
+                minHeight: 'calc(var(--vh, 1vh) * 100)',
+                WebkitOverflowScrolling: 'touch',
+                // CRITICAL: Create new stacking context to isolate from body background
+                zIndex: 99999,
+                // Force isolation from background elements
+                isolation: 'isolate',
+                // Force hardware acceleration to bypass background interference
+                WebkitTransform: 'translateZ(0)',
+                transform: 'translateZ(0)',
+                // Ensure drawer appears above all background elements
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
             } as React.CSSProperties}
         >
             {/* Overlay Background */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300" />
+            <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+                style={{
+                    // Ensure overlay appears above background but below drawer
+                    zIndex: 99998,
+                    isolation: 'isolate',
+                    // Force hardware acceleration
+                    WebkitTransform: 'translateZ(0)',
+                    transform: 'translateZ(0)'
+                } as React.CSSProperties}
+            />
 
             {/* Drawer */}
             <div
@@ -177,8 +214,15 @@ export const BottomDrawer = ({
                     // Fix border rendering issues on iOS
                     WebkitBackfaceVisibility: 'hidden',
                     backfaceVisibility: 'hidden',
-                    // Ensure proper layering on iOS
-                    isolation: 'isolate'
+                    // CRITICAL: Ensure proper layering above background
+                    isolation: 'isolate',
+                    zIndex: 100000, // Even higher z-index for drawer content
+                    position: 'relative',
+                    // Force GPU rendering to bypass background interference
+                    willChange: 'transform',
+                    // Additional isolation properties
+                    WebkitPerspective: 1000,
+                    perspective: 1000
                 } as React.CSSProperties}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
@@ -216,4 +260,11 @@ export const BottomDrawer = ({
             </div>
         </div>
     );
+
+    // Use portal to render outside current stacking context
+    if (typeof window !== 'undefined') {
+        return createPortal(drawerContent, document.body);
+    }
+
+    return null;
 };
