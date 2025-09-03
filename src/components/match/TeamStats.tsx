@@ -42,7 +42,7 @@ export const TeamStats = ({ stats, team, userData, matchId, onDrawerOpen, onDraw
                 itemClassName="px-4 py-2"
                 showGradient={true}
             >
-                {stats.map((player) => (
+                {stats.map((player, index) => (
                     <PlayerStatCardWithDrawer
                         key={player.id}
                         player={player}
@@ -50,6 +50,8 @@ export const TeamStats = ({ stats, team, userData, matchId, onDrawerOpen, onDraw
                         matchId={matchId}
                         onDrawerOpen={onDrawerOpen}
                         onDrawerClose={onDrawerClose}
+                        allPlayers={stats}
+                        playerIndex={index}
                     />
                 ))}
             </HorizontalScroll>

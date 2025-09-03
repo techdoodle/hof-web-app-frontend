@@ -61,14 +61,14 @@ export function OTPVerificationScreen({
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
-    
+
     if (pastedData.length > 0) {
       const newOtp = [...otp];
       for (let i = 0; i < 6; i++) {
         newOtp[i] = pastedData[i] || '';
       }
       setOtp(newOtp);
-      
+
       // Focus the last filled input or the next empty one
       const lastFilledIndex = Math.min(pastedData.length - 1, 5);
       inputRefs[lastFilledIndex].current?.focus();
@@ -83,7 +83,7 @@ export function OTPVerificationScreen({
 
   const handleSubmit = async () => {
     const otpString = otp.join('');
-    
+
     try {
       OTPSchema.parse(otpString);
       setValidationError('');
@@ -124,7 +124,7 @@ export function OTPVerificationScreen({
   return (
     <div className="flex flex-col h-full">
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-32">
         <h1 className="text-2xl font-bold mb-4 font-orbitron">
           Enter the 6-digit code *
           <br />
@@ -168,7 +168,7 @@ export function OTPVerificationScreen({
           className="mt-4 text-md font-semibold text-primary disabled:opacity-50"
           disabled={isLoading || timer > 0 || resendLimitReached}
         >
-          {timer > 0 
+          {timer > 0
             ? `I haven't received a code (0:${timer.toString().padStart(2, '0')})`
             : "Resend code"
           }
@@ -180,8 +180,16 @@ export function OTPVerificationScreen({
         )}
       </div>
 
-      {/* Fixed Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4">
+      {/* Fixed Continue Button with Android viewport fix */}
+      <div
+        className="fixed left-0 right-0 p-4"
+        style={{
+          bottom: 'calc(env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+          background: 'linear-gradient(to top, var(--background) 70%, transparent)',
+          backdropFilter: 'blur(8px)'
+        }}
+      >
         <Button
           onClick={handleSubmit}
           isLoading={isLoading}

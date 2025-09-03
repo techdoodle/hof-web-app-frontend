@@ -21,12 +21,30 @@ interface PlayerStatCardWithDrawerProps {
     matchId?: number;
     onDrawerOpen?: () => void;
     onDrawerClose?: () => void;
+    // New props for navigation
+    allPlayers?: PlayerData[];
+    playerIndex?: number;
 }
 
-export const PlayerStatCardWithDrawer = ({ player, userData, matchId, onDrawerOpen, onDrawerClose }: PlayerStatCardWithDrawerProps) => {
+export const PlayerStatCardWithDrawer = ({
+    player,
+    userData,
+    matchId,
+    onDrawerOpen,
+    onDrawerClose,
+    allPlayers = [],
+    playerIndex = 0
+}: PlayerStatCardWithDrawerProps) => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [currentPlayerIndex, setCurrentPlayerIndex] = useState(playerIndex);
+
+    // Update current player when props change
+    useEffect(() => {
+        setCurrentPlayerIndex(playerIndex);
+    }, [playerIndex]);
 
     const handleCardClick = () => {
+        setCurrentPlayerIndex(playerIndex); // Reset to clicked player
         setIsDrawerOpen(true);
         onDrawerOpen?.();
     };
@@ -35,6 +53,13 @@ export const PlayerStatCardWithDrawer = ({ player, userData, matchId, onDrawerOp
         setIsDrawerOpen(false);
         onDrawerClose?.();
     };
+
+    const handlePlayerChange = (newIndex: number) => {
+        setCurrentPlayerIndex(newIndex);
+    };
+
+    // Get current player based on index
+    const currentPlayer = allPlayers[currentPlayerIndex] || player;
 
     useEffect(() => {
         console.log('isDrawerOpen', isDrawerOpen);
@@ -52,16 +77,19 @@ export const PlayerStatCardWithDrawer = ({ player, userData, matchId, onDrawerOp
                 isOpen={isDrawerOpen}
                 onClose={handleDrawerClose}
                 player={{
-                    id: player.id,
-                    firstName: player.firstName,
-                    lastName: player.lastName,
-                    position: player.position,
-                    statVal: player.statVal,
-                    profilePicture: player.profilePicture,
-                    mvp: player.mvp
+                    id: currentPlayer.id,
+                    firstName: currentPlayer.firstName,
+                    lastName: currentPlayer.lastName,
+                    position: currentPlayer.position,
+                    statVal: currentPlayer.statVal,
+                    profilePicture: currentPlayer.profilePicture,
+                    mvp: currentPlayer.mvp
                 }}
                 userData={userData}
                 matchId={matchId}
+                players={allPlayers}
+                currentPlayerIndex={currentPlayerIndex}
+                onPlayerChange={handlePlayerChange}
             />
         </>
     );

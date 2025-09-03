@@ -20,7 +20,7 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
       />
       {/* Overlay */}
       <div className="absolute inset-0 z-10 bg-black opacity-40" />
-      
+
       {/* Scrollable Content */}
       <div className="relative z-20 flex-1 flex flex-col items-center justify-center text-center px-4 overflow-y-auto pb-20">
         <div className="logo-container">
@@ -41,7 +41,15 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
       </div>
 
       {/* Fixed Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 z-20">
+      <div
+        className="fixed left-0 right-0 p-4 z-20"
+        style={{
+          bottom: 'calc(env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+          background: 'linear-gradient(to top, var(--background) 70%, transparent)',
+          backdropFilter: 'blur(8px)'
+        }}
+      >
         <Button
           variant="gradient"
           onClick={onContinue}

@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils/styles";
 import { determineMainStats } from "@/lib/utils/determineMainStats";
 
 const MatchPlayerProfile = ({ matchStats, userData, playerPosition }: { matchStats: any; userData: UserData; playerPosition: 'GK' | 'DEF' | 'FWD' }) => {
-    console.log("matchStatsmatchStats", matchStats);
 
     const KEY_STATS = determineMainStats(playerPosition, matchStats);
     return (
@@ -32,7 +31,12 @@ const MatchPlayerProfile = ({ matchStats, userData, playerPosition }: { matchSta
             }}>
 
                 <div className="relative">
-                    <ProfilePicture imageUrl={userData?.profilePicture || 'undefined'} size="xl" userName={userData?.firstName + " " + userData?.lastName} />
+                    <ProfilePicture
+                        key={`${userData?.id}-${userData?.profilePicture}`}
+                        imageUrl={userData?.profilePicture || 'undefined'}
+                        size="xl"
+                        userName={userData?.firstName + " " + userData?.lastName}
+                    />
                 </div>
             </div>
             <div className={"flex flex-col items-center text-gradient-bg max-w-full"} style={{

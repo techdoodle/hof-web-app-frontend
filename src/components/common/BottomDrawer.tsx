@@ -175,7 +175,7 @@ export const BottomDrawer = ({
 
                         {/* Content */}
                         <motion.div
-                            className={`${showHandle ? 'p-6 pt-0' : 'p-6'} overflow-y-auto`}
+                            className={`${showHandle ? 'p-2 pt-0' : 'p-6'} overflow-y-auto`}
                             style={{
                                 height: showHandle ? 'calc(100% - 60px)' : '100%',
                                 WebkitOverflowScrolling: 'touch',

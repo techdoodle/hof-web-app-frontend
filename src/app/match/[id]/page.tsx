@@ -52,7 +52,12 @@ const MatchPage = ({ params }: MatchPageProps) => {
         return (
           <div className="match-details-page min-h-screen overflow-y-auto p-4 flex flex-col gap-4">
             <MatchDetailsHeader matchStats={matchStats} />
-            <MatchPlayerProfile matchStats={matchStats} userData={userData} playerPosition={playerPosition as 'GK' | 'DEF' | 'FWD'} />
+            <MatchPlayerProfile
+              key={`match-profile-${matchId}-${userData?.id}`}
+              matchStats={matchStats}
+              userData={userData}
+              playerPosition={playerPosition as 'GK' | 'DEF' | 'FWD'}
+            />
             <StatsTable loading={isMatchStatsLoading} stats={matchStats} screenName="matchStats" playerPosition={playerPosition} />
             <VenueDetails matchStats={matchStats} />
             <div className="border-b border-white border-dashed" />

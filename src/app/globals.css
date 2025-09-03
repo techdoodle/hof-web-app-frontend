@@ -25,10 +25,23 @@
     --sai-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Fix for mobile viewport height */
+  /* Fix for mobile viewport height - iOS */
   @supports (-webkit-touch-callout: none) {
     .min-h-screen {
       min-height: -webkit-fill-available;
+    }
+  }
+
+  /* Fix for Android viewport height issues */
+  @media screen and (max-width: 767px) {
+    .h-full {
+      height: 100vh;
+      height: calc(var(--vh, 1vh) * 100);
+    }
+
+    .min-h-screen {
+      min-height: 100vh;
+      min-height: calc(var(--vh, 1vh) * 100);
     }
   }
 
