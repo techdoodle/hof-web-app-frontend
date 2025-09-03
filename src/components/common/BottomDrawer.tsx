@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, ReactNode } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 
 interface BottomDrawerProps {
     isOpen: boolean;
@@ -18,12 +19,6 @@ export const BottomDrawer = ({
     height = 'half',
     showHandle = true
 }: BottomDrawerProps) => {
-    const drawerRef = useRef<HTMLDivElement>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
-    const startY = useRef<number>(0);
-    const currentY = useRef<number>(0);
-    const isDragging = useRef<boolean>(false);
-
     // Handle iOS viewport height issues
     useEffect(() => {
         const setViewportHeight = () => {
@@ -39,226 +34,165 @@ export const BottomDrawer = ({
         };
     }, []);
 
-    // Handle touch/mouse events for swipe down
-    const handleStart = (clientY: number) => {
-        startY.current = clientY;
-        currentY.current = clientY;
-        isDragging.current = true;
-    };
+    // Handle drag gestures with Framer Motion
+    const handleDragEnd = (event: any, info: PanInfo) => {
+        const threshold = 80;
+        const velocity = info.velocity.y;
 
-    const handleMove = (clientY: number) => {
-        if (!isDragging.current || !drawerRef.current) return;
-
-        currentY.current = clientY;
-        const deltaY = currentY.current - startY.current;
-
-        // Only allow downward movement
-        if (deltaY > 0) {
-            drawerRef.current.style.transform = `translateY(${deltaY}px)`;
-        }
-    };
-
-    const handleEnd = () => {
-        if (!isDragging.current || !drawerRef.current) return;
-
-        const deltaY = currentY.current - startY.current;
-
-        // Close if swiped down more than 100px
-        if (deltaY > 100) {
-            onClose();
-        } else {
-            // Reset position
-            drawerRef.current.style.transform = 'translateY(0)';
-        }
-
-        isDragging.current = false;
-    };
-
-    // Touch events
-    const handleTouchStart = (e: React.TouchEvent) => {
-        handleStart(e.touches[0].clientY);
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        handleMove(e.touches[0].clientY);
-    };
-
-    const handleTouchEnd = () => {
-        handleEnd();
-    };
-
-    // Mouse events for desktop
-    const handleMouseDown = (e: React.MouseEvent) => {
-        handleStart(e.clientY);
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-        handleMove(e.clientY);
-    };
-
-    const handleMouseUp = () => {
-        handleEnd();
-    };
-
-    // Outside click handler
-    const handleOverlayClick = (e: React.MouseEvent) => {
-        if (e.target === overlayRef.current) {
+        // Close if dragged down beyond threshold or fast downward swipe
+        if (info.offset.y > threshold || velocity > 500) {
             onClose();
         }
     };
 
-    // Add/remove mouse event listeners
-    useEffect(() => {
-        if (isDragging.current) {
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
-
-            return () => {
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
-            };
-        }
-    }, [isDragging.current]);
-
-    // Reset drawer position when opened/closed
-    useEffect(() => {
-        if (drawerRef.current) {
-            drawerRef.current.style.transform = 'translateY(0)';
-        }
-    }, [isOpen]);
-
-    // Manage body scroll
+    // Manage body scroll with better iOS handling
     useEffect(() => {
         if (isOpen) {
+            const scrollY = window.scrollY;
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.left = '0';
+            document.body.style.right = '0';
             document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
 
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
+            return () => {
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.left = '';
+                document.body.style.right = '';
+                document.body.style.overflow = '';
+                window.scrollTo(0, scrollY);
+            };
+        }
     }, [isOpen]);
 
-    if (!isOpen) return null;
-
-    // Determine height class
-    const getHeightClass = () => {
+    // Get height value for different screen sizes
+    const getHeightValue = () => {
         switch (height) {
             case 'half':
-                return 'h-55/100'; // Increased from h-1/2 (50%) to h-3/5 (60%)
+                return '55%'; // 55% of viewport height
             case 'full':
-                return 'h-full';
+                return '90%';
             default:
-                return height; // Assume it's a custom Tailwind class
+                return height;
         }
     };
 
-    // Create drawer content
+    // Animation variants for smooth transitions
+    const overlayVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1 }
+    };
+
+    const drawerVariants = {
+        hidden: {
+            y: '100%',
+            transition: {
+                type: 'spring' as const,
+                damping: 25,
+                stiffness: 300
+            }
+        },
+        visible: {
+            y: 0,
+            transition: {
+                type: 'spring' as const,
+                damping: 25,
+                stiffness: 300
+            }
+        }
+    };
+
+    // Create drawer content with Framer Motion
     const drawerContent = (
-        <div
-            ref={overlayRef}
-            className="fixed inset-0 z-50 flex items-end"
-            onClick={handleOverlayClick}
-            style={{
-                // iOS-specific fixes
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 'calc(var(--vh, 1vh) * 100)',
-                // Fix for iOS viewport issues
-                minHeight: 'calc(var(--vh, 1vh) * 100)',
-                WebkitOverflowScrolling: 'touch',
-                // CRITICAL: Create new stacking context to isolate from body background
-                zIndex: 99999,
-                // Force isolation from background elements
-                isolation: 'isolate',
-                // Force hardware acceleration to bypass background interference
-                WebkitTransform: 'translateZ(0)',
-                transform: 'translateZ(0)',
-                // Ensure drawer appears above all background elements
-                WebkitBackfaceVisibility: 'hidden',
-                backfaceVisibility: 'hidden'
-            } as React.CSSProperties}
-        >
-            {/* Overlay Background */}
-            <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
-                style={{
-                    // Ensure overlay appears above background but below drawer
-                    zIndex: 99998,
-                    isolation: 'isolate',
-                    // Force hardware acceleration
-                    WebkitTransform: 'translateZ(0)',
-                    transform: 'translateZ(0)'
-                } as React.CSSProperties}
-            />
-
-            {/* Drawer */}
-            <div
-                ref={drawerRef}
-                className={`relative w-full ${getHeightClass()} rounded-t-3xl transform transition-transform duration-300 ease-out`}
-                style={{
-                    transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-                    background: 'linear-gradient(0deg, var(--Dark-Background, #0D1F1E), var(--Dark-Background, #0D1F1E)), linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%)',
-                    border: '1px solid',
-                    borderImageSource: 'linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%)',
-                    borderImageSlice: 1,
-                    // iOS-specific fixes for drawer
-                    WebkitTransform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-                    WebkitTransition: 'transform 300ms ease-out, -webkit-transform 300ms ease-out',
-                    // Prevent scrolling issues on iOS
-                    WebkitOverflowScrolling: 'touch',
-                    // Fix border rendering issues on iOS
-                    WebkitBackfaceVisibility: 'hidden',
-                    backfaceVisibility: 'hidden',
-                    // CRITICAL: Ensure proper layering above background
-                    isolation: 'isolate',
-                    zIndex: 100000, // Even higher z-index for drawer content
-                    position: 'relative',
-                    // Force GPU rendering to bypass background interference
-                    willChange: 'transform',
-                    // Additional isolation properties
-                    WebkitPerspective: 1000,
-                    perspective: 1000
-                } as React.CSSProperties}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onMouseDown={handleMouseDown}
-            >
-                {/* Drag Handle */}
-                {showHandle && (
-                    <div
-                        className="w-12 h-1 bg-gray-400 rounded-full mx-auto mt-3 mb-3 cursor-grab active:cursor-grabbing"
-                        style={{
-                            // Prevent handle distortion on iOS
-                            WebkitTouchCallout: 'none',
-                            WebkitUserSelect: 'none',
-                            userSelect: 'none'
-                        } as React.CSSProperties}
-                    />
-                )}
-
-                {/* Content */}
-                <div
-                    className={`${showHandle ? 'p-6 pt-0' : 'p-6'} h-full overflow-y-auto`}
+        <AnimatePresence mode="wait">
+            {isOpen && (
+                <motion.div
+                    className="fixed inset-0 z-50 flex items-end"
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    variants={overlayVariants}
                     style={{
-                        // iOS-specific content fixes
-                        WebkitOverflowScrolling: 'touch',
-                        // Prevent content from being distorted
+                        height: 'calc(var(--vh, 1vh) * 100)',
+                        minHeight: 'calc(var(--vh, 1vh) * 100)',
+                        zIndex: 99999,
+                        isolation: 'isolate',
                         WebkitTransform: 'translateZ(0)',
-                        transform: 'translateZ(0)',
-                        // Fix for iOS safe area
-                        paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))'
+                        transform: 'translateZ(0)'
                     } as React.CSSProperties}
                 >
-                    {children}
-                </div>
-            </div>
-        </div>
+                    {/* Overlay Background - Click here to close */}
+                    <motion.div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-pointer"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={onClose}
+                        onTouchEnd={onClose}
+                    />
+
+                    {/* Drawer */}
+                    <motion.div
+                        className="relative w-full rounded-t-3xl"
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        variants={drawerVariants}
+                        drag="y"
+                        dragConstraints={{ top: 0, bottom: 0 }}
+                        dragElastic={{ top: 0, bottom: 0.2 }}
+                        onDragEnd={handleDragEnd}
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                        style={{
+                            height: getHeightValue(),
+                            background: 'linear-gradient(0deg, var(--Dark-Background, #0D1F1E), var(--Dark-Background, #0D1F1E)), linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%)',
+                            border: '1px solid',
+                            borderImageSource: 'linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)), linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%)',
+                            borderImageSlice: 1,
+                            WebkitOverflowScrolling: 'touch',
+                            WebkitBackfaceVisibility: 'hidden',
+                            backfaceVisibility: 'hidden',
+                            isolation: 'isolate',
+                            zIndex: 100000,
+                            willChange: 'transform'
+                        } as React.CSSProperties}
+                    >
+                        {/* Drag Handle */}
+                        {showHandle && (
+                            <motion.div
+                                className="w-12 h-1 bg-gray-400 rounded-full mx-auto mt-3 mb-3 cursor-grab active:cursor-grabbing"
+                                whileTap={{ scale: 1.1 }}
+                                style={{
+                                    WebkitTouchCallout: 'none',
+                                    WebkitUserSelect: 'none',
+                                    userSelect: 'none'
+                                } as React.CSSProperties}
+                            />
+                        )}
+
+                        {/* Content */}
+                        <motion.div
+                            className={`${showHandle ? 'p-6 pt-0' : 'p-6'} overflow-y-auto`}
+                            style={{
+                                height: showHandle ? 'calc(100% - 60px)' : '100%',
+                                WebkitOverflowScrolling: 'touch',
+                                WebkitTransform: 'translateZ(0)',
+                                transform: 'translateZ(0)',
+                                paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))'
+                            } as React.CSSProperties}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1, duration: 0.3 }}
+                        >
+                            {children}
+                        </motion.div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 
     // Use portal to render outside current stacking context
