@@ -51,7 +51,8 @@ export const MiniMatchCard = ({ playerId, playerName, playerProfilePicture, matc
             {/* Header Section with Profile and Key Stats */}
             <div className="relative flex items-center justify-between gap-2">
                 {/* Left Key Stat */}
-                <div>
+                <div className="flex flex-col items-center">
+                    <div className="mt-1 text-xl font-bold text-white font-orbitron">{playerPosition}</div>
                     {isMatchStatsLoading ? (
                         <StatSkeleton />
                     ) : keyStatsEntries[0] ? (
@@ -64,7 +65,6 @@ export const MiniMatchCard = ({ playerId, playerName, playerProfilePicture, matc
                             </div>
                         </div>
                     ) : null}
-                    <div className="mt-1 text-xl font-bold text-white font-orbitron">{playerPosition}</div>
                 </div>
 
                 <ProfilePicture
@@ -75,7 +75,8 @@ export const MiniMatchCard = ({ playerId, playerName, playerProfilePicture, matc
                 />
 
                 {/* Right Key Stat */}
-                <div>
+                <div className="flex flex-col items-center">
+                    {mvp && <div className="mt-1 text-xl font-bold font-orbitron text-[#00CC66]">MVP</div>}
                     {isMatchStatsLoading ? (
                         <StatSkeleton />
                     ) : keyStatsEntries[1] ? (
@@ -88,7 +89,6 @@ export const MiniMatchCard = ({ playerId, playerName, playerProfilePicture, matc
                             </div>
                         </div>
                     ) : null}
-                    {mvp && <div className="mt-1 text-xl font-bold font-orbitron text-[#00CC66]">MVP</div>}
                 </div>
             </div>
             <div className={"flex flex-col items-center w-full"} style={{

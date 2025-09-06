@@ -74,7 +74,7 @@ export const PlayerDetailsDrawer = ({
         <BottomDrawer isOpen={isOpen} onClose={onClose} height="half">
             <div className="drawer-content space-y-6 flex flex-row justify-center items-center">
                 {/* Navigation Header */}
-                {players.length > 1 && onPlayerChange && (
+                {players.length > 0 && onPlayerChange && (
                     <div className="flex items-center justify-between p-0">
                         {/* Previous Player Button */}
                         <button
@@ -101,7 +101,7 @@ export const PlayerDetailsDrawer = ({
                         mvp={player.mvp}
                     />
                 )}
-                {players.length > 1 && onPlayerChange && (
+                {players.length > 0 && onPlayerChange && (
                     <div className="flex items-center justify-between p-0">
                         {/* Previous Player Button */}
                         <button
