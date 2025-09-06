@@ -1,16 +1,19 @@
 'use client';
 
 import { AuthWrapper } from '@/components/auth/AuthWrapper';
-import { ComingSoon } from '@/components/common/ComingSoon';
 import { CommonNavbar } from '@/components/common/CommonNavbar';
-import { LeaderboardIcon } from '@/components/icons';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
+import { GoalsAssistsLeaderboard } from '@/components/leaderboard/GoalsAssistsLeaderboard';
 import { UserData } from '@/modules/onboarding/types';
 import { ChevronLeftIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function LeaderboardPage() {
+function LeaderboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'overall';
+
   return (
     <AuthWrapper>
       {(userData: UserData) => (
@@ -26,12 +29,21 @@ export default function LeaderboardPage() {
             </div>
           </div>
 
-          <Leaderboard />
+          {/* Content based on active tab - the filters are inside each component */}
+          {activeTab === 'gna' ? <GoalsAssistsLeaderboard /> : <Leaderboard />}
 
           {/* Common Navbar */}
           <CommonNavbar activeTab="leaderboard" />
         </div>
       )}
     </AuthWrapper>
+  );
+}
+
+export default function LeaderboardPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen text-white">Loading...</div>}>
+      <LeaderboardContent />
+    </Suspense>
   );
 } 

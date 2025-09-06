@@ -1,6 +1,7 @@
 import { fetchLeaderBoard } from "@/lib/api";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const LEADERBOARD_QUERY_KEY = 'leaderboard';
 const LEADERBOARD_STALE_TIME = 60 * 60 * 1000; // 5 minutes
@@ -29,16 +30,50 @@ const defaultFilters = {
     limit: 50
 };
 
-export const useLeaderBoard = (limit: number = 20) => {
+export const useLeaderBoard = (limit: number = 20, initialType?: string) => {
     const queryClient = useQueryClient();
-    const [filters, setFilters] = useState(defaultFilters);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Get initial type from URL params or fallback to initialType or default
+    const getInitialType = () => {
+        const urlTab = searchParams.get('tab');
+        if (urlTab && ['overall', 'gna'].includes(urlTab)) {
+            return urlTab;
+        }
+        return initialType || 'overall';
+    };
+
+    const [filters, setFilters] = useState({
+        ...defaultFilters,
+        type: getInitialType()
+    });
+
+    // Sync filters with URL params
+    useEffect(() => {
+        const urlTab = searchParams.get('tab') || 'overall';
+        if (urlTab !== filters.type) {
+            setFilters(prev => ({ ...prev, type: urlTab }));
+        }
+    }, [searchParams, filters.type]);
 
     const handleFilterClick = (key: string, value: string) => {
         console.log("handleFilterClick", key, value);
         if (key === "type") {
+            // Update URL when type changes
+            const params = new URLSearchParams(searchParams.toString());
+            if (value === 'overall') {
+                params.delete('tab');
+            } else {
+                params.set('tab', value);
+            }
+            const newUrl = params.toString() ? `/leaderboard?${params.toString()}` : '/leaderboard';
+            router.push(newUrl);
+
             setFilters({ ...filters, type: value });
         } else if (key === "city") {
-            setFilters({ ...filters, city: value, type: 'overall' });
+            // Keep the current type when changing city, don't reset to overall
+            setFilters({ ...filters, city: value });
         } else return;
     }
 
