@@ -50,9 +50,21 @@ export function GoalsAssistsLeaderboard() {
             )
         },
         {
-            key: 'appearances',
-            label: 'Apps',
+            key: 'goalsAssists',
+            label: 'G+A',
             width: '80px',
+            align: 'left',
+            sortable: true,
+            render: (value: any, row: LeaderboardPlayer) => (
+                <span className="text-sm font-bold text-primary">
+                    {(row.goals || 0) + (row.assists || 0)}
+                </span>
+            )
+        },
+        {
+            key: 'appearances',
+            label: 'Appearances',
+            width: '100px',
             align: 'left',
             sortable: true,
             render: (value: number) => (
@@ -77,18 +89,6 @@ export function GoalsAssistsLeaderboard() {
             sortable: true,
             render: (value: number) => (
                 <span className="text-sm font-medium text-foreground">{value || 0}</span>
-            )
-        },
-        {
-            key: 'goalsAssists',
-            label: 'G+A',
-            width: '80px',
-            align: 'left',
-            sortable: true,
-            render: (value: any, row: LeaderboardPlayer) => (
-                <span className="text-sm font-bold text-primary">
-                    {(row.goals || 0) + (row.assists || 0)}
-                </span>
             )
         }
     ];
