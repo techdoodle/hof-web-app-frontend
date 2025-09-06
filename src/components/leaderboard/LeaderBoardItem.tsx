@@ -30,7 +30,7 @@ export function LeaderboardItem({
         <div
             className={`
                 flex items-center gap-4 p-3 rounded-xl transition-all duration-500 ease-in-out
-                ${isUser && floating ? 'bg-[#00CC6661] border border-[#00CC6661]' : ''}
+                ${isUser && floating ? 'bg-[#00CC6661] border border-[#00CC6661] hover:scale-105 bg-[#0D1F1E]' : ''}
                 ${isUser && isVisible ? 'scale-102 shadow-lg' : ''}
             `}
             style={{ width: '100%', boxSizing: 'border-box' }}
