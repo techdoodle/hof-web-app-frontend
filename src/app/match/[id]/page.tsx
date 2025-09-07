@@ -8,76 +8,7 @@ import { VenueDetails } from "@/components/match/VenueDetails";
 import { StatsTable } from "@/components/profile/StatsTable";
 import { useMatchStats } from "@/hooks/useMatchStats";
 import { UserData } from "@/modules/onboarding/types";
-
-const MY_TEAM = [
-  {
-    id: 1,
-    name: "John Doe",
-    position: "DEFENDER",
-    statVal: '1 Tackle',
-    profilePicture: 'https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures_stg/2/9bb07e14-cb39-4fc6-9a86-9a7f30b80d88.png',
-    mvp: true,
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    position: "FORWARD",
-    statVal: '1 Goal',
-    profilePicture: 'https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures_stg/5/eebd34da-337d-4d96-bbca-0d740e511642.png',
-    mvp: false,
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    position: "FORWARD",
-    statVal: '1 Goal',
-    profilePicture: 'https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures_stg/4/f74e6533-fc9e-4a40-9cd4-fd2c568165d5.png',
-    mvp: false,
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    position: "FORWARD",
-    statVal: '1 Goal',
-    profilePicture: 'url+here_pls',
-    mvp: false,
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    position: "FORWARD",
-    statVal: '1 Goal',
-    profilePicture: 'url+here_pls',
-    mvp: false,
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    position: "FORWARD",
-    statVal: '1 Goal',
-    profilePicture: 'url+here_pls',
-    mvp: false,
-  }
-];
-
-const OPPONENT_TEAM = [
-  {
-    id: 1,
-    name: "John Doe",
-    position: "DEFENDER",
-    statVal: '1 Tackle',
-    profilePicture: 'https://storage.googleapis.com/hof-storage.firebasestorage.app/profile_pictures_stg/3/7f8c6d8b-9d6f-49d7-bdd4-91ee8d0b6499.png',
-    mvp: true,
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    position: "FORWARD",
-    statVal: '1 Goal',
-    profilePicture: 'url+here_pls',
-    mvp: false,
-  }
-];
+import { useBottomNavVisibility } from "@/hooks/useBottomNavVisibility";
 
 interface MatchPageProps {
   params: {
@@ -95,6 +26,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
         console.log('debugging user', userData);
 
         const { matchStats, isMatchStatsLoading, matchStatsError, refetchMatchStats } = useMatchStats(userData?.id, parseInt(matchId));
+        const { shouldHideBottomNav, showDrawer, hideDrawer } = useBottomNavVisibility();
         console.log('debugging matchStats', matchStats);
 
         // Get player position from matchStats or userData
@@ -120,12 +52,31 @@ const MatchPage = ({ params }: MatchPageProps) => {
         return (
           <div className="match-details-page min-h-screen overflow-y-auto p-4 flex flex-col gap-4">
             <MatchDetailsHeader matchStats={matchStats} />
-            <MatchPlayerProfile matchStats={matchStats} userData={userData} playerPosition={playerPosition as 'GK' | 'DEF' | 'FWD'} />
+            <MatchPlayerProfile
+              key={`match-profile-${matchId}-${userData?.id}`}
+              matchStats={matchStats}
+              userData={userData}
+              playerPosition={playerPosition as 'GK' | 'DEF' | 'FWD'}
+            />
             <StatsTable loading={isMatchStatsLoading} stats={matchStats} screenName="matchStats" playerPosition={playerPosition} />
             <VenueDetails matchStats={matchStats} />
             <div className="border-b border-white border-dashed" />
-            {/* <TeamStats stats={MY_TEAM} team=" Your Team" />
-            <TeamStats stats={OPPONENT_TEAM} team=" Opponents" /> */}
+            {matchStats && matchStats?.myTeam && <TeamStats
+              stats={matchStats?.myTeam}
+              team=" Your Team"
+              userData={userData}
+              matchId={parseInt(matchId)}
+              onDrawerOpen={showDrawer}
+              onDrawerClose={hideDrawer}
+            />}
+            {matchStats && matchStats?.opponentTeam && <TeamStats
+              stats={matchStats?.opponentTeam}
+              team=" Opponents"
+              userData={userData}
+              matchId={parseInt(matchId)}
+              onDrawerOpen={showDrawer}
+              onDrawerClose={hideDrawer}
+            />}
             <div className="h-24" />
           </div>
         );

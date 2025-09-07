@@ -25,10 +25,23 @@
     --sai-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Fix for mobile viewport height */
+  /* Fix for mobile viewport height - iOS */
   @supports (-webkit-touch-callout: none) {
     .min-h-screen {
       min-height: -webkit-fill-available;
+    }
+  }
+
+  /* Fix for Android viewport height issues */
+  @media screen and (max-width: 767px) {
+    .h-full {
+      height: 100vh;
+      height: calc(var(--vh, 1vh) * 100);
+    }
+
+    .min-h-screen {
+      min-height: 100vh;
+      min-height: calc(var(--vh, 1vh) * 100);
     }
   }
 
@@ -52,6 +65,25 @@
   /* Prevent pull-to-refresh on mobile */
   body {
     overscroll-behavior-y: none;
+    /* Additional iOS fixes */
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS-specific modal and drawer fixes */
+  .fixed {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  /* Fix iOS Safari viewport issues */
+  @supports (-webkit-touch-callout: none) {
+    .fixed.inset-0 {
+      height: 100vh;
+      height: 100dvh;
+      min-height: -webkit-fill-available;
+    }
   }
 
   /* Hide number input spinners */

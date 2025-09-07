@@ -193,7 +193,15 @@ export function GenderSelectionScreen({
       </div>
 
       {/* Fixed Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 keyboard-safe">
+      <div
+        className="fixed left-0 right-0 p-4 keyboard-safe"
+        style={{
+          bottom: 'calc(env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+          background: 'linear-gradient(to top, var(--background) 70%, transparent)',
+          backdropFilter: 'blur(8px)'
+        }}
+      >
         <Button
           onClick={handleSubmit}
           isLoading={isLoading}

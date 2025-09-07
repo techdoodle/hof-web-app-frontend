@@ -51,9 +51,9 @@ export function PositionSelectionScreen({
               key={position.value}
               onClick={() => setSelectedPosition(position.value)}
               className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${selectedPosition === position.value
-                  // ? 'border-primary bg-primary/10 text-primary'
-                  ? 'gradient-border-selected'
-                  : 'border-gray-700 bg-gray-800/50 text-white hover:border-gray-600'
+                // ? 'border-primary bg-primary/10 text-primary'
+                ? 'gradient-border-selected'
+                : 'border-gray-700 bg-gray-800/50 text-white hover:border-gray-600'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -62,8 +62,8 @@ export function PositionSelectionScreen({
               </div>
               <div
                 className={`w-6 h-6 rounded-full border-2 transition-all ${selectedPosition === position.value
-                    ? 'border-primary bg-primary'
-                    : 'border-gray-500'
+                  ? 'border-primary bg-primary'
+                  : 'border-gray-500'
                   }`}
               >
                 {selectedPosition === position.value && (

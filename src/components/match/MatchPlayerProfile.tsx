@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils/styles";
 import { determineMainStats } from "@/lib/utils/determineMainStats";
 
 const MatchPlayerProfile = ({ matchStats, userData, playerPosition }: { matchStats: any; userData: UserData; playerPosition: 'GK' | 'DEF' | 'FWD' }) => {
-    console.log("matchStatsmatchStats", matchStats);
 
     const KEY_STATS = determineMainStats(playerPosition, matchStats);
     return (
@@ -19,16 +18,8 @@ const MatchPlayerProfile = ({ matchStats, userData, playerPosition }: { matchSta
                 display: 'flex',
                 justifyContent: 'space-between',
             }}>
-                {/* <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> {goals}  </div>
-                    <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Goals </div>
-                </div>
-                <div className="flex flex-col items-center justify-start">
-                    <div className="text-3xl text-[#FFA726] font-bold"> {assists} </div>
-                    <div className="text-lg text-[#FFA726] font-bold font-orbitron"> Assists </div>
-                </div> */}
                 {Object.entries(KEY_STATS).map(([key, value]) => (
-                    <div className="flex flex-col items-center justify-start">
+                    <div key={key} className="flex flex-col items-center justify-start">
                         <div className="text-3xl text-[#FFA726] font-bold"> {value} </div>
                         <div className="text-lg text-[#FFA726] font-bold font-orbitron"> {key} </div>
                     </div>
@@ -40,7 +31,12 @@ const MatchPlayerProfile = ({ matchStats, userData, playerPosition }: { matchSta
             }}>
 
                 <div className="relative">
-                    <ProfilePicture imageUrl={userData?.profilePicture || 'undefined'} size="xl" userName={userData?.firstName + " " + userData?.lastName} />
+                    <ProfilePicture
+                        key={`${userData?.id}-${userData?.profilePicture}`}
+                        imageUrl={userData?.profilePicture || 'undefined'}
+                        size="xl"
+                        userName={userData?.firstName + " " + userData?.lastName}
+                    />
                 </div>
             </div>
             <div className={"flex flex-col items-center text-gradient-bg max-w-full"} style={{

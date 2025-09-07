@@ -78,11 +78,11 @@ export function TeamSelectionScreen({
 
   const handleSubmit = async () => {
     if (!selectedTeam) return;
-    
+
     await onSubmit({
       preferredTeam: selectedTeam,
     }).then(() => {
-        markOnboardingCompleted();
+      markOnboardingCompleted();
     });
   };
 
@@ -141,11 +141,10 @@ export function TeamSelectionScreen({
                     <button
                       key={team.id}
                       onClick={() => handleTeamSelect(team.id)}
-                      className={`relative w-full h-30 flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all ${
-                        selectedTeam === team.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
-                      }`}
+                      className={`relative w-full h-30 flex flex-col items-center justify-center p-2 rounded-2xl border-2 transition-all ${selectedTeam === team.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                        }`}
                     >
                       {team.logoUrl ? (
                         <img
@@ -178,22 +177,20 @@ export function TeamSelectionScreen({
                     <button
                       key={team.id}
                       onClick={() => handleTeamSelect(team.id)}
-                      className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
-                        selectedTeam === team.id
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-gray-700 bg-gray-800/50 text-white hover:border-gray-600'
-                      }`}
+                      className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${selectedTeam === team.id
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-gray-700 bg-gray-800/50 text-white hover:border-gray-600'
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="font-medium">{team.teamName}</span>
                         <span className="text-sm text-gray-400">({team.country})</span>
                       </div>
                       <div
-                        className={`w-6 h-6 rounded-full border-2 transition-all ${
-                          selectedTeam === team.id
-                            ? 'border-primary bg-primary'
-                            : 'border-gray-500'
-                        }`}
+                        className={`w-6 h-6 rounded-full border-2 transition-all ${selectedTeam === team.id
+                          ? 'border-primary bg-primary'
+                          : 'border-gray-500'
+                          }`}
                       >
                         {/* {selectedTeam === team.id && (
                           <div className="w-full h-full rounded-full bg-primary flex items-center justify-center">
@@ -222,7 +219,15 @@ export function TeamSelectionScreen({
         )}
       </div>
 
-      <div className="mt-4 fixed bottom-0 left-0 right-0 p-4">
+      <div
+        className="mt-4 fixed left-0 right-0 p-4"
+        style={{
+          bottom: 'calc(env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+          background: 'linear-gradient(to top, var(--background) 70%, transparent)',
+          backdropFilter: 'blur(8px)'
+        }}
+      >
         <Button
           onClick={handleSubmit}
           disabled={!selectedTeam || isLoading}

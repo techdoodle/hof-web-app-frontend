@@ -20,6 +20,7 @@
     "axios": "^1.6.7",
     "clsx": "^2.1.0",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.12",
     "highcharts": "^12.3.0",
     "highcharts-react-official": "^3.2.2",
     "lucide-react": "^0.465.0",

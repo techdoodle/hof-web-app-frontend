@@ -46,7 +46,7 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
   return (
     <div className="flex flex-col h-full">
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-32">
         <div className="flex flex-col items-start justify-center h-full">
           <div className="text-2xl font-boldtext-white text-left font-semibold mb-4 font-orbitron">LOGIN</div>
           <div className="text-white mb-2">Enter your mobile number *</div>
@@ -92,8 +92,16 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
         </div>
       </div>
 
-      {/* Fixed Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4">
+      {/* Fixed Continue Button with Android viewport fix */}
+      <div
+        className="fixed left-0 right-0 p-4"
+        style={{
+          bottom: 'calc(env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+          background: 'linear-gradient(to top, var(--background) 70%, transparent)',
+          backdropFilter: 'blur(8px)'
+        }}
+      >
         <form onSubmit={handleSubmit}>
           <Button
             variant="gradient"

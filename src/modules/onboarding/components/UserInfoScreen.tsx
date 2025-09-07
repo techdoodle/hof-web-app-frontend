@@ -28,7 +28,7 @@ export function UserInfoScreen({
     city: userData.city ? userData.city.cityName : '',
     gender: 'MALE',
   });
-  const [cities, setCities] = useState<Array<{id: number, cityName: string}>>([]);
+  const [cities, setCities] = useState<Array<{ id: number, cityName: string }>>([]);
   const [citiesLoading, setCitiesLoading] = useState(true);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function UserInfoScreen({
         }));
         setCities(citiesWithIds);
         // Default to Pune if available, else first city
-        const defaultCity = userData.city ? userData.city.cityName : 
+        const defaultCity = userData.city ? userData.city.cityName :
           (cityList.includes('Pune') ? 'Pune' : (cityList[0] || ''));
         setFormData((prev) => ({
           ...prev,
@@ -72,7 +72,7 @@ export function UserInfoScreen({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate all required fields
     if (!formData.firstName.trim()) {
       return; // Button will be disabled, but add visual feedback
@@ -83,13 +83,13 @@ export function UserInfoScreen({
     if (!formData.city) {
       return;
     }
-    
+
     // Find the city ID by name from the cities array
     const cityData = cities.find(city => city.cityName === formData.city);
     const cityId = cityData ? cityData.id : -1;
     console.log("formData", formData, cities, cityId);
     // setCurrentStep('GENDER_SELECTION');
-    await onSubmit({...formData, city: cityId as any});
+    await onSubmit({ ...formData, city: cityId as any });
   };
 
   const handleChange = (field: keyof UserInfo, value: string) => {
@@ -153,12 +153,20 @@ export function UserInfoScreen({
       </div>
 
       {/* Fixed Continue Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4">
+      <div
+        className="fixed left-0 right-0 p-4"
+        style={{
+          bottom: 'calc(env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+          background: 'linear-gradient(to top, var(--background) 70%, transparent)',
+          backdropFilter: 'blur(8px)'
+        }}
+      >
         <form onSubmit={handleSubmit}>
-          <Button 
-            type="submit" 
-            isLoading={isLoading} 
-            size="lg" 
+          <Button
+            type="submit"
+            isLoading={isLoading}
+            size="lg"
             variant="gradient"
             className="w-full"
             disabled={!isFormValid || isLoading}

@@ -1,7 +1,6 @@
 import { useLeaderBoard } from "@/hooks/useLeaderBoard";
 import { LeaderboardItem } from "./LeaderBoardItem";
 import { useUserData } from "@/hooks/useUserData";
-import Image from "next/image";
 import { Podium } from "./Podium";
 import { useState, useEffect, useRef } from "react";
 import { LeaderBoardFilters } from "./LeaderBoardFilters";
@@ -36,7 +35,18 @@ export function Leaderboard() {
     console.log("leaderboardui", leaderboard, "pagination:", pagination, "error:", leaderboardError, "loading:", isLeaderboardLoading, "hasNextPage:", hasNextPage);
     const { userData, isLoading: isUserDataLoading } = useUserData();
     const [isUserVisible, setIsUserVisible] = useState(false);
+    const [isMerging, setIsMerging] = useState(false);
     const userItemRef = useRef<HTMLDivElement>(null);
+
+    const scrollToUserItem = () => {
+        if (userItemRef.current) {
+            userItemRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'nearest'
+            });
+        }
+    };
 
     const userRank = leaderboard?.find((item: LeaderboardItemType) => item.id === userData?.id)?.rank;
     const userItem = leaderboard?.find((item: LeaderboardItemType) => item.id === userData?.id);
@@ -48,7 +58,19 @@ export function Leaderboard() {
 
         const observer = new IntersectionObserver(
             ([entry]) => {
-                setIsUserVisible(entry.isIntersecting);
+                console.log('User item intersection:', entry.isIntersecting, 'showBottomCard will be:', userItem && !entry.isIntersecting);
+
+                if (entry.isIntersecting && !isUserVisible) {
+                    // User item is becoming visible - start merge animation
+                    setIsMerging(true);
+                    setTimeout(() => {
+                        setIsUserVisible(true);
+                        setIsMerging(false);
+                    }, 300); // Match this with CSS transition duration
+                } else if (!entry.isIntersecting && isUserVisible) {
+                    // User item is becoming hidden - show bottom card
+                    setIsUserVisible(false);
+                }
             },
             {
                 threshold: 0.1, // Trigger when 10% of the element is visible
@@ -59,7 +81,7 @@ export function Leaderboard() {
         observer.observe(userItemRef.current);
 
         return () => observer.disconnect();
-    }, [userItem]);
+    }, [userItem, isUserVisible]);
 
     if (isLeaderboardLoading) {
         return <div className="flex justify-center items-center h-screen">
@@ -70,7 +92,7 @@ export function Leaderboard() {
         </div>;
     }
 
-    const showBottomCard = userItem && !isUserVisible;
+    const showBottomCard = userItem && userRank && userRank > 3 && (!isUserVisible || isMerging);
 
     if (leaderboardError) {
         return <ComingSoon />
@@ -95,7 +117,12 @@ export function Leaderboard() {
                 prefetchNextPage={prefetchNextPage}
             >
                 {leaderboard && leaderboard.slice(3).map((item: LeaderboardItemType, index) => (
-                    <div key={`${item.id}-${index}`} ref={item.id === userData?.id ? userItemRef : null} className="max-w-full">
+                    <div
+                        key={`${item.id}-${index}`}
+                        ref={item.id === userData?.id ? userItemRef : null}
+                        className={`max-w-full transition-all duration-300 ease-in-out ${item.id === userData?.id && isMerging ? 'scale-105 shadow-lg' : ''
+                            }`}
+                    >
                         <LeaderboardItem
                             item={item}
                             isUser={item.id === userData?.id}
@@ -105,13 +132,17 @@ export function Leaderboard() {
                 ))}
             </InfiniteScrollTrigger>
 
-            {/* {showBottomCard && (
-                <div className="fixed bottom-[125px] p-[1px] rounded-2xl bg-[#00CC6661] transition-all duration-500 ease-in-out">
-                    <div className="text-center flex items-center gap-4 justify-center text-gray-400 p-1 bg-[#0B1E19] rounded-2xl">
-                        <LeaderboardItem floating={true} item={userItem} isUser={true} isVisible={isUserVisible} />
-                    </div>
+            {showBottomCard && (
+                <div
+                    className={`fixed left-1/2 transform -translate-x-1/2 p-[1px] rounded-2xl transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 ${isMerging
+                        ? 'opacity-0 scale-95 bottom-[50vh]'
+                        : 'opacity-100 scale-100 bottom-[125px]'
+                        }`}
+                    onClick={scrollToUserItem}
+                >
+                    <LeaderboardItem floating={true} item={userItem} isUser={true} isVisible={isUserVisible} />
                 </div>
-            )} */}
+            )}
         </div>
     );
 }

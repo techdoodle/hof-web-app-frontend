@@ -1,23 +1,29 @@
 'use client';
 
 import { HorizontalScroll } from '@/components/common/HorizontalScroll';
-import { PlayerStatCard } from './PlayerStatCard';
+import { PlayerStatCardWithDrawer } from './PlayerStatCardWithDrawer';
+import { UserData } from '@/modules/onboarding/types';
 
 interface PlayerStat {
     id: number;
-    name: string;
+    firstName: string;
+    lastName: string;
     position: string;
     statVal: string;
-    profilePicture: string;
+    profilePicture: string | null;
     mvp: boolean;
 }
 
 interface TeamStatsProps {
     stats: PlayerStat[];
     team: string;
+    userData?: UserData;
+    matchId?: number;
+    onDrawerOpen?: () => void;
+    onDrawerClose?: () => void;
 }
 
-export const TeamStats = ({ stats, team }: TeamStatsProps) => {
+export const TeamStats = ({ stats, team, userData, matchId, onDrawerOpen, onDrawerClose }: TeamStatsProps) => {
     return (
         <div className="flex flex-col gap-4">
             {/* Team Header */}
@@ -36,15 +42,16 @@ export const TeamStats = ({ stats, team }: TeamStatsProps) => {
                 itemClassName="px-4 py-2"
                 showGradient={true}
             >
-                {stats.map((player) => (
-                    <PlayerStatCard
+                {stats.map((player, index) => (
+                    <PlayerStatCardWithDrawer
                         key={player.id}
-                        id={player.id}
-                        name={player.name}
-                        position={player.position}
-                        statVal={player.statVal}
-                        profilePicture={player.profilePicture}
-                        mvp={player.mvp}
+                        player={player}
+                        userData={userData}
+                        matchId={matchId}
+                        onDrawerOpen={onDrawerOpen}
+                        onDrawerClose={onDrawerClose}
+                        allPlayers={stats}
+                        playerIndex={index}
                     />
                 ))}
             </HorizontalScroll>

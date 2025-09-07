@@ -1,5 +1,9 @@
+'use client';
+
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useBottomNavVisibility } from '@/hooks/useBottomNavVisibility';
 
 interface CommonNavbarProps {
   activeTab: 'leaderboard' | 'play' | 'profile';
@@ -41,8 +45,10 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
       },
     ];
 
+  const { shouldHideBottomNav } = useBottomNavVisibility();
+  console.log('isDrawerOpen shouldHideBottomNav', shouldHideBottomNav);
   return (
-    <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50">
+    <div className={`fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 ${shouldHideBottomNav ? 'hidden' : 'block'}`}>
       <nav
         className="rounded-full px-6 py-3"
         style={{
