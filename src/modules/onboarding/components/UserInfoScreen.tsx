@@ -93,9 +93,6 @@ export function UserInfoScreen({
   };
 
   const handleChange = (field: keyof UserInfo, value: string) => {
-    console.log('debugging handleChange', field, value);
-    console.log('debugging formData', formData);
-    console.log('debugging cities', cities, cities.findIndex(city => city.cityName === value));
     setFormData((prev) => ({
       ...prev,
       [field]: value,

@@ -172,4 +172,13 @@ export class OnboardingRepository {
     // Extract cityName from each city object
     return response.data.map((city: any) => city.cityName);
   }
+
+  async fetchCitiesWithIds(): Promise<Array<{ id: number; cityName: string }>> {
+    const response = await api.get('/cities');
+    // Return full city objects with actual IDs from backend
+    return response.data.map((city: any) => ({
+      id: city.id,
+      cityName: city.cityName
+    }));
+  }
 } 

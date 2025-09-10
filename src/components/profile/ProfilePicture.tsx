@@ -33,13 +33,26 @@ export function ProfilePicture({
       // Fallback timeout in case image load events don't fire
       const timeout = setTimeout(() => {
         setImageLoading(false);
-      }, 15000); // 10 second timeout
+      }, 10000); // 15 second timeout
 
       return () => clearTimeout(timeout);
     } else {
       setImageLoading(false);
     }
   }, [imageUrl]);
+
+  // Add cache-busting parameter for profile pictures to ensure they reload
+  const getImageUrlWithCacheBust = (url: string) => {
+    if (!url) return url;
+
+    // If it's a Firebase Storage URL, add cache busting parameter
+    if (url.includes('storage.googleapis.com') || url.includes('firebasestorage.googleapis.com')) {
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}t=${Date.now()}`;
+    }
+
+    return url;
+  };
 
   const handleImageLoad = () => {
     setImageLoading(false);
@@ -72,7 +85,7 @@ export function ProfilePicture({
       )}
 
       <img
-        src={imageUrl}
+        src={getImageUrlWithCacheBust(imageUrl)}
         onLoad={handleImageLoad}
         onError={handleImageError}
         alt={userName}
