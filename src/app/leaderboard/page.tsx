@@ -4,6 +4,7 @@ import { AuthWrapper } from '@/components/auth/AuthWrapper';
 import { CommonNavbar } from '@/components/common/CommonNavbar';
 import { Leaderboard } from '@/components/leaderboard/Leaderboard';
 import { GoalsAssistsLeaderboard } from '@/components/leaderboard/GoalsAssistsLeaderboard';
+import { AppearancesLeaderboard } from '@/components/leaderboard/AppearancesLeaderboard';
 import { UserData } from '@/modules/onboarding/types';
 import { ChevronLeftIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -30,7 +31,13 @@ function LeaderboardContent() {
           </div>
 
           {/* Content based on active tab - the filters are inside each component */}
-          {activeTab === 'gna' ? <GoalsAssistsLeaderboard /> : <Leaderboard />}
+          {activeTab === 'gna' ? (
+            <GoalsAssistsLeaderboard />
+          ) : activeTab === 'appearances' ? (
+            <AppearancesLeaderboard />
+          ) : (
+            <Leaderboard />
+          )}
 
           {/* Common Navbar */}
           <CommonNavbar activeTab="leaderboard" />
