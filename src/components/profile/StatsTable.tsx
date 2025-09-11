@@ -6,9 +6,10 @@ interface StatsTableProps {
   screenName?: undefined | string;
   playerPosition?: 'GK' | 'DEF' | 'FWD';
   loading?: boolean;
+  extraPadding?: boolean;
 }
 
-export function StatsTable({ loading, stats, screenName, playerPosition }: StatsTableProps) {
+export function StatsTable({ loading, stats, screenName, playerPosition, extraPadding }: StatsTableProps) {
   const config = detectAndGenerateConfig(stats, screenName, playerPosition);
   console.log('debugging config', config, stats, screenName, playerPosition);
 
@@ -28,11 +29,10 @@ export function StatsTable({ loading, stats, screenName, playerPosition }: Stats
     <div
       className="p-[1px] rounded-2xl w-full mt-2"
       style={{
-        // marginTop: '-30px',
         background: 'linear-gradient(169.22deg, rgba(169, 169, 169, 0) -1.94%, #FFFFFF 43.05%, #CBCBCB 66.97%, #747474 88.27%)',
       }}
     >
-      <div className="p-4 bg-[#0B1E19] rounded-2xl" >
+      <div className={`p-4 bg-[#0B1E19] rounded-2xl ${extraPadding ? 'pt-6' : ''}`}>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-3 font-orbitron">
             {config.leftColumn.map((item, index) => renderStatRow(item, index))}

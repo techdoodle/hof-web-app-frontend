@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PhoneNumberSchema } from '../types';
 import { Button } from '@/lib/ui/components/Button/Button';
-import Image from 'next/image';
 import { useOnbaordingNavigation } from '@/lib/ui/context/OnbaordingNavigationContext';
-import { ArrowLeft } from 'lucide-react';
 
 interface LoginScreenProps {
   onSubmit: (phoneNumber: string) => Promise<void>;
@@ -35,11 +33,10 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
       setValidationError('');
       await onSubmit(phoneNumber);
     } catch (err) {
-      console.log("in catchhh", err);
+      console.log('in catchhh', err);
       setValidationError('Network Error! Please try again later.');
     }
   };
-
   // Check if phone number is valid (exactly 10 digits)
   const isPhoneNumberValid = phoneNumber.length === 10;
 

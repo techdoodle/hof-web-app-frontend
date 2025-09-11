@@ -7,6 +7,7 @@ import { EditProfileHeader } from './EditProfileHeader';
 import { EditProfilePicture } from './EditProfilePicture';
 import { useEditProfile } from '@/hooks/useEditProfile';
 import { EditProfileForm } from './EditProfileForm';
+import { LogoutSection } from './LogoutSection';
 
 interface EditProfileContainerProps {
     userData: UserData;
@@ -97,6 +98,9 @@ export function EditProfileContainer({ userData: initialUserData }: EditProfileC
                     onUpdateField={updateUserField}
                     isLoading={isLoading}
                 />
+
+                {/* Logout Section */}
+                <LogoutSection />
             </div>
         </div>
     );

@@ -14,7 +14,7 @@ export default function PWAInstallPrompt() {
 
   useEffect(() => {
     setIsClient(true);
-    
+
     // Only run on client side
     if (typeof window === 'undefined') return;
 
@@ -23,7 +23,19 @@ export default function PWAInstallPrompt() {
       e.preventDefault();
       // Stash the event so it can be triggered later
       setDeferredPrompt(e);
-      setShowInstallPrompt(true);
+
+      // Check if prompt was already shown in this session
+      const promptShownThisSession = sessionStorage.getItem('pwa-install-prompt-shown');
+
+      // Only show if not already shown in this session
+      if (!promptShownThisSession) {
+        setShowInstallPrompt(true);
+        // Mark as shown for this session
+        sessionStorage.setItem('pwa-install-prompt-shown', 'true');
+        console.log('PWA install prompt shown for this session');
+      } else {
+        console.log('PWA install prompt already shown this session, skipping');
+      }
     };
 
     const handleAppInstalled = () => {
@@ -43,25 +55,34 @@ export default function PWAInstallPrompt() {
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
 
-    // Show the install prompt
-    await deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-    } else {
-      console.log('User dismissed the install prompt');
+    try {
+      // Show the install prompt
+      await deferredPrompt.prompt();
+
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        // If user accepts, remove the session flag so they don't see it again
+        sessionStorage.removeItem('pwa-install-prompt-shown');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+
+      // Clear the saved prompt since it can't be used again
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
+    } catch (error) {
+      console.error('Error showing install prompt:', error);
+      setShowInstallPrompt(false);
     }
-    
-    // Clear the saved prompt since it can't be used again
-    setDeferredPrompt(null);
-    setShowInstallPrompt(false);
   };
 
   const handleDismiss = () => {
     setShowInstallPrompt(false);
+    // User dismissed, so they won't see it again this session
+    console.log('User dismissed PWA install prompt for this session');
   };
 
   if (!isClient || !showInstallPrompt) {

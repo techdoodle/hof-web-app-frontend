@@ -9,6 +9,8 @@ console.log("environment DEBUG", environment, "deployment:", deploymentEnv);
 
 if (environment === 'development') {
   baseURL = 'http://localhost:8000';
+  // baseURL = 'https://hof-web-app-backend-production.up.railway.app';
+  // baseURL = 'https://hof-web-app-backend-staging.up.railway.app';
 } else if (deploymentEnv === 'staging') {
   baseURL = 'https://hof-web-app-backend-staging.up.railway.app';
 } else {
@@ -20,6 +22,7 @@ const api = axios.create({
   baseURL: baseURL,
   // baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : 'https://hof-web-app-backend-production.up.railway.app',
   withCredentials: true,
+  timeout: 30000, // 30 second timeout for all requests
   // baseURL: 'http://localhost:8000',
 });
 

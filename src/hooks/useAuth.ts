@@ -27,10 +27,16 @@ export function useAuth() {
     if (!isClient) return;
 
     const storedUser = getUser();
+    console.log('useAuth - token:', !!token, 'storedUser:', !!storedUser);
 
     if (token && storedUser) {
       setIsAuthenticated(true);
       setUser(storedUser);
+      console.log('useAuth - Set authenticated with stored user');
+    } else if (token && !storedUser) {
+      // Has token but no stored user - might be a fresh login
+      setIsAuthenticated(true);
+      console.log('useAuth - Has token but no stored user, will rely on query');
     }
     setIsInitialLoading(false);
   }, [token, isClient]);
@@ -39,14 +45,16 @@ export function useAuth() {
   const { data: currentUser, isLoading: isRefreshing, error, refetch } = useQuery({
     queryKey: ['user'],
     queryFn: async (): Promise<UserData> => {
+      console.log('useAuth - Fetching user data from API');
       const repository = OnboardingRepository.getInstance();
       const result = await repository.getCurrentUser();
+      console.log('useAuth - API returned user data:', !!result);
       return result;
     },
     enabled: !!token && isClient, // Always run if token exists and we're on client
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // Don't refetch on mount if we have data
+    refetchOnMount: true, // Always refetch on mount to ensure fresh data
     retry: (failureCount, error: any) => {
       // Don't retry if it's a 401 (unauthorized)
       if (error?.response?.status === 401) {
@@ -89,10 +97,17 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
-    clearAuthData();
-    setIsAuthenticated(false);
-    setUser(null);
+  const logout = async () => {
+    try {
+      // Always clear local data regardless of API response
+      clearAuthData();
+      setIsAuthenticated(false);
+      setUser(null);
+      queryClient.clear(); // Clear all React Query cache
+    } catch (error) {
+      console.error('Logout failed:', error);
+      throw error;
+    }
   };
 
   // Determine if we're still loading

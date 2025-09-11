@@ -200,7 +200,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       </div>
       <div className="text-center text-gradient-bg" style={{
         position: 'absolute',
-        marginTop: '-44px',
+        marginTop: '-30px',
         left: '24px',
         gap: '9px',
         flexWrap: "wrap",
@@ -212,7 +212,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       </div>
 
       {/* Stats Table */}
-      <StatsTable stats={stats} screenName='profileStats' playerPosition={playerPosition} />
+      <StatsTable stats={stats} screenName='profileStats' playerPosition={playerPosition} extraPadding={true} />
 
       {/* Radar Chart */}
       {stats?.spiderChart && <div className="radar chart">
