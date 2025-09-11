@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SelfieInstructionsPage } from '@/components/profile/edit/SelfieInstructionsPage';
 import { SelfieCapturePage } from '@/components/profile/edit/SelfieCapturePage';
@@ -8,7 +8,7 @@ import { SelfieConfirmationPage } from '@/components/profile/edit/SelfieConfirma
 import { useAuth } from '@/hooks/useAuth';
 import { useEditProfile } from '@/hooks/useEditProfile';
 
-export default function EditSelfiePage() {
+function EditSelfieContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user } = useAuth();
@@ -124,5 +124,26 @@ export default function EditSelfiePage() {
                 />
             )}
         </>
+    );
+}
+
+function LoadingFallback() {
+    return (
+        <div className="min-h-screen bg-background flex items-center justify-center" style={{
+            backgroundImage: 'url(/hof-background.svg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+    );
+}
+
+export default function EditSelfiePage() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <EditSelfieContent />
+        </Suspense>
     );
 }
