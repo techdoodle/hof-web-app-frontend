@@ -49,7 +49,7 @@ export const MiniMatchCard = ({ playerId, playerName, playerProfilePicture, matc
     return (
         <div className="mini-match-card w-full space-y-4">
             {/* Header Section with Profile and Key Stats */}
-            <div className="relative flex items-center justify-between gap-2">
+            <div className="relative flex items-end justify-between gap-2">
                 {/* Left Key Stat */}
                 <div className="flex flex-col items-center">
                     <div className="mt-1 text-xl font-bold text-white font-orbitron">{playerPosition}</div>

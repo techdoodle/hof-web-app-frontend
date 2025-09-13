@@ -6,12 +6,14 @@ import { storeAuthData } from '@/lib/utils/auth';
 import { getAccessToken } from '@/lib/utils/auth';
 import { getUser } from '@/lib/utils/auth';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/contexts/ToastContext';
 
 export function useOnboarding() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('LOGIN');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [token, setToken] = useState('');
   const [userId, setUserId] = useState<number | null>(null);
+  const { showToast } = useToast();
   const [requestOTPData, setRequestOTPData] = useState<{ iv: string, encryptedOtp: string, mobile: string | number } | null>(null);
   const [otpAttempts, setOtpAttempts] = useState(0);
   const maxOtpAttempts = 3;
@@ -113,6 +115,9 @@ export function useOnboarding() {
 
       // Save user info in React Query cache
       queryClient.setQueryData(['user'], userData);
+
+      // Show login success toast
+      showToast('Login successful!', 'success', 2000);
 
       // Check if user has already completed onboarding
       if (userData.onboardingComplete) {

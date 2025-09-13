@@ -3,6 +3,7 @@ import { RadarChart } from './RadarChart';
 import { ProfilePicture } from './ProfilePicture';
 import { StatsTable } from './StatsTable';
 import { positionAbbreviationMapping } from '@/utils/positionMapping';
+import NameComponent from './NameComponent';
 
 interface StatsTabProps {
   userData: UserData;
@@ -64,6 +65,7 @@ function UncalibratedStats({ userData, error }: { userData: UserData, error: any
         <div className="relative flex flex-col items-center" >
           {userData.profilePicture ? (
             <ProfilePicture
+              key={`stats-profile-pic-${userData.id}-${userData.profilePicture || 'no-image'}`}
               imageUrl={userData.profilePicture || undefined}
               userName={`${userData.firstName} ${userData.lastName}`}
               size="lg"
@@ -189,6 +191,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
         {/* Player Image */}
         <div className="relative">
           <ProfilePicture
+            key={`stats-profile-pic-2-${userData.id}-${userData.profilePicture || 'no-image'}`}
             imageUrl={userData.profilePicture || undefined}
             userName={`${userData.firstName} ${userData.lastName}`}
             size="lg"
@@ -197,7 +200,7 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       </div>
       <div className="text-center text-gradient-bg" style={{
         position: 'absolute',
-        marginTop: '-58px',
+        marginTop: '-30px',
         left: '24px',
         gap: '9px',
         flexWrap: "wrap",
@@ -205,21 +208,11 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
         alignItems: "flex-start",
         flexDirection: "column",
       }}>
-        <h2 className="text-xl font-bold text-white font-orbitron" style={{
-          fontSize: '50px',
-          marginBottom: '10px',
-        }}>
-          {userData.firstName}
-        </h2>
-        <h2 className="text-xl font-bold text-[#AAAAAA] font-orbitron" style={{
-          fontSize: '50px',
-        }}>
-          {userData.lastName}
-        </h2>
+        <NameComponent firstName={userData.firstName} lastName={userData.lastName} />
       </div>
 
       {/* Stats Table */}
-      <StatsTable stats={stats} screenName='profileStats' playerPosition={playerPosition} />
+      <StatsTable stats={stats} screenName='profileStats' playerPosition={playerPosition} extraPadding={true} />
 
       {/* Radar Chart */}
       {stats?.spiderChart && <div className="radar chart">

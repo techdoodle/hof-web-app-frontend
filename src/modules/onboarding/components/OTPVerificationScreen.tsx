@@ -39,7 +39,6 @@ export function OTPVerificationScreen({
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
   ];
-
   const handleChange = (value: string, index: number) => {
     if (value.length > 1) return;
 
@@ -87,6 +86,7 @@ export function OTPVerificationScreen({
     try {
       OTPSchema.parse(otpString);
       setValidationError('');
+      console.log('otpString', otpString);
       await onSubmit(otpString);
     } catch (err) {
       setValidationError('Please enter a valid 6-digit code');

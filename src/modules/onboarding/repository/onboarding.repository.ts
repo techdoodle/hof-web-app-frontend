@@ -14,11 +14,34 @@ export class OnboardingRepository {
   }
 
   async requestOTP(phoneNumber: string): Promise<{ iv: string, encryptedOtp: string, mobile: string | number }> {
-    const response = await api.post(`/auth/send-otp`, {
-      "mobile": phoneNumber,
-    });
-    console.log(" requestOTP response.data", response.data);
-    return response.data;
+    try {
+      const response = await api.post(`/auth/send-otp`, {
+        "mobile": phoneNumber,
+      });
+      console.log(" requestOTP response.data", response.data);
+
+      // Check if the response indicates failure
+      if (response.data.success === false || response.data.error) {
+        throw new Error(response.data.message || response.data.error || 'Failed to send OTP');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('OTP request failed:', error);
+
+      // Handle different types of errors
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        throw new Error('Request timed out. Please check your internet connection and try again.');
+      } else if (error.response?.status >= 500) {
+        throw new Error('Server error. Please try again later.');
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Failed to send OTP. Please try again.');
+      }
+    }
   }
 
   async verifyOTP(
@@ -171,5 +194,19 @@ export class OnboardingRepository {
     const response = await api.get('/cities');
     // Extract cityName from each city object
     return response.data.map((city: any) => city.cityName);
+  }
+
+  async fetchCitiesWithIds(): Promise<Array<{ id: number; cityName: string }>> {
+    const response = await api.get('/cities');
+    // Return full city objects with actual IDs from backend
+    return response.data.map((city: any) => ({
+      id: city.id,
+      cityName: city.cityName
+    }));
+  }
+
+  async logout(): Promise<{ success: boolean; message: string }> {
+    const response = await api.post('/auth/logout');
+    return response.data;
   }
 } 

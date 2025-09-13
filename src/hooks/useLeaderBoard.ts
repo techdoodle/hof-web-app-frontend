@@ -9,6 +9,7 @@ const LEADERBOARD_STALE_TIME = 60 * 60 * 1000; // 5 minutes
 const LEADERBOARD_TYPES = {
     'Overall': 'overall',
     'Goals + Assists': 'gna',
+    'Appearances': 'appearances',
 }
 
 const LEADERBOARD_CITIES = {
@@ -38,11 +39,16 @@ export const useLeaderBoard = (limit: number = 20, initialType?: string) => {
     // Get initial type from URL params or fallback to initialType or default
     const getInitialType = () => {
         const urlTab = searchParams.get('tab');
-        if (urlTab && ['overall', 'gna'].includes(urlTab)) {
+        if (urlTab && ['overall', 'gna', 'appearances'].includes(urlTab)) {
+            // Map appearances URL tab to the component's desired type
+            if (urlTab === 'appearances' && initialType === 'gna') {
+                return 'gna'; // AppearancesLeaderboard uses GNA data
+            }
             return urlTab;
         }
         return initialType || 'overall';
     };
+    console.log("initialType", initialType);
 
     const [filters, setFilters] = useState({
         ...defaultFilters,
@@ -52,10 +58,17 @@ export const useLeaderBoard = (limit: number = 20, initialType?: string) => {
     // Sync filters with URL params
     useEffect(() => {
         const urlTab = searchParams.get('tab') || 'overall';
-        if (urlTab !== filters.type) {
-            setFilters(prev => ({ ...prev, type: urlTab }));
+        let targetType = urlTab;
+
+        // Map appearances URL tab to GNA for AppearancesLeaderboard component
+        if (urlTab === 'appearances' && initialType === 'gna') {
+            targetType = 'gna';
         }
-    }, [searchParams, filters.type]);
+
+        if (targetType !== filters.type) {
+            setFilters(prev => ({ ...prev, type: targetType }));
+        }
+    }, [searchParams, filters.type, initialType]);
 
     const handleFilterClick = (key: string, value: string) => {
         console.log("handleFilterClick", key, value);
