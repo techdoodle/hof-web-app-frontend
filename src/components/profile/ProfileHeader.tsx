@@ -1,40 +1,46 @@
 import { UserData } from '@/modules/onboarding/types';
-import { EditIcon, ShareIcon } from '@/components/icons';
-import Link from 'next/link';
+import { EditIcon } from '@/components/icons';
+import { DropdownMenu, DropdownMenuItem } from '@/components/ui/DropdownMenu';
+import { useRouter } from 'next/navigation';
+import { EllipsisVertical } from 'lucide-react';
 
 interface ProfileHeaderProps {
   userData: UserData;
 }
 
 export function ProfileHeader({ userData }: ProfileHeaderProps) {
+  const router = useRouter();
+
+  const dropdownItems: DropdownMenuItem[] = [
+    {
+      id: 'edit-profile',
+      label: 'Edit Profile',
+      onClick: () => router.push('/profile/me'),
+      icon: <EditIcon className="w-4 h-4" />
+    }
+  ];
+
   return (
     <div className="border-gray-800 px-4 py-3 z-10">
       <div className="flex items-center justify-between">
         {/* Left side - empty for balance */}
-        <div className="w-16"></div>
+        <div className="w-10"></div>
 
         {/* Center - Title */}
-        <div className="flex flex-row items-center justify-between gap-4">
-          <h1 className="text-xl font-semibold text-white">Profile</h1>
-          <div className="">
-            <Link href="/profile/me">
-              <EditIcon className="w-5 h-5 text-white opacity-50 hover:opacity-100" />
-            </Link>
-          </div>
+        <h1 className="text-xl font-semibold text-white">Profile</h1>
+
+        {/* Right side - Dropdown Menu */}
+        <div className="w-10 flex justify-end">
+          <DropdownMenu
+            trigger={
+              <div className="p-2 hover:bg-gray-800 rounded-full transition-colors">
+                <EllipsisVertical />
+              </div>
+            }
+            items={dropdownItems}
+          />
         </div>
-        <div className="w-16"></div>
-
-
-        {/* Right side - Edit Link */}
-        {/* <div className="flex items-center justify-end w-16">
-          <Link
-            href="/profile/me"
-            className="p-1 hover:bg-gray-800 rounded transition-colors"
-          >
-            <EditIcon className="w-5 h-5 text-white opacity-50 hover:opacity-100" />
-          </Link>
-        </div> */}
       </div>
     </div>
   );
-} 
+}
