@@ -190,10 +190,10 @@ export class OnboardingRepository {
     return response.data;
   }
 
-  async fetchCities(): Promise<string[]> {
+  async fetchCities(): Promise<Array<{ id: number; cityName: string }>> {
     const response = await api.get('/cities');
     // Extract cityName from each city object
-    return response.data.map((city: any) => city.cityName);
+    return response.data.map((city: any) => ({ cityName: city.cityName, id: city.id }));
   }
 
   async fetchCitiesWithIds(): Promise<Array<{ id: number; cityName: string }>> {
