@@ -36,15 +36,10 @@ export function UserInfoScreen({
       try {
         const repo = OnboardingRepository.getInstance();
         const cityList = await repo.fetchCities();
-        // Convert string array to object array with id and cityName
-        const citiesWithIds = cityList.map((cityName, index) => ({
-          id: index,
-          cityName: cityName
-        }));
-        setCities(citiesWithIds);
-        // Default to Pune if available, else first city
+        console.log('cityList', cityList);
+        setCities(cityList);
         const defaultCity = userData.city ? userData.city.cityName :
-          (cityList.includes('Pune') ? 'Pune' : (cityList[0] || ''));
+          (cityList.find(city => city.cityName === 'Gurugram')?.cityName || cityList[0]?.cityName || '') as string;
         setFormData((prev) => ({
           ...prev,
           city: defaultCity,
@@ -73,9 +68,8 @@ export function UserInfoScreen({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate all required fields
     if (!formData.firstName.trim()) {
-      return; // Button will be disabled, but add visual feedback
+      return;
     }
     if (!formData.lastName.trim()) {
       return;
@@ -83,28 +77,31 @@ export function UserInfoScreen({
     if (!formData.city) {
       return;
     }
+    console.log('formData', formData, cities);
 
-    // Find the city ID by name from the cities array
     const cityData = cities.find(city => city.cityName === formData.city);
     const cityId = cityData ? cityData.id : -1;
     console.log("formData", formData, cities, cityId);
-    // setCurrentStep('GENDER_SELECTION');
     await onSubmit({ ...formData, city: cityId as any });
   };
 
   const handleChange = (field: keyof UserInfo, value: string) => {
+    console.log('changed field', field);
+    console.log('changed value', value);
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
+    console.log('formData', {
+      ...formData,
+      [field]: value,
+    });
   };
 
-  // Check if all required fields are filled
   const isFormValid = formData.firstName.trim() && formData.lastName.trim() && formData.city;
 
   return (
     <div className="flex flex-col h-full">
-      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto pb-20">
         <h1 className="text-2xl font-bold mb-2 font-orbitron">What's your name?</h1>
         <p className="text-gray mb-8">Let us know how to properly address you</p>
@@ -149,7 +146,6 @@ export function UserInfoScreen({
         )}
       </div>
 
-      {/* Fixed Continue Button */}
       <div
         className="fixed left-0 right-0 p-4"
         style={{

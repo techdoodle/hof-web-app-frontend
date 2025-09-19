@@ -9,6 +9,7 @@ import { StatsTable } from "@/components/profile/StatsTable";
 import { useMatchStats } from "@/hooks/useMatchStats";
 import { UserData } from "@/modules/onboarding/types";
 import { useBottomNavVisibility } from "@/hooks/useBottomNavVisibility";
+import HighlightLinks from "@/components/match/HighlightLinks";
 
 interface MatchPageProps {
   params: {
@@ -19,6 +20,21 @@ interface MatchPageProps {
 const MatchPage = ({ params }: MatchPageProps) => {
   const { id: matchId } = params;
   console.log('debugging matchId', matchId);
+
+  const getMatchRecapAndHighlights = (matchStats: any) => {
+    if (matchStats?.match) {
+      if (matchStats?.match?.matchRecap && matchStats?.match?.matchHighlights) {
+        return [matchStats.match?.matchHighlights, matchStats.match?.matchRecap];
+      }
+      else if (matchStats?.match?.matchHighlights) {
+        return [matchStats.match?.matchHighlights];
+      }
+      else if (matchStats?.match?.matchRecap) {
+        return [matchStats.match?.matchRecap];
+      }
+    }
+    return [];
+  }
 
   return (
     <AuthWrapper>
@@ -77,6 +93,8 @@ const MatchPage = ({ params }: MatchPageProps) => {
               onDrawerOpen={showDrawer}
               onDrawerClose={hideDrawer}
             />}
+            {getMatchRecapAndHighlights(matchStats).length > 0 && <HighlightLinks links={getMatchRecapAndHighlights(matchStats)} heading="Match Highlights and Recap" />}
+            {matchStats?.playerHighlights && matchStats?.playerHighlights.length > 0 && <HighlightLinks links={[matchStats?.playerHighlights || '']} heading="Player Highlights" />}
             <div className="h-24" />
           </div>
         );
