@@ -152,7 +152,11 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
       {
         label: 'Passes',
         dataPath: 'detailedStats.passing.totalPasses'
-      }
+      },
+      {
+        label: 'Tackles',
+        dataPath: 'detailedStats.tackling.totalTackles'
+      },
     ],
     rightColumn: [
       {
@@ -251,9 +255,9 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: 'detailedStats.passing.totalPasses'
       },
       {
-        label: 'Key Passes',
-        dataPath: 'detailedStats.impact.totalKeyPass'
-      }
+        label: 'Interceptions',
+        dataPath: 'detailedStats.tackling.interceptions'
+      },
     ],
     rightColumn: [
       {
@@ -270,8 +274,12 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: 'detailedStats.goalkeeping.totalSave'
       },
       {
-        label: 'Assists',
-        dataPath: 'detailedStats.impact.totalAssists'
+        label: 'Key Passes',
+        dataPath: 'detailedStats.impact.totalKeyPass'
+      },
+      {
+        label: 'Tackles',
+        dataPath: 'detailedStats.tackling.totalTackles'
       },
     ]
   };
