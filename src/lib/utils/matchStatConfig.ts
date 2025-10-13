@@ -2,153 +2,71 @@ export const generateMatchStatsConfig = (matchStats: any, playerPosition?: 'GK' 
   // Default configuration (current one) not needed
   const defaultConfig = {
     leftColumn: [
-      {
-        label: 'Passes',
-        dataPath: 'totalPass'
-      },
-      {
-        label: 'Pass Acc.',
-        dataPath: 'totalPassingAccuracy',
-        suffix: '%'
-      },
-      {
-        label: 'Tackles',
-        dataPath: 'tackleTurnover'
-      }
+      { label: 'Key Passes', dataPath: 'detailedStats.impact.totalKeyPass' },
+      { label: 'Pass Acc.', dataPath: 'detailedStats.passing.overallAccuracy', suffix: '%' },
+      { label: 'Tackles', dataPath: 'detailedStats.tackling.totalTackles' },
+      { label: 'Interceptions', dataPath: 'detailedStats.tackling.interceptions' },
+      { label: 'Saves', dataPath: 'detailedStats.goalkeeping.totalSave' },
     ],
     rightColumn: [
-      {
-        label: 'Shots Attemp',
-        dataPath: 'totalShot'
-      },
-      {
-        label: 'Interception',
-        dataPath: 'interceptionSameTeam'
-      },
-      {
-        label: 'Shots Acc.',
-        dataPath: 'shotAccuracy',
-        suffix: '%'
-      }
+      { label: 'Shots', dataPath: 'detailedStats.shooting.totalShots' },
+      { label: 'Shot Acc.', dataPath: 'detailedStats.shooting.shotAccuracy', suffix: '%' },
+      { label: 'Goals', dataPath: 'detailedStats.impact.totalGoals' },
+      { label: 'Assists', dataPath: 'detailedStats.impact.totalAssists' },
+      { label: 'Passes', dataPath: 'detailedStats.passing.totalPasses' },
     ],
   };
   // Goalkeeper Profile (GK) – Focus on saves, handling, and defensive actions
   const goalkeeperConfig = {
     leftColumn: [
-      //   {
-      //     label: "Matches",
-      //     dataPath: "matchesPlayed"
-      //   },
-      {
-        label: "Save",
-        dataPath: "detailedStats.goalkeeping.totalSave"
-      },
-      {
-        label: "Catch",
-        dataPath: "detailedStats.goalkeeping.totalCatch"
-      },
-      {
-        label: "Punch",
-        dataPath: "detailedStats.goalkeeping.totalPunch"
-      }
+      { label: 'Save', dataPath: 'detailedStats.goalkeeping.totalSave' },
+      { label: 'Pass Acc.', dataPath: 'detailedStats.passing.overallAccuracy', suffix: '%' },
+      { label: 'Shots', dataPath: 'detailedStats.shooting.totalShots' },
+      { label: 'Shot Acc.', dataPath: 'detailedStats.shooting.shotAccuracy', suffix: '%' },
+      { label: 'Passes', dataPath: 'detailedStats.passing.totalPasses' },
     ],
     rightColumn: [
-      //   {
-      //     label: "MVPs",
-      //     dataPath: "totalMvpWins"
-      //   },
-      {
-        label: "Clearance",
-        dataPath: "detailedStats.goalkeeping.totalClearance"
-      },
-      {
-        label: "Accuracy",
-        dataPath: "detailedStats.passing.overallAccuracy",
-        suffix: "%"
-      },
-      {
-        label: "Miscontrol",
-        dataPath: "detailedStats.goalkeeping.totalMiscontrol"
-      }
+      { label: 'Assists', dataPath: 'detailedStats.impact.totalAssists' },
+      { label: 'Goals', dataPath: 'detailedStats.impact.totalGoals' },
+      { label: 'Key Passes', dataPath: 'detailedStats.impact.totalKeyPass' },
+      { label: 'Tackles', dataPath: 'detailedStats.tackling.totalTackles' },
+      { label: 'Interceptions', dataPath: 'detailedStats.tackling.interceptions' },
     ]
   };
 
   // Defender Profile (DEF) – Focus on defensive interventions and passing under pressure
   const defenderConfig = {
     leftColumn: [
-      {
-        label: "Interception",
-        dataPath: "detailedStats.tackling.interceptions"
-      },
-      {
-        label: "Goals",
-        dataPath: "detailedStats.impact.totalGoals"
-      },
-      {
-        label: "Defensive Actions",
-        dataPath: "detailedStats.tackling.totalDefensiveActions"
-      }
+      { label: 'Tackles', dataPath: 'detailedStats.tackling.totalTackles' },
+      { label: 'Pass Acc.', dataPath: 'detailedStats.passing.overallAccuracy', suffix: '%' },
+      { label: 'Interceptions', dataPath: 'detailedStats.tackling.interceptions' },
+      { label: 'Passes', dataPath: 'detailedStats.passing.totalPasses' },
+      { label: 'Saves', dataPath: 'detailedStats.goalkeeping.totalSave' },
     ],
     rightColumn: [
-      {
-        label: "Blocks",
-        dataPath: "detailedStats.tackling.blocks"
-      },
-      {
-        label: "Passing Acc",
-        dataPath: "detailedStats.passing.overallAccuracy",
-        suffix: "%"
-      },
-      {
-        label: 'Steals',
-        dataPath: 'detailedStats.tackling.steals'
-      }
+      { label: 'Shots', dataPath: 'detailedStats.shooting.totalShots' },
+      { label: 'Shot Acc.', dataPath: 'detailedStats.shooting.shotAccuracy', suffix: '%' },
+      { label: 'Goals', dataPath: 'detailedStats.impact.totalGoals' },
+      { label: 'Assists', dataPath: 'detailedStats.impact.totalAssists' },
+      { label: 'Key Passes', dataPath: 'detailedStats.impact.totalKeyPass' },
     ]
   };
 
   // Forward Profile (FWD) – Emphasize attacking contribution and efficiency
   const forwardConfig = {
     leftColumn: [
-      {
-        label: "Total Shots",
-        dataPath: "detailedStats.shooting.totalShots"
-      },
-      {
-        label: "Passing Acc",
-        dataPath: "detailedStats.passing.overallAccuracy",
-        suffix: "%"
-      },
-      // {
-      //   label: "Total Goals",
-      //   dataPath: "detailedStats.impact.totalGoals"
-      // },
-      {
-        label: "Passes",
-        dataPath: "detailedStats.passing.totalPassingActions"
-      }
+      { label: 'Total Shots', dataPath: 'detailedStats.shooting.totalShots' },
+      { label: 'Passing Acc', dataPath: 'detailedStats.passing.overallAccuracy', suffix: '%' },
+      { label: 'Total Goals', dataPath: 'detailedStats.impact.totalGoals' },
+      { label: 'Key Passes', dataPath: 'detailedStats.impact.totalKeyPass' },
+      { label: 'Passes', dataPath: 'detailedStats.passing.totalPasses' },
     ],
     rightColumn: [
-      //   {
-      //     label: "MVPs",
-      //     dataPath: "totalMvpWins"
-      //   },
-      {
-        label: "Dribbles",
-        dataPath: "detailedStats.dribbling.totalAttempts"
-      },
-      {
-        label: "Shot Acc",
-        dataPath: "detailedStats.shooting.shotAccuracy",
-        suffix: "%"
-      },
-      // {
-      //   label: "Assists",
-      //   dataPath: "detailedStats.impact.totalAssists"
-      // },
-      {
-        label: "Successful Dribbles",
-        dataPath: "detailedStats.dribbling.totalSuccessful"
-      }
+      { label: 'Shot Acc', dataPath: 'detailedStats.shooting.shotAccuracy', suffix: '%' },
+      { label: 'Assists', dataPath: 'detailedStats.impact.totalAssists' },
+      { label: 'Tackles', dataPath: 'detailedStats.tackling.totalTackles' },
+      { label: 'Interceptions', dataPath: 'detailedStats.tackling.interceptions' },
+      { label: 'Saves', dataPath: 'detailedStats.goalkeeping.totalSave' },
     ]
   };
 
@@ -175,17 +93,21 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: 'matchesPlayed'
       },
       {
-        label: 'Passes',
-        dataPath: 'totalPass'
+        label: 'Key Passes',
+        dataPath: 'detailedStats.impact.totalKeyPass'
       },
       {
         label: 'Pass Acc.',
-        dataPath: 'totalPassingAccuracy',
+        dataPath: 'detailedStats.passing.overallAccuracy',
         suffix: '%'
       },
       {
         label: 'Tackles',
-        dataPath: 'tackleTurnover'
+        dataPath: 'detailedStats.tackling.totalTackles'
+      },
+      {
+        label: 'Passes',
+        dataPath: 'detailedStats.passing.totalPasses'
       }
     ],
     rightColumn: [
@@ -194,17 +116,21 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: 'totalMvpWins'
       },
       {
-        label: 'Shots Attemp',
-        dataPath: 'totalShot'
+        label: 'Shots',
+        dataPath: 'detailedStats.shooting.totalShots'
       },
       {
         label: 'Interception',
-        dataPath: 'interceptionSameTeam'
+        dataPath: 'detailedStats.tackling.interceptions'
       },
       {
         label: 'Shots Acc.',
-        dataPath: 'shotAccuracy',
+        dataPath: 'detailedStats.shooting.shotAccuracy',
         suffix: '%'
+      },
+      {
+        label: 'Saves',
+        dataPath: 'detailedStats.goalkeeping.totalSave'
       }
     ],
   };
@@ -220,13 +146,17 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: "detailedStats.goalkeeping.totalSave"
       },
       {
-        label: "Catch",
-        dataPath: "detailedStats.goalkeeping.totalCatch"
+        label: "Assists",
+        dataPath: "detailedStats.impact.totalAssists"
       },
       {
-        label: "Punch",
-        dataPath: "detailedStats.goalkeeping.totalPunch"
-      }
+        label: 'Passes',
+        dataPath: 'detailedStats.passing.totalPasses'
+      },
+      {
+        label: 'Tackles',
+        dataPath: 'detailedStats.tackling.totalTackles'
+      },
     ],
     rightColumn: [
       {
@@ -234,17 +164,22 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: "totalMvpWins"
       },
       {
-        label: "Clearance",
-        dataPath: "detailedStats.goalkeeping.totalClearance"
-      },
-      {
         label: "Accuracy",
         dataPath: "detailedStats.passing.overallAccuracy",
         suffix: "%"
       },
       {
-        label: "Miscontrol",
-        dataPath: "detailedStats.goalkeeping.totalMiscontrol"
+        label: "Shots",
+        dataPath: "detailedStats.shooting.totalShots"
+      },
+      {
+        label: 'Shot Acc.',
+        dataPath: 'detailedStats.shooting.shotAccuracy',
+        suffix: '%'
+      },
+      {
+        label: 'Key Passes',
+        dataPath: 'detailedStats.impact.totalKeyPass'
       }
     ]
   };
@@ -253,40 +188,49 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
   const defenderConfig = {
     leftColumn: [
       {
-        label: "Matches",
-        dataPath: "matchesPlayed"
+        label: 'Matches',
+        dataPath: 'matchesPlayed'
       },
       {
-        label: "Interception",
-        dataPath: "detailedStats.tackling.interceptions"
+        label: 'Passes',
+        dataPath: 'detailedStats.passing.totalPasses'
       },
       {
-        label: "Goals",
-        dataPath: "detailedStats.impact.totalGoals"
+        label: 'Key Passes',
+        dataPath: 'detailedStats.impact.totalKeyPass'
       },
       {
-        label: "Defensive Actions",
-        dataPath: "detailedStats.tackling.totalDefensiveActions"
+        label: 'Tackles',
+        dataPath: 'detailedStats.tackling.totalTackles'
+      },
+      {
+        label: 'Pass Acc.',
+        dataPath: 'detailedStats.passing.overallAccuracy',
+        suffix: '%'
       }
     ],
     rightColumn: [
       {
-        label: "MVPs",
-        dataPath: "totalMvpWins"
+        label: 'MVPs',
+        dataPath: 'totalMvpWins'
       },
       {
-        label: "Blocks",
-        dataPath: "detailedStats.tackling.blocks"
+        label: 'Saves',
+        dataPath: 'detailedStats.goalkeeping.totalSave'
       },
       {
-        label: "Passing Acc",
-        dataPath: "detailedStats.passing.overallAccuracy",
-        suffix: "%"
+        label: 'Interceptions',
+        dataPath: 'detailedStats.tackling.interceptions'
       },
       {
-        label: 'Steals',
-        dataPath: 'detailedStats.tackling.steals'
-      }
+        label: 'Shots',
+        dataPath: 'detailedStats.shooting.totalShots'
+      },
+      {
+        label: 'Shot Acc.',
+        dataPath: 'detailedStats.shooting.shotAccuracy',
+        suffix: '%'
+      },
     ]
   };
 
@@ -306,14 +250,14 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: "detailedStats.passing.overallAccuracy",
         suffix: "%"
       },
-      // {
-      //   label: "Total Goals",
-      //   dataPath: "detailedStats.impact.totalGoals"
-      // },
       {
-        label: "Passes",
-        dataPath: "detailedStats.passing.totalPassingActions"
-      }
+        label: 'Passes',
+        dataPath: 'detailedStats.passing.totalPasses'
+      },
+      {
+        label: 'Interceptions',
+        dataPath: 'detailedStats.tackling.interceptions'
+      },
     ],
     rightColumn: [
       {
@@ -321,22 +265,22 @@ export const generateProfileStatsConfig = (matchStats: any, playerPosition?: 'GK
         dataPath: "totalMvpWins"
       },
       {
-        label: "Dribbles",
-        dataPath: "detailedStats.dribbling.totalAttempts"
-      },
-      {
         label: "Shot Acc",
         dataPath: "detailedStats.shooting.shotAccuracy",
         suffix: "%"
       },
-      // {
-      //   label: "Assists",
-      //   dataPath: "detailedStats.impact.totalAssists"
-      // },
       {
-        label: "Successful Dribbles",
-        dataPath: "detailedStats.dribbling.totalSuccessful"
-      }
+        label: 'Saves',
+        dataPath: 'detailedStats.goalkeeping.totalSave'
+      },
+      {
+        label: 'Key Passes',
+        dataPath: 'detailedStats.impact.totalKeyPass'
+      },
+      {
+        label: 'Tackles',
+        dataPath: 'detailedStats.tackling.totalTackles'
+      },
     ]
   };
 

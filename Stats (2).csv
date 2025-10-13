@@ -1,0 +1,11 @@
+id,name,teamName,phoneNumber,date,totalPassingActions,totalPassingAccuracy,totalShot,shotAccuracy,totalGoal,totalAssist,totalKeyPass,totalDribbleAttempt,totalSuccessfulDribble,totalUnsuccessfulDribble,dribbleSuccessPercent,totalDefensiveActions,totalTackles,totalInterceptions,blockedShotDefensive,steal,totalClearance,totalSave,totalCatch,totalPunch,totalMiscontrol,totalOwnGoals,teamAGoals,teamBGoals
+B828,Bunny,Team B,7017137232,"Aug 31, 2025",54,0.7,15,0.8,2,0,4,1,0,1,0,18,3,10,0,7,1,0,0,0,2,0,14,10
+B858,Ayush,Team B,9953835664,"Aug 31, 2025",54,0.76,16,0.44,3,2,13,9,4,5,0.44,36,12,9,3,6,0,0,0,0,2,0,14,10
+B179,Manav,Team B,9760814570,"Aug 31, 2025",67,0.82,0,,0,0,3,0,0,0,,45,0,0,0,0,2,20,6,0,0,0,14,10
+A705,Manoj,Team A,9711018361,"Aug 31, 2025",56,0.7,13,0.77,3,2,8,7,4,3,0.57,50,11,13,3,11,5,6,1,0,3,0,14,10
+A893,Usaid,Team A,8707463246,"Aug 31, 2025",47,0.6,9,0.89,3,4,12,13,8,5,0.62,11,2,3,0,3,0,0,0,0,4,0,14,10
+B171,Fahad,Team B,8130475338,"Aug 31, 2025",66,0.7,15,0.8,3,0,9,6,4,2,0.67,21,6,8,0,5,0,0,0,0,1,0,14,10
+A908,Abhishek,Team A,8130637967,"Aug 31, 2025",40,0.78,22,0.59,4,2,6,9,5,4,0.56,15,3,7,0,6,1,1,0,0,3,0,14,10
+A523,Pranay,Team A,7989704358,"Aug 31, 2025",50,0.86,1,1,0,1,6,1,1,0,1,44,4,5,2,1,0,18,3,0,2,0,14,10
+B348,Kevin,Team B,7982660967,"Aug 31, 2025",73,0.73,10,0.7,2,4,13,2,1,1,0.5,18,6,6,1,4,0,0,0,0,2,0,14,10
+A359,Dhruv,Team A,8810663584,"Aug 31, 2025",40,0.68,14,0.43,4,0,9,9,5,4,0.56,24,3,10,0,6,1,2,0,0,0,0,14,10

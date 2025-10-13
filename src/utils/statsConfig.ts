@@ -21,36 +21,48 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
         dataPath: "matchesPlayed"
       },
       {
-        label: "Passes",
-        dataPath: "detailedStats.passing.totalCompletePassingActions"
-      },
-      {
-        label: "Tackles",
-        dataPath: "detailedStats.tackling.successfulTackles"
-      },
-      {
-        label: "Interception",
-        dataPath: "detailedStats.tackling.interceptions"
-      }
-    ],
-    rightColumn: [
-      {
         label: "MVPs",
         dataPath: "totalMvpWins"
       },
+      {
+        label: "Passes",
+        dataPath: "detailedStats.passing.totalPasses"
+      },
+      {
+        label: "Key Passes",
+        dataPath: "detailedStats.impact.totalKeyPass"
+      },
+      {
+        label: "Tackles",
+        dataPath: "detailedStats.tackling.totalTackles"
+      }
+    ],
+    rightColumn: [
       {
         label: "Pass Acc.",
         dataPath: "detailedStats.passing.overallAccuracy",
         suffix: "%"
       },
       {
-        label: "Shots Attemp",
+        label: "Shots",
         dataPath: "detailedStats.shooting.totalShots"
       },
       {
         label: "Shots Acc.",
         dataPath: "detailedStats.shooting.shotAccuracy",
         suffix: "%"
+      },
+      {
+        label: "Goals",
+        dataPath: "detailedStats.impact.totalGoals"
+      },
+      {
+        label: "Assists",
+        dataPath: "detailedStats.impact.totalAssists"
+      },
+      {
+        label: "Interception",
+        dataPath: "detailedStats.tackling.interceptions"
       }
     ]
   };
@@ -67,12 +79,8 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
         dataPath: "detailedStats.goalkeeping.totalSave"
       },
       {
-        label: "Catch",
-        dataPath: "detailedStats.goalkeeping.totalCatch"
-      },
-      {
-        label: "Punch",
-        dataPath: "detailedStats.goalkeeping.totalPunch"
+        label: "Assists",
+        dataPath: "detailedStats.impact.totalAssists"
       }
     ],
     rightColumn: [
@@ -81,17 +89,13 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
         dataPath: "totalMvpWins"
       },
       {
-        label: "Clearance",
-        dataPath: "detailedStats.goalkeeping.totalClearance"
-      },
-      {
         label: "Accuracy",
         dataPath: "detailedStats.passing.overallAccuracy",
         suffix: "%"
       },
       {
-        label: "Miscontrol",
-        dataPath: "detailedStats.goalkeeping.totalMiscontrol"
+        label: "Shots",
+        dataPath: "detailedStats.shooting.totalShots"
       }
     ]
   };
@@ -108,8 +112,8 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
         dataPath: "detailedStats.tackling.interceptions"
       },
       {
-        label: "Tackle",
-        dataPath: "detailedStats.tackling.successfulTackles"
+        label: "Tackles",
+        dataPath: "detailedStats.tackling.totalTackles"
       },
       {
         label: "Goals",
@@ -124,10 +128,6 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
       {
         label: "Assists",
         dataPath: "detailedStats.impact.totalAssists"
-      },
-      {
-        label: "Blocks",
-        dataPath: "detailedStats.tackling.blocks"
       },
       {
         label: "Passing Acc",
@@ -158,8 +158,8 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
         dataPath: "detailedStats.impact.totalGoals"
       },
       {
-        label: "Passes",
-        dataPath: "detailedStats.passing.totalPasses"
+        label: "Key Passes",
+        dataPath: "detailedStats.passing.totalKeyPasses"
       }
     ],
     rightColumn: [
@@ -167,10 +167,6 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
       //   label: "MVPs",
       //   dataPath: "totalMvpWins"
       // },
-      {
-        label: "Dribbles",
-        dataPath: "detailedStats.dribbling.totalAttempts"
-      },
       {
         label: "Shot Acc",
         dataPath: "detailedStats.shooting.shotAccuracy",
@@ -181,8 +177,8 @@ export function generateStatsConfig(playerPosition?: 'GK' | 'DEF' | 'FWD'): Stat
         dataPath: "detailedStats.impact.totalAssists"
       },
       {
-        label: "Successful Dribbles",
-        dataPath: "detailedStats.dribbling.totalSuccessful"
+        label: "Interceptions",
+        dataPath: "detailedStats.tackling.interceptions"
       }
     ]
   };
