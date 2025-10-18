@@ -3,6 +3,7 @@ import { EditIcon } from '@/components/icons';
 import { DropdownMenu, DropdownMenuItem } from '@/components/ui/DropdownMenu';
 import { useRouter } from 'next/navigation';
 import { EllipsisVertical } from 'lucide-react';
+import { NotificationTest } from '@/components/common/NotificationTest';
 
 interface ProfileHeaderProps {
   userData: UserData;
@@ -22,6 +23,7 @@ export function ProfileHeader({ userData }: ProfileHeaderProps) {
 
   return (
     <div className="border-gray-800 px-4 py-3 z-10">
+      {/* <NotificationTest /> */}
       <div className="flex items-center justify-between">
         {/* Left side - empty for balance */}
         <div className="w-10"></div>
