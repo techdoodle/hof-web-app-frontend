@@ -5,6 +5,9 @@ import { CriticalBookingInfo, useCriticalBookingInfo } from '@/hooks/useCritical
 import { PhoneIcon, MinusIcon, PlusIcon, X } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import api from '@/lib/api';
+import { BookingService } from '@/lib/bookingService';
+import { loadRazorpayScript, openRazorpayCheckout, RazorpayOptions } from '@/lib/razorpay';
+import { BookingConfirmation } from './BookingConfirmation';
 
 interface AdditionalSlotInfo {
     firstName: string;
@@ -29,6 +32,10 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     const [finalPrice, setFinalPrice] = useState(0);
     const [isCalculatingPrice, setIsCalculatingPrice] = useState(false);
     const [isValidatingSlots, setIsValidatingSlots] = useState(false);
+    const [isProcessingBooking, setIsProcessingBooking] = useState(false);
+    const [bookingId, setBookingId] = useState<string | null>(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [bookingData, setBookingData] = useState<any>(null);
 
     const { data: bookingInfo, isLoading: isLoadingBookingInfo, error: bookingInfoError, isError: hasBookingInfoError, refetch: refetchBookingInfo } = useCriticalBookingInfo(matchId);
 
@@ -96,35 +103,6 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         }
         return true;
     };
-
-    const calculateFinalPrice = async () => {
-        if (bookingType === 'waitlist') {
-            setFinalPrice(0);
-            return;
-        }
-
-        if (!typedBookingInfo || !bookingType) return;
-
-        setIsCalculatingPrice(true);
-        try {
-            const response = await api.post('/matches/${matchId}/calculate-price', {
-                numSlots
-            });
-
-            if (response.status === 200 && response.data) {
-                setFinalPrice(response.data.finalPrice || 0);
-            } else {
-                showToast('Failed to calculate price', 'error');
-                setFinalPrice(typedBookingInfo.offerPrice * numSlots);
-            }
-        } catch (error) {
-            showToast('Failed to calculate price', 'error');
-            setFinalPrice(typedBookingInfo.offerPrice * numSlots);
-        } finally {
-            setIsCalculatingPrice(false);
-        }
-    };
-
     // Initialize price when booking type is selected
     useEffect(() => {
         if (bookingType === 'waitlist') {
@@ -228,12 +206,145 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     showToast(`There are ${bookingData.waitlistedSlots} people already on the waitlist`, 'info');
                 }
             }
-            // Proceed with payment...
+
+            // Proceed with booking and payment
+            await processBookingAndPayment();
         } catch (error) {
             console.log("validating...   error", error);
             showToast('Failed to validate booking. Please try again.', 'error');
         } finally {
             setIsValidatingSlots(false);
+        }
+    };
+
+    const processBookingAndPayment = async () => {
+        setIsProcessingBooking(true);
+
+        try {
+            // Debug: Check authentication
+            console.log('User authenticated:', !!user);
+            console.log('User ID:', user?.id);
+            console.log('User email:', userEmail);
+
+            // Step 1: Create booking
+            // Prepare players array (main user + additional slots)
+            const players = [
+                {
+                    firstName: user?.firstName || '',
+                    lastName: user?.lastName || '',
+                    phone: '' // Main user phone will be extracted from JWT token on backend
+                },
+                ...additionalSlots.map(slot => ({
+                    firstName: slot.firstName,
+                    lastName: slot.lastName,
+                    phone: slot.phone // Additional players provide their own phone
+                }))
+            ];
+
+            const bookingData = {
+                matchId: Number(matchId),
+                userId: user?.id?.toString(),
+                email: userEmail,
+                totalSlots: numSlots,
+                slotNumbers: Array.from({ length: numSlots }, (_, i) => i + 1), // Generate slot numbers
+                players: players,
+                metadata: {
+                    bookingType,
+                    amount: finalPrice, // Add amount to metadata
+                    additionalSlots: additionalSlots.map(slot => ({
+                        firstName: slot.firstName,
+                        lastName: slot.lastName,
+                        phone: slot.phone
+                    }))
+                }
+            };
+
+            const booking = await BookingService.createBooking(bookingData);
+            setBookingId(booking.id);
+
+            if (bookingType === 'waitlist') {
+                // For waitlist, no payment required
+                showToast('Successfully added to waitlist!', 'success');
+                onClose();
+                return;
+            }
+
+            // Step 2: Initiate payment for regular bookings
+            const paymentData = {
+                bookingId: booking.id,
+                amount: finalPrice,
+                currency: 'INR',
+                email: userEmail,
+                metadata: {
+                    matchId: Number(matchId),
+                    bookingType
+                }
+            };
+
+            const paymentResponse = await BookingService.initiatePayment(paymentData);
+
+            // Step 3: Load Razorpay and open checkout
+            const razorpayLoaded = await loadRazorpayScript();
+            if (!razorpayLoaded) {
+                throw new Error('Failed to load Razorpay SDK');
+            }
+
+            const razorpayOptions: RazorpayOptions = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+                amount: paymentResponse.razorpayOrder.amount,
+                currency: paymentResponse.razorpayOrder.currency,
+                name: 'HOF - Hall of Football',
+                description: `Booking for ${matchData.venue.name}`,
+                order_id: paymentResponse.razorpayOrder.id,
+                prefill: {
+                    name: `${user?.firstName} ${user?.lastName}`,
+                    email: userEmail,
+                    contact: ''
+                },
+                notes: {
+                    bookingId: booking.id,
+                    matchId: matchId,
+                    bookingType
+                },
+                theme: {
+                    color: '#1f2937'
+                },
+                handler: async (response) => {
+                    try {
+                        // Handle successful payment
+                        await BookingService.handlePaymentCallback(booking.id, {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+
+                        showToast('Payment successful! Booking confirmed.', 'success');
+                        // Store booking data and show confirmation page
+                        setBookingData({
+                            id: booking.id,
+                            amount: finalPrice,
+                            totalSlots: numSlots
+                        });
+                        setShowConfirmation(true);
+                    } catch (error) {
+                        console.error('Payment callback error:', error);
+                        showToast('Payment verification failed. Please contact support.', 'error');
+                    }
+                },
+                modal: {
+                    ondismiss: () => {
+                        showToast('Payment cancelled', 'info');
+                    }
+                }
+            };
+
+            openRazorpayCheckout(razorpayOptions);
+
+        } catch (error) {
+            console.error('Booking process error:', error);
+            showToast('Failed to process booking. Please try again.', 'error');
+        } finally {
+            setIsProcessingBooking(false);
         }
     };
 
@@ -270,6 +381,18 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     </div>
                 </div>
             </div>
+        );
+    }
+
+    // Show confirmation page after successful payment
+    if (showConfirmation && bookingData) {
+        return (
+            <BookingConfirmation
+                bookingId={bookingData.id}
+                matchData={matchData}
+                bookingData={bookingData}
+                onClose={onClose}
+            />
         );
     }
 
@@ -544,13 +667,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 <Button
                     className="w-full"
                     onClick={handleProceedToPayment}
-                    disabled={!typedBookingInfo || isLoadingBookingInfo || isCalculatingPrice || isValidatingSlots}
+                    disabled={!typedBookingInfo || isLoadingBookingInfo || isCalculatingPrice || isValidatingSlots || isProcessingBooking}
                 >
                     {bookingType === 'waitlist' ? (
-                        isValidatingSlots ? 'Validating Slots...' : 'Join Waitlist (Free)'
+                        isProcessingBooking ? 'Processing...' : isValidatingSlots ? 'Validating Slots...' : 'Join Waitlist (Free)'
                     ) : (
                         <>
-                            {isCalculatingPrice ? (
+                            {isProcessingBooking ? (
+                                'Processing Booking...'
+                            ) : isCalculatingPrice ? (
                                 'Calculating Final Price...'
                             ) : isValidatingSlots ? (
                                 'Validating Slots...'

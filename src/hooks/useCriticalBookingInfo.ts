@@ -28,7 +28,7 @@ export function useCriticalBookingInfo(matchId: string | number, options?: any) 
             const response = await api.get(`/matches/${matchId}/booking-info`);
             return response.data as CriticalBookingInfo;
         },
-        refetchInterval: 10000, // Refetch every 10 seconds
+        refetchInterval: 30000, // Refetch every 10 seconds
         retry: 3, // Max 3 retries
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
         staleTime: 5000, // Consider data stale after 5 seconds

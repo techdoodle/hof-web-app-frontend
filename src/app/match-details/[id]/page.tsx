@@ -21,7 +21,7 @@ const MatchDetailsPage = () => {
     const [isBooking, setIsBooking] = useState(false);
     console.log("matchData", matchData);
     const handleBack = () => {
-        router.back();
+        router.push("/play");
     };
 
     const handleBookSlot = async () => {
