@@ -6,6 +6,7 @@ import { ReactNode } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { CacheClearer } from '@/components/utils/CacheClearer';
+import { LocationProvider } from '@/contexts/LocationContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,9 +29,11 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ToastProvider>
-          <CacheClearer />
-          {children}
-          <ReactQueryDevtools initialIsOpen={false} />
+          <LocationProvider>
+            <CacheClearer />
+            {children}
+            <ReactQueryDevtools initialIsOpen={false} />
+          </LocationProvider>
         </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>

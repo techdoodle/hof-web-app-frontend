@@ -29,6 +29,7 @@ module.exports = {
         'dark-overlay-blur': '#FFFFFF',
         'light-text-primary': '#121212',
         'dark-text-primary': '#F9F9F9',
+        'golden': '#423404',
         // Existing theme colors
         primary: '#00FF85', // Neon green
         'primary-dark': '#003B1F', // Dark green
@@ -49,6 +50,8 @@ module.exports = {
       backgroundImage: {
         'grid-pattern': "linear-gradient(rgba(0, 255, 133, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 133, 0.05) 1px, transparent 1px)",
         'green-gradient-dark': "linear-gradient(180deg, rgba(0, 102, 51, 0.5) -40.91%, rgba(0, 204, 102, 0.8) 132.95%)",
+        'hof-select-golden-gradient': "linear-gradient(205.04deg, rgba(248, 241, 202, 0.14) 8.48%, rgba(221, 169, 68, 0.14) 50%, rgba(239, 215, 126, 0.14) 91.52%)",
+        'hof-select-golden-gradient-light': "linear-gradient(205.04deg, #F8F1CA 8.48%, #DDA944 50%, #EFD77E 91.52%)",
       },
       backgroundSize: {
         'grid': '20px 20px',

@@ -44,9 +44,9 @@ export default function ProfilePage() {
               </div>
 
               {/* Notification Test */}
-              <div className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm mt-4 mx-4">
+              {/* <div className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm mt-4 mx-4">
                 <NotificationTest />
-              </div>
+              </div> */}
             </div>
 
             {/* Common Navbar */}
