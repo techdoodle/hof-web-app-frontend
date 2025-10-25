@@ -48,6 +48,11 @@ export interface PaymentInitiationResponse {
 }
 
 export class BookingService {
+    static async checkSlotAvailability(matchId: string, numSlots: number): Promise<{ availableSlots: number }> {
+        const response = await api.get(`/matches/${matchId}/availability?slots=${numSlots}`);
+        return response.data;
+    }
+
     static async createBooking(data: CreateBookingRequest): Promise<BookingResponse> {
         console.log('Creating booking with data:', data);
         console.log('API base URL:', api.defaults.baseURL);

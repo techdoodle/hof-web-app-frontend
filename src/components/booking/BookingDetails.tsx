@@ -280,6 +280,24 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 }
             };
 
+            // Final availability check before API call to handle race conditions
+            console.log('🔍 Final availability check before booking submission...');
+            const finalAvailabilityCheck = await BookingService.checkSlotAvailability(matchId.toString(), numSlots);
+
+            if (finalAvailabilityCheck.availableSlots > 0 && bookingType === 'waitlist') {
+                // Slots became available! Switch to regular booking
+                console.log('🎉 Slots became available! Switching from waitlist to regular booking');
+                showToast('Great news! Slots are now available. Proceeding with confirmed booking.', 'success');
+                setBookingType('regular');
+                setFinalPrice(finalAvailabilityCheck.availableSlots * (matchData?.slotPrice || 0));
+            } else if (finalAvailabilityCheck.availableSlots === 0 && bookingType === 'regular') {
+                // No slots available, switch to waitlist
+                console.log('📝 No slots available, switching to waitlist');
+                showToast('No slots available. Adding you to the waitlist instead.', 'info');
+                setBookingType('waitlist');
+                setFinalPrice(0);
+            }
+
             if (bookingType === 'waitlist') {
                 // For waitlist, use waitlist service instead of booking service
                 const waitlistData = {

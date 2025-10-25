@@ -19,7 +19,7 @@ function BookingsContent() {
                     <div className="border-gray-800 px-4 py-3">
                         <div className="flex items-center justify-between">
                             <div className="w-8">
-                                <ChevronLeftIcon className="w-6 h-6" onClick={() => router.back()} />
+                                <ChevronLeftIcon className="w-6 h-6" onClick={() => router.push('/play')} />
                             </div>
                             <h1 className="text-lg text-white">Bookings</h1>
                             <div className="w-8"></div>
