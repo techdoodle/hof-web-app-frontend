@@ -72,4 +72,9 @@ export class WaitlistService {
         });
         return response.data;
     }
+
+    static async getWaitlistEntry(waitlistId: string): Promise<any> {
+        const response = await api.get(`/waitlist/${waitlistId}`);
+        return response.data;
+    }
 }

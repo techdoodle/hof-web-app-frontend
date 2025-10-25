@@ -29,7 +29,7 @@ function BookingsContent() {
                         <BookingHistory />
                     </div>
                     {/* Common Navbar */}
-                    <CommonNavbar activeTab="profile" />
+                    {/* <CommonNavbar activeTab="profile" /> */}
                 </div>
             )}
         </AuthWrapper>

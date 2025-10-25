@@ -88,4 +88,26 @@ export class BookingService {
         const response = await api.get('/bookings', { params: filters });
         return response.data;
     }
+
+    static async getBookingById(bookingId: string): Promise<BookingResponse> {
+        const response = await api.get(`/bookings/${bookingId}`);
+        return response.data;
+    }
+
+    static async cancelBooking(bookingId: string): Promise<void> {
+        await api.delete(`/bookings/${bookingId}`);
+    }
+
+    static async cancelBookingSlots(data: {
+        bookingId: string;
+        slotNumbers: number[];
+        reason?: string;
+    }): Promise<void> {
+        await api.delete(`/bookings/${data.bookingId}/slots`, {
+            data: {
+                slotNumbers: data.slotNumbers,
+                reason: data.reason
+            }
+        });
+    }
 }

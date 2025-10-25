@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthContext } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 
@@ -30,52 +30,47 @@ interface Booking {
 
 export function useBookingHistory(status?: string) {
     const { user } = useAuthContext();
-    const [bookings, setBookings] = useState<Booking[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
-    const fetchBookings = async (filterStatus?: string) => {
-        if (!user?.id) return;
-
-        try {
-            setLoading(true);
-            setError(null);
+    const {
+        data: bookings = [],
+        isLoading: loading,
+        error,
+        refetch
+    } = useQuery({
+        queryKey: ['bookings', user?.id, status],
+        queryFn: async () => {
+            if (!user?.id) return [];
 
             const params = new URLSearchParams({ userId: user.id.toString() });
-            if (filterStatus) {
-                params.append('status', filterStatus);
+            if (status) {
+                params.append('status', status);
             }
 
             const response = await api.get(`/bookings?${params.toString()}`);
-            setBookings(response.data);
-        } catch (err) {
-            console.error('Failed to fetch bookings:', err);
-            setError('Failed to load bookings');
-        } finally {
-            setLoading(false);
-        }
-    };
+            return response.data;
+        },
+        enabled: !!user?.id,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
+    });
 
     const refreshBookings = () => {
-        fetchBookings(status);
+        refetch();
     };
 
     const fetchFailedBookings = () => {
-        fetchBookings('PAYMENT_FAILED');
+        queryClient.invalidateQueries({ queryKey: ['bookings', user?.id, 'PAYMENT_FAILED'] });
     };
 
     const fetchAllBookings = () => {
-        fetchBookings();
+        queryClient.invalidateQueries({ queryKey: ['bookings', user?.id] });
     };
-
-    useEffect(() => {
-        fetchBookings(status);
-    }, [user?.id, status]);
 
     return {
         bookings,
         loading,
-        error,
+        error: error ? 'Failed to load bookings' : null,
         refreshBookings,
         fetchFailedBookings,
         fetchAllBookings
