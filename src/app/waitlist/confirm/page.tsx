@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -16,7 +16,7 @@ interface WaitlistConfirmData {
     matchDetails: any;
 }
 
-export default function WaitlistConfirmPage() {
+function WaitlistConfirmContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { user } = useAuthContext();
@@ -178,5 +178,17 @@ export default function WaitlistConfirmPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function WaitlistConfirmPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <div className="text-white text-xl">Loading...</div>
+            </div>
+        }>
+            <WaitlistConfirmContent />
+        </Suspense>
     );
 }
