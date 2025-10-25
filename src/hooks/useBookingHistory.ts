@@ -4,17 +4,28 @@ import api from '@/lib/api';
 
 interface Booking {
     id: number;
-    bookingReference: string;
-    matchId: number;
-    totalSlots: number;
-    amount: number;
+    booking_reference: string;
+    match_id: number;
+    total_slots: number;
+    total_amount: number;
     status: string;
-    createdAt: string;
+    created_at: string;
+    venue_name: string;
+    venue_address: string;
+    start_time: string;
+    end_time: string;
     slots: Array<{
-        slotNumber: number;
-        playerName: string;
+        slot_number: number;
+        player_name: string;
         status: string;
     }>;
+    matchDetails: {
+        venueName: string;
+        venueAddress: string;
+        startTime: string;
+        endTime: string;
+        match_date: string;
+    } | null;
 }
 
 export function useBookingHistory(status?: string) {

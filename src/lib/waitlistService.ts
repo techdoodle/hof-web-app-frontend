@@ -49,4 +49,27 @@ export class WaitlistService {
         const response = await api.get(`/waitlist/count?matchId=${matchId}`);
         return response.data;
     }
+
+    static async initiateWaitlistBooking(waitlistId: string): Promise<{
+        orderId: string;
+        amount: number;
+        currency: string;
+    }> {
+        const response = await api.post(`/waitlist/${waitlistId}/initiate-booking`);
+        return response.data;
+    }
+
+    static async confirmWaitlistBooking(
+        waitlistId: string,
+        paymentOrderId: string,
+        paymentId: string,
+        signature: string
+    ): Promise<any> {
+        const response = await api.post(`/waitlist/${waitlistId}/confirm-booking`, {
+            paymentOrderId,
+            paymentId,
+            signature
+        });
+        return response.data;
+    }
 }

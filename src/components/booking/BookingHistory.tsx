@@ -45,7 +45,7 @@ export function BookingHistory() {
                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                         }`}
                 >
-                    All Bookings
+                    Confirmed Bookings
                 </button>
                 <button
                     onClick={() => setFilter('failed')}
@@ -60,18 +60,18 @@ export function BookingHistory() {
 
             {bookings.map((booking) => (
                 <div key={booking.id} className="bg-gray-800 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-start mb-3">
                         <div>
                             <div className="text-white font-semibold">
-                                Booking #{booking.bookingReference}
+                                Booking #{booking.booking_reference}
                             </div>
                             <div className="text-gray-400 text-sm">
-                                {format(new Date(booking.createdAt), 'dd MMM yyyy')}
+                                Booking Date:   {booking.created_at ? format(new Date(booking.created_at), 'dd MMM yyyy') : 'N/A'}
                             </div>
                         </div>
                         <div className="text-right">
                             <div className="text-green-400 font-semibold">
-                                ₹{booking.amount}
+                                ₹{booking.total_amount}
                             </div>
                             <div className={`text-xs px-2 py-1 rounded ${booking.status === 'CONFIRMED' ? 'bg-green-900 text-green-300' :
                                 booking.status === 'INITIATED' ? 'bg-yellow-900 text-yellow-300' :
@@ -82,19 +82,39 @@ export function BookingHistory() {
                         </div>
                     </div>
 
-                    <div className="text-gray-300 text-sm">
-                        {booking.totalSlots} slot{booking.totalSlots > 1 ? 's' : ''} booked
-                    </div>
+                    {/* Match Details */}
+                    {booking.matchDetails && (
+                        <div className="mb-3 p-3 bg-gray-700 rounded-lg">
+                            <div className="text-white font-medium text-sm mb-1">
+                                {booking.matchDetails.venueName}
+                            </div>
+                            <div className="text-gray-300 text-xs mb-1">
+                                {booking.matchDetails.venueAddress}
+                            </div>
+                            <div className="text-gray-400 text-xs">
+                                {booking.matchDetails.startTime && booking.matchDetails.endTime && (
+                                    <>
+                                        {format(new Date(booking.matchDetails.startTime), 'dd MMM yyyy')} • {' '}
+                                        {format(new Date(booking.matchDetails.startTime), 'HH:mm')} - {' '}
+                                        {format(new Date(booking.matchDetails.endTime), 'HH:mm')}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {booking.slots && booking.slots.length > 0 && (
                         <div className="mt-2">
                             <div className="text-gray-400 text-xs">Players:</div>
                             <div className="flex flex-wrap gap-1 mt-1">
-                                {booking.slots.map((slot, index) => (
+                                {/* {booking.slots.map((slot, index) => (
                                     <span key={index} className="text-xs bg-gray-700 px-2 py-1 rounded">
                                         {slot.playerName}
                                     </span>
-                                ))}
+                                ))} */}
+                                <span className="text-xs bg-gray-700 px-2 py-1 rounded">
+                                    {booking.slots[0].player_name + (booking.slots.length > 1 ? ` + ${booking.slots.length - 1} more` : '')}
+                                </span>
                             </div>
                         </div>
                     )}
