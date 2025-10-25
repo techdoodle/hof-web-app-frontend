@@ -62,6 +62,11 @@ export class BookingService {
         return response.data;
     }
 
+    static async cancelPayment(bookingId: string): Promise<void> {
+        const response = await api.post(`/bookings/${bookingId}/cancel-payment`);
+        return response.data;
+    }
+
     static async handlePaymentCallback(
         bookingId: string,
         data: PaymentCallbackRequest

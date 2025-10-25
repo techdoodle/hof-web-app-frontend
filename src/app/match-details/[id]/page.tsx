@@ -5,6 +5,7 @@ import Image from "next/image";
 import { format, parseISO } from "date-fns";
 import { CalendarIcon, ChevronLeft, ClockIcon, ContactIcon, PhoneIcon, Share2, WatchIcon } from "lucide-react";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
+import { useCriticalBookingInfo, CriticalBookingInfo } from "@/hooks/useCriticalBookingInfo";
 import { useLocation } from "@/contexts/LocationContext";
 import { calculateDistance } from "@/lib/utils/distance";
 import { Button } from "@/components/ui/button";
@@ -16,9 +17,14 @@ const MatchDetailsPage = () => {
     const { id } = useParams();
     const router = useRouter();
     const { data: matchData, isLoading, error } = useMatchDetails(Number(id));
+    const { data: bookingInfo, isLoading: isBookingInfoLoading } = useCriticalBookingInfo(Number(id));
     const { location } = useLocation();
     const { showToast } = useToast();
     const [isBooking, setIsBooking] = useState(false);
+
+    // Type assertion for booking info
+    const typedBookingInfo = bookingInfo as CriticalBookingInfo | undefined;
+
     console.log("matchData", matchData);
     const handleBack = () => {
         router.push("/play");
@@ -33,11 +39,10 @@ const MatchDetailsPage = () => {
             showToast("Oops! This match has started or is about to start.", "error");
             return;
         }
-        const lockedSlotsCount = typeof matchData.lockedSlots === 'object' && matchData.lockedSlots !== null
-            ? Object.keys(matchData.lockedSlots).length
-            : (matchData.lockedSlots || 0);
+        // Use accurate slot availability from booking info
+        const totalAvailableSlots = (typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0);
 
-        if (matchData.playerCapacity + matchData.bufferCapacity - matchData.bookedSlots - lockedSlotsCount <= 0) {
+        if (totalAvailableSlots <= 0) {
             showToast("Oops! This match is full.", "error");
             return;
         }
@@ -60,7 +65,7 @@ const MatchDetailsPage = () => {
         }
     };
 
-    if (isLoading) {
+    if (isLoading || isBookingInfoLoading) {
         return (
             <div className="flex min-h-screen items-center justify-center text-white">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div>
@@ -175,7 +180,7 @@ const MatchDetailsPage = () => {
                             <div>
                                 <span className="text-gray-400">Available Slots:</span>
                                 <span className="ml-2 font-medium">
-                                    {(matchData.playerCapacity || 0) + (matchData.bufferCapacity || 0) - (matchData.bookedSlots || 0) - (typeof matchData.lockedSlots === 'object' && matchData.lockedSlots !== null ? Object.keys(matchData.lockedSlots).length : (matchData.lockedSlots || 0))}
+                                    {(typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)}
                                 </span>
                             </div>
                         </div>
@@ -187,13 +192,13 @@ const MatchDetailsPage = () => {
                             <p className="text-sm text-gray-400">Football Chief</p>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                                    {matchData.footballChief?.firstName?.charAt(0) + matchData.footballChief?.lastName?.charAt(0) || 'FC'}
+                                    {matchData.footballChief?.name?.charAt(0) || 'FC'}
                                 </div>
                                 <div>
-                                    <p className="font-medium">{matchData.footballChief?.firstName + ' ' + matchData.footballChief?.lastName || 'Football Chief'}</p>
+                                    <p className="font-medium">{matchData.footballChief?.name || 'Football Chief'}</p>
                                     <p className="text-sm text-gray-400 flex items-center">
-                                        <PhoneIcon className="w-4 h-4 mr-2 cursor-pointer" onClick={() => window.open(`tel:${matchData.footballChief?.phoneNumber}`, '_blank')} />
-                                        {matchData.footballChief?.phoneNumber || 'Contact info not available'}
+                                        <PhoneIcon className="w-4 h-4 mr-2 cursor-pointer" onClick={() => window.open(`tel:${matchData.footballChief?.number}`, '_blank')} />
+                                        {matchData.footballChief?.number || 'Contact info not available'}
                                     </p>
                                 </div>
                             </div>
@@ -203,14 +208,14 @@ const MatchDetailsPage = () => {
                     {/* Book Slot Button */}
                     <div className="mt-auto fixed bottom-0 left-0 right-0 p-4">
                         <Button
-                            disabled={isLoading || !matchData || matchData.playerCapacity + matchData.bufferCapacity - matchData.bookedSlots - (typeof matchData.lockedSlots === 'object' && matchData.lockedSlots !== null ? Object.keys(matchData.lockedSlots).length : (matchData.lockedSlots || 0)) <= 0 || isBooking}
+                            disabled={isLoading || isBookingInfoLoading || !matchData || !typedBookingInfo || ((typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)) <= 0 || isBooking}
                             className="w-full bg-green-600 text-white py-4 rounded-lg"
                             onClick={handleBookSlot}
                         >
                             {isBooking && (
                                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white ml-2"></div>
                             )}
-                            {(!matchData || matchData.playerCapacity + matchData.bufferCapacity - matchData.bookedSlots - (typeof matchData.lockedSlots === 'object' && matchData.lockedSlots !== null ? Object.keys(matchData.lockedSlots).length : (matchData.lockedSlots || 0)) <= 0) ? "This match is full" : "Book Slot(s)"}
+                            {(!matchData || !typedBookingInfo || ((typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)) <= 0) ? "This match is full" : "Book Slot(s)"}
                         </Button>
                     </div>
                 </div>

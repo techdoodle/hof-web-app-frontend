@@ -20,7 +20,7 @@ export function BookingConfirmation({ bookingId, matchData, bookingData, onClose
         setIsLoading(true);
         // Navigate back to play page or match details
         router.push('/play');
-        onClose();
+        // onClose();
     };
 
     const formatDate = (dateString: string) => {

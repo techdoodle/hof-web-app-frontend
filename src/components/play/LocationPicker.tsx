@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { locationService } from '@/lib/utils/locationService';
 import { MapPinIcon, Loader2Icon } from 'lucide-react';
 import { Button } from '../ui/button';
+import api from '@/lib/api';
 
 interface City {
     id: number;
@@ -27,8 +28,8 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
         const fetchCities = async () => {
             try {
                 // TODO: Replace with actual API call
-                const response = await fetch('http://localhost:3000/api/cities');
-                const data = await response.json();
+                const response = await api.get('/cities');
+                const data = response.data;
                 setCities(data);
             } catch (err) {
                 console.error('Failed to fetch cities:', err);

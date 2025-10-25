@@ -6,8 +6,10 @@ import { PhoneIcon, MinusIcon, PlusIcon, X } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { BookingService } from '@/lib/bookingService';
+import { WaitlistService } from '@/lib/waitlistService';
 import { loadRazorpayScript, openRazorpayCheckout, RazorpayOptions } from '@/lib/razorpay';
 import { BookingConfirmation } from './BookingConfirmation';
+import { WaitlistConfirmation } from './WaitlistConfirmation';
 
 interface AdditionalSlotInfo {
     firstName: string;
@@ -36,6 +38,9 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     const [bookingId, setBookingId] = useState<string | null>(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [bookingData, setBookingData] = useState<any>(null);
+    const [showWaitlistConfirmation, setShowWaitlistConfirmation] = useState(false);
+    const [waitlistData, setWaitlistData] = useState<any>(null);
+    const [waitlistMatchData, setWaitlistMatchData] = useState<any>(null);
 
     const { data: bookingInfo, isLoading: isLoadingBookingInfo, error: bookingInfoError, isError: hasBookingInfoError, refetch: refetchBookingInfo } = useCriticalBookingInfo(matchId);
 
@@ -88,6 +93,22 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     };
 
     const validateAdditionalSlots = (): boolean => {
+        // Get user's phone number
+        const userPhone = user?.phoneNumber || '';
+
+        // Collect all phone numbers (user + additional slots)
+        const allPhones = [
+            userPhone,
+            ...additionalSlots.map(slot => slot.phone)
+        ].filter(phone => phone && phone.trim() !== '');
+
+        // Check for duplicates
+        const uniquePhones = new Set(allPhones);
+        if (allPhones.length !== uniquePhones.size) {
+            showToast('Duplicate phone numbers are not allowed. Each player must have a unique phone number.', 'error');
+            return false;
+        }
+
         for (let i = 0; i < additionalSlots.length; i++) {
             const slot = additionalSlots[i];
             if (!slot.phone?.trim()) {
@@ -259,15 +280,45 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 }
             };
 
-            const booking = await BookingService.createBooking(bookingData);
-            setBookingId(booking.id);
-
             if (bookingType === 'waitlist') {
-                // For waitlist, no payment required
+                // For waitlist, use waitlist service instead of booking service
+                const waitlistData = {
+                    matchId: matchId.toString(),
+                    email: userEmail,
+                    slotsRequired: numSlots,
+                    metadata: {
+                        players: [
+                            {
+                                firstName: user?.firstName || '',
+                                lastName: user?.lastName || '',
+                                phone: '' // Main user phone will be extracted from JWT token on backend
+                            },
+                            ...additionalSlots.map(slot => ({
+                                firstName: slot.firstName,
+                                lastName: slot.lastName,
+                                phone: slot.phone
+                            }))
+                        ]
+                    }
+                };
+
+                const waitlistResponse = await WaitlistService.joinWaitlist(waitlistData);
                 showToast('Successfully added to waitlist!', 'success');
-                onClose();
+
+                // Show waitlist confirmation page
+                setWaitlistData({
+                    id: waitlistResponse.waitlistEntry.id,
+                    slotsRequired: waitlistResponse.waitlistEntry.slotsRequired,
+                    email: waitlistResponse.waitlistEntry.email
+                });
+                setWaitlistMatchData(waitlistResponse.matchDetails);
+                setShowWaitlistConfirmation(true);
                 return;
             }
+
+            // For regular bookings, use booking service
+            const booking = await BookingService.createBooking(bookingData);
+            setBookingId(booking.id);
 
             // Step 2: Initiate payment for regular bookings
             const paymentData = {
@@ -332,8 +383,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     }
                 },
                 modal: {
-                    ondismiss: () => {
-                        showToast('Payment cancelled', 'info');
+                    ondismiss: async () => {
+                        try {
+                            // Cancel the payment and release locked slots
+                            await BookingService.cancelPayment(booking.id);
+                            showToast('Payment cancelled', 'info');
+                        } catch (error) {
+                            console.error('Failed to cancel booking:', error);
+                            showToast('Payment cancelled but booking status update failed', 'warning');
+                        }
                     }
                 }
             };
@@ -381,6 +439,18 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     </div>
                 </div>
             </div>
+        );
+    }
+
+    // Show waitlist confirmation page after successful waitlist join
+    if (showWaitlistConfirmation && waitlistData && waitlistMatchData) {
+        return (
+            <WaitlistConfirmation
+                waitlistId={waitlistData.id}
+                matchData={waitlistMatchData}
+                waitlistData={waitlistData}
+                onClose={onClose}
+            />
         );
     }
 

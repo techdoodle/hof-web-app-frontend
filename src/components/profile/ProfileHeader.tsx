@@ -2,7 +2,7 @@ import { UserData } from '@/modules/onboarding/types';
 import { EditIcon } from '@/components/icons';
 import { DropdownMenu, DropdownMenuItem } from '@/components/ui/DropdownMenu';
 import { useRouter } from 'next/navigation';
-import { EllipsisVertical } from 'lucide-react';
+import { BookCheckIcon, EllipsisVertical, HistoryIcon, LogOutIcon } from 'lucide-react';
 import { NotificationTest } from '@/components/common/NotificationTest';
 
 interface ProfileHeaderProps {
@@ -18,6 +18,21 @@ export function ProfileHeader({ userData }: ProfileHeaderProps) {
       label: 'Edit Profile',
       onClick: () => router.push('/profile/me'),
       icon: <EditIcon className="w-4 h-4" />
+    },
+    {
+      id: 'booking-history',
+      label: 'Booking History',
+      onClick: () => router.push('/bookings'),
+      icon: <HistoryIcon className="w-4 h-4" />
+    },
+    {
+      id: 'logout',
+      label: 'Logout',
+      onClick: () => {
+        localStorage.removeItem('token');
+        router.push('/login');
+      },
+      icon: <LogOutIcon className="w-4 h-4" />
     }
   ];
 

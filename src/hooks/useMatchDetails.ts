@@ -18,6 +18,12 @@ export interface MatchDetails {
   playerCapacity: number;
   bookedSlots: number;
   isFastFilling: boolean;
+  footballChief?: {
+    id: number;
+    name: string;
+    number: string;
+    email: string;
+  };
 }
 
 export function useMatchDetails(matchId: string | number) {
