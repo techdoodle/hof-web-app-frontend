@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { locationService } from '@/lib/utils/locationService';
 import { MapPinIcon, Loader2Icon } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -6,8 +6,8 @@ import api from '@/lib/api';
 
 interface City {
     id: number;
-    city_name: string;
-    state_name: string;
+    cityName: string;
+    stateName: string;
     latitude: number;
     longitude: number;
 }
@@ -35,10 +35,10 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
                 console.error('Failed to fetch cities:', err);
                 // For now, use hardcoded cities
                 setCities([
-                    { id: 77, city_name: 'Gurugram', state_name: 'Haryana', latitude: 28.460105, longitude: 77.0266 },
-                    { id: 132, city_name: 'Mumbai', state_name: 'Maharashtra', latitude: 19.0760, longitude: 72.8777 },
-                    { id: 143, city_name: 'New Delhi', state_name: 'Delhi', latitude: 28.6139, longitude: 77.2090 },
-                    { id: 28, city_name: 'Bengaluru', state_name: 'Karnataka', latitude: 12.9716, longitude: 77.5946 },
+                    { id: 77, cityName: 'Gurugram', stateName: 'Haryana', latitude: 28.460105, longitude: 77.0266 },
+                    { id: 132, cityName: 'Mumbai', stateName: 'Maharashtra', latitude: 19.0760, longitude: 72.8777 },
+                    { id: 143, cityName: 'New Delhi', stateName: 'Delhi', latitude: 28.6139, longitude: 77.2090 },
+                    { id: 28, cityName: 'Bengaluru', stateName: 'Karnataka', latitude: 12.9716, longitude: 77.5946 },
                 ]);
             }
         };
@@ -52,6 +52,10 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
         try {
             const coords = await locationService.getCurrentLocation();
             localStorage.setItem('userLocation', JSON.stringify(coords));
+
+            // Dispatch custom event to notify LocationContext
+            window.dispatchEvent(new CustomEvent('locationUpdated'));
+
             onLocationSelected(coords);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to get location');
@@ -67,6 +71,10 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
             longitude: city.longitude,
         };
         localStorage.setItem('userLocation', JSON.stringify(location));
+
+        // Dispatch custom event to notify LocationContext
+        window.dispatchEvent(new CustomEvent('locationUpdated'));
+
         onLocationSelected(location);
     };
 
@@ -99,19 +107,19 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
                     <span className="bg-black px-2 text-gray-400">or select a city</span>
                 </div>
             </div>
-
             <div className="grid grid-cols-1 gap-2">
-                {cities.map((city) => (
-                    <Button
-                        key={city.id}
-                        variant={selectedCity?.id === city.id ? "default" : "outline"}
-                        className="w-full justify-start"
-                        onClick={() => handleCitySelect(city)}
-                    >
-                        <MapPinIcon className="h-4 w-4 mr-2" />
-                        {city.city_name}, {city.state_name}
-                    </Button>
-                ))}
+                {cities.length > 0 ? cities.map((city) => (
+                    <Fragment key={city.id}>
+                        <Button
+                            variant={selectedCity?.id === city.id ? "default" : "outline"}
+                            className="w-full justify-start"
+                            onClick={() => handleCitySelect(city)}
+                        >
+                            <MapPinIcon className="h-4 w-4 mr-2" />
+                            {city.cityName}, {city.stateName}
+                        </Button>
+                    </Fragment>
+                )) : <div className="text-gray-400 text-sm">No cities found</div>}
             </div>
         </div>
     );
