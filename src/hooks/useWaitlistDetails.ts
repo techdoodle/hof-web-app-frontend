@@ -24,7 +24,7 @@ interface WaitlistDetails {
 export function useWaitlistDetails(waitlistId: string) {
     const { user } = useAuthContext();
 
-    return useQuery({
+    const { data, isLoading, error } = useQuery({
         queryKey: ['waitlist', waitlistId],
         queryFn: async (): Promise<WaitlistDetails> => {
             const response = await api.get(`/waitlist/${waitlistId}`);
@@ -34,4 +34,10 @@ export function useWaitlistDetails(waitlistId: string) {
         staleTime: 2 * 60 * 1000, // 2 minutes
         gcTime: 5 * 60 * 1000, // 5 minutes
     });
+
+    return {
+        data,
+        loading: isLoading,
+        error: error ? 'Failed to load waitlist details' : null
+    };
 }

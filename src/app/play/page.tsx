@@ -5,7 +5,7 @@ import { AuthWrapper } from '@/components/auth/AuthWrapper';
 import { CommonNavbar } from '@/components/common/CommonNavbar';
 import { UserData } from '@/modules/onboarding/types';
 import { useRouter } from 'next/navigation';
-import { ChevronLeftIcon, MapPinIcon } from 'lucide-react';
+import { ChevronLeftIcon, ClockIcon, MapPinIcon } from 'lucide-react';
 import { LocationPicker } from '@/components/play/LocationPicker';
 import { NearbyMatches } from '@/components/play/NearbyMatches';
 
@@ -35,14 +35,17 @@ export default function PlayPage() {
           <div className="border-b border-gray-800 px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="w-8">
-                <ChevronLeftIcon className="w-6 h-6" onClick={() => router.back()} />
+                <ChevronLeftIcon className="w-6 h-6" onClick={() => router.push("/play")} />
               </div>
               <h1 className="text-lg text-white">Book & Play Matches</h1>
-              {!showLocationPicker && (
-                <div className="w-8 cursor-pointer" onClick={() => setShowLocationPicker(true)}>
-                  <MapPinIcon className="w-6 h-6" />
-                </div>
-              )}
+              <div className="flex flex-row items-center justify-end gap-2">
+                <ClockIcon className="w-6 h-6 cursor-pointer" onClick={() => router.push("/bookings?status=CONFIRMED")} />
+                {!showLocationPicker && (
+                  <div className="w-8 cursor-pointer" onClick={() => setShowLocationPicker(true)}>
+                    <MapPinIcon className="w-6 h-6" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

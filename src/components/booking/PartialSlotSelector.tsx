@@ -53,7 +53,7 @@ export function PartialSlotSelector({ slots, onConfirm, onCancel, loading = fals
                     </p>
 
                     <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {slots.map((slot) => (
+                        {[...slots].filter((slot) => slot.status === 'ACTIVE').map((slot) => (
                             <div
                                 key={slot.slotNumber}
                                 className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${isSlotSelected(slot.slotNumber)
@@ -104,9 +104,6 @@ export function PartialSlotSelector({ slots, onConfirm, onCancel, loading = fals
                     <div className="mt-3 p-3 bg-orange-900/20 rounded-lg">
                         <div className="text-sm text-orange-300">
                             <strong>Refund Amount:</strong> ₹{Math.round((selectedSlots.length / slots.length) * 100)}% of total booking amount
-                        </div>
-                        <div className="text-xs text-orange-400 mt-1">
-                            Selected slots: {selectedSlots.sort((a, b) => a - b).join(', ')}
                         </div>
                     </div>
                 )}

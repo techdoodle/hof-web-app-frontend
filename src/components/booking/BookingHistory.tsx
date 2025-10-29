@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useBookingHistory } from '@/hooks/useBookingHistory';
 import { HorizontalScroll } from '../common/HorizontalScroll';
+import Link from 'next/link';
+import { ChevronLeftIcon } from 'lucide-react';
 
 interface Booking {
     id: number;
@@ -32,17 +34,55 @@ export function BookingHistory() {
     const router = useRouter();
     const [filter, setFilter] = useState<'confirmed' | 'waitlisted' | 'cancelled' | 'failed'>('confirmed');
     const { bookings, loading, error, fetchFailedBookings, fetchAllBookings } = useBookingHistory(
-        filter === 'failed' ? 'PAYMENT_FAILED' : filter === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'
+        filter === 'failed' ? 'PAYMENT_FAILED' : filter === 'cancelled' ? 'CANCELLED' : filter === 'waitlisted' ? 'WAITLISTED' : 'CONFIRMED'
     );
 
-    const handleBookingClick = (booking: any) => {
-        // Navigate to booking details page
-        router.push(`/bookings/${booking.id}`);
-    };
+    const handleBookingClick = (booking: Booking) => {
+        router.push(`/bookings/${booking.id}?status=${booking.status}`);
+    }
+    // const handleBookingClick
+
+
+    const BookingStatusHeader = () => {
+        return (
+            <HorizontalScroll>
+                <div className="flex gap-2 mb-4">
+                    <button
+                        onClick={() => setFilter('confirmed')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'confirmed'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                    >
+                        Active Bookings
+                    </button>
+                    <button
+                        onClick={() => setFilter('waitlisted')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'waitlisted'
+                            ? 'bg-yellow-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                    >
+                        Waitlisted Bookings
+                    </button>
+                    <button
+                        onClick={() => setFilter('failed')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'failed'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                    >
+                        Failed Payments
+                    </button>
+                </div>
+            </HorizontalScroll>
+        );
+    }
 
     if (loading) {
         return (
             <div className="flex justify-center items-center py-8">
+                <BookingStatusHeader />
                 <div className="text-white">Loading bookings...</div>
             </div>
         );
@@ -51,6 +91,7 @@ export function BookingHistory() {
     if (error) {
         return (
             <div className="text-center py-8">
+                <BookingStatusHeader />
                 <div className="text-red-400">{error}</div>
             </div>
         );
@@ -59,7 +100,11 @@ export function BookingHistory() {
     if (bookings.length === 0) {
         return (
             <div className="text-center py-8">
+                <BookingStatusHeader />
                 <div className="text-gray-400">No bookings found</div>
+                <div className="flex flex-row items-center justify-center">
+                    <Link href="/play"> Book a new match!! </Link>
+                </div>
             </div>
         );
     }
@@ -68,37 +113,7 @@ export function BookingHistory() {
         <>
             <div className="space-y-4 p-4">
                 {/* Filter Buttons */}
-                <HorizontalScroll>
-                    <div className="flex gap-2 mb-4">
-                        <button
-                            onClick={() => setFilter('confirmed')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'confirmed'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            Active Bookings
-                        </button>
-                        <button
-                            onClick={() => setFilter('waitlisted')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'waitlisted'
-                                ? 'bg-red-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            Waitlisted Bookings
-                        </button>
-                        <button
-                            onClick={() => setFilter('failed')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'failed'
-                                ? 'bg-red-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            Failed Payments
-                        </button>
-                    </div>
-                </HorizontalScroll>
+                <BookingStatusHeader />
 
                 {bookings.map((booking: Booking) => (
                     <div
@@ -108,14 +123,16 @@ export function BookingHistory() {
                     >
                         <div className="flex justify-between items-start mb-3">
                             <div className="flex-1">
-                                <div className="text-white font-semibold text-lg">
-                                    {booking.booking_reference || `WAIT-${booking.id}`}
+                                <div className="text-white font-semibold text-sm">
+                                    {/* {(booking as any).booking_reference || (booking as any).bookingReference || `WAITLISTED-${booking.id}`} */}
+                                    {booking.status === 'WAITLISTED' ? null : (booking as any).booking_reference || (booking as any).bookingReference}
                                 </div>
                                 <div className="text-gray-400 text-sm">
-                                    {booking.created_at ? format(new Date(booking.created_at), 'dd MMM yyyy, HH:mm') : 'N/A'}
+                                    {(booking as any).created_at || (booking as any).createdAt ?
+                                        format(new Date(((booking as any).created_at || (booking as any).createdAt) as string), 'dd MMM yyyy, HH:mm') : 'N/A'}
                                 </div>
                                 <div className="text-gray-300 text-sm mt-1">
-                                    {booking.total_slots} slot{booking.total_slots !== 1 ? 's' : ''} • ₹{booking.total_amount || 0}
+                                    {((booking as any).total_slots ?? (booking as any).totalSlots ?? 0)} slot{(((booking as any).total_slots ?? (booking as any).totalSlots ?? 0) !== 1 ? 's' : '')} • ₹{(booking as any).total_amount ?? (booking as any).amount ?? 0}
                                 </div>
                             </div>
                             <div className="text-right">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,7 +26,8 @@ import {
     CheckCircle,
     AlertCircle,
     Clock as ClockIcon,
-    User
+    User,
+    Loader2
 } from 'lucide-react';
 
 interface BookingDetailsPageProps {
@@ -38,23 +39,24 @@ interface BookingDetailsPageProps {
 export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingDetailsPageProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { user } = useAuthContext();
+    const { user, isLoading: authLoading } = useAuthContext();
     const { showToast } = useToast();
 
     const [actionLoading, setActionLoading] = useState(false);
     const [showPartialSelector, setShowPartialSelector] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
+    const [canPay, setCanPay] = useState(false);
 
     // Use React Query hooks based on booking type
     const {
         data: booking,
-        isLoading: loading,
+        loading,
         error: bookingError
     } = useBookingDetails(bookingType !== 'waitlisted' ? bookingId : '');
 
     const {
         data: waitlistData,
-        isLoading: waitlistLoading,
+        loading: waitlistLoading,
         error: waitlistError
     } = useWaitlistDetails(bookingType === 'waitlisted' ? bookingId : '');
 
@@ -62,6 +64,10 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
     const currentBooking = (bookingType === 'waitlisted' ? waitlistData : booking) as any;
     const currentLoading = bookingType === 'waitlisted' ? waitlistLoading : loading;
     const currentError = bookingType === 'waitlisted' ? waitlistError : bookingError;
+    const isQueryEnabled = !!bookingId && !!user?.id;
+    console.log('currentBooking', currentBooking);
+    console.log('currentLoading', currentLoading);
+    console.log('currentError', currentError);
 
     // Handle errors
     if (currentError) {
@@ -73,7 +79,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
             setActionLoading(true);
 
             if (bookingType === 'waitlisted') {
-                await WaitlistService.cancelWaitlist(currentBooking.matchId.toString(), currentBooking.email);
+                await WaitlistService.cancelWaitlist(currentBooking?.matchId?.toString() || '', currentBooking?.email || '');
                 showToast('Waitlist entry cancelled successfully', 'success');
             } else {
                 await BookingService.cancelBooking(bookingId);
@@ -93,6 +99,27 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
             setActionLoading(false);
         }
     };
+
+    // Check payment availability when data loads
+    useEffect(() => {
+        const checkPaymentAvailability = async () => {
+            if (bookingType === 'waitlisted' && currentBooking?.matchId) {
+                try {
+                    const checkForAvailableSlots = await BookingService.checkSlotAvailability(
+                        currentBooking.matchId.toString(),
+                        currentBooking.totalSlots || 0
+                    );
+                    setCanPay(checkForAvailableSlots.availableSlots > 0);
+                } catch (error) {
+                    setCanPay(false);
+                }
+            } else {
+                setCanPay(false);
+            }
+        };
+
+        checkPaymentAvailability();
+    }, [bookingType, currentBooking?.matchId, currentBooking?.totalSlots]);
 
     const handlePartialCancel = () => {
         if (currentBooking?.slots && currentBooking.slots.length > 1) {
@@ -141,14 +168,14 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                 // For regular bookings, initiate payment
                 const order = await BookingService.initiatePayment({
                     bookingId: bookingId,
-                    amount: currentBooking.total_amount * 100, // Convert to paise
-                    email: currentBooking.email,
+                    amount: (currentBooking?.total_amount || 0) * 100, // Convert to paise
+                    email: currentBooking?.email || '',
                     currency: 'INR',
                     metadata: {
                         bookingId: bookingId,
-                        amount: currentBooking.total_amount,
+                        amount: currentBooking?.total_amount || 0,
                         currency: 'INR',
-                        email: currentBooking.email
+                        email: currentBooking?.email || ''
                     }
                 });
                 // Handle Razorpay payment flow
@@ -164,16 +191,27 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
 
     const getStatusIcon = (status: string) => {
         switch (status) {
+            // Booking statuses
             case 'CONFIRMED':
                 return <CheckCircle className="w-5 h-5 text-green-500" />;
-            case 'WAITLISTED':
-                return <ClockIcon className="w-5 h-5 text-orange-500" />;
             case 'PAYMENT_FAILED':
                 return <AlertCircle className="w-5 h-5 text-red-500" />;
             case 'CANCELLED':
                 return <X className="w-5 h-5 text-gray-500" />;
             case 'PARTIALLY_CANCELLED':
                 return <AlertCircle className="w-5 h-5 text-orange-500" />;
+            case 'INITIATED':
+            case 'PAYMENT_PENDING':
+                return <ClockIcon className="w-5 h-5 text-yellow-500" />;
+            // Waitlist statuses
+            case 'WAITING':
+                return <ClockIcon className="w-5 h-5 text-orange-500" />;
+            case 'NOTIFIED':
+                return <AlertCircle className="w-5 h-5 text-orange-500" />;
+            case 'PROMOTED':
+                return <CheckCircle className="w-5 h-5 text-green-500" />;
+            case 'EXPIRED':
+                return <X className="w-5 h-5 text-gray-500" />;
             default:
                 return <ClockIcon className="w-5 h-5 text-blue-500" />;
         }
@@ -181,16 +219,27 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
 
     const getStatusColor = (status: string) => {
         switch (status) {
+            // Booking statuses
             case 'CONFIRMED':
                 return 'bg-green-900 text-green-300';
-            case 'WAITLISTED':
-                return 'bg-orange-900 text-orange-300';
             case 'PAYMENT_FAILED':
                 return 'bg-red-900 text-red-300';
             case 'CANCELLED':
                 return 'bg-gray-900 text-gray-300';
             case 'PARTIALLY_CANCELLED':
                 return 'bg-orange-900 text-orange-300';
+            case 'INITIATED':
+            case 'PAYMENT_PENDING':
+                return 'bg-yellow-900 text-yellow-300';
+            // Waitlist statuses
+            case 'WAITING':
+                return 'bg-orange-900 text-orange-300';
+            case 'NOTIFIED':
+                return 'bg-orange-900 text-orange-300';
+            case 'PROMOTED':
+                return 'bg-green-900 text-green-300';
+            case 'EXPIRED':
+                return 'bg-gray-900 text-gray-300';
             default:
                 return 'bg-blue-900 text-blue-300';
         }
@@ -198,15 +247,11 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
 
     const canCancel = () => {
         return bookingType === 'waitlisted' ||
-            (bookingType === 'confirmed' && currentBooking?.status === 'CONFIRMED');
+            (bookingType === 'confirmed' && currentBooking?.status === 'CONFIRMED') ||
+            (bookingType === 'cancelled' && (currentBooking?.status === 'CANCELLED' || currentBooking?.status === 'PARTIALLY_CANCELLED'));
     };
 
-    const canInitiatePayment = () => {
-        return bookingType === 'waitlisted' ||
-            (bookingType === 'failed' && currentBooking?.status === 'PAYMENT_FAILED');
-    };
-
-    if (currentLoading) {
+    if (authLoading || !isQueryEnabled || currentLoading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
                 <div className="text-center">
@@ -217,13 +262,29 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
         );
     }
 
-    if (!currentBooking) {
+    if (currentError) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
                 <div className="text-center">
                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold mb-2">Booking Not Found</h1>
                     <p className="text-gray-400 mb-4">The booking you're looking for doesn't exist.</p>
+                    <Button onClick={onClose} variant="outline">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Go Back
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!currentBooking) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+                <div className="text-center">
+                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <h1 className="text-2xl font-bold mb-2">No Data Available</h1>
+                    <p className="text-gray-400 mb-4">Unable to load booking information.</p>
                     <Button onClick={onClose} variant="outline">
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         Go Back
@@ -251,13 +312,13 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                             {bookingType === 'waitlisted' ? 'Waitlist Entry' : 'Booking'} Details
                         </h1>
                         <p className="text-sm text-gray-400">
-                            {currentBooking.bookingReference || `WAIT-${currentBooking.id}`}
+                            {bookingType === 'waitlisted' ? null : currentBooking?.bookingReference}
                         </p>
                     </div>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${getStatusColor(currentBooking.status)}`}>
-                    {getStatusIcon(currentBooking.status)}
-                    <span className="ml-2">{currentBooking.status}</span>
+                <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${getStatusColor(currentBooking?.status || '')}`}>
+                    {getStatusIcon(currentBooking?.status || '')}
+                    <span className="ml-2">{currentBooking?.status || 'UNKNOWN'}</span>
                 </div>
             </div>
 
@@ -270,7 +331,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                         Match Information
                     </h2>
 
-                    {currentBooking.matchDetails && (
+                    {currentBooking?.matchDetails && (
                         <div className="space-y-3">
                             <div className="flex items-start">
                                 <MapPin className="w-5 h-5 text-gray-400 mt-0.5 mr-3" />
@@ -308,32 +369,32 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <div className="text-sm text-gray-400">Total Slots</div>
-                            <div className="font-medium">{currentBooking.totalSlots}</div>
+                            <div className="font-medium">{currentBooking?.totalSlots || 0}</div>
                         </div>
                         <div>
                             <div className="text-sm text-gray-400">Amount</div>
                             <div className="font-medium">
-                                {currentBooking.amount > 0 ? `₹${currentBooking.amount}` : 'Free'}
+                                {(currentBooking?.amount || 0) > 0 ? `₹${currentBooking?.amount}` : 'Free'}
                             </div>
                         </div>
                         <div>
                             <div className="text-sm text-gray-400">Email</div>
                             <div className="font-medium flex items-center">
                                 <Mail className="w-4 h-4 mr-1" />
-                                {currentBooking.email}
+                                {currentBooking?.email || 'N/A'}
                             </div>
                         </div>
                         <div>
                             <div className="text-sm text-gray-400">Created</div>
                             <div className="font-medium">
-                                {format(new Date(currentBooking.createdAt), 'dd MMM yyyy HH:mm')}
+                                {currentBooking?.createdAt ? format(new Date(currentBooking.createdAt), 'dd MMM yyyy HH:mm') : 'N/A'}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Players */}
-                {currentBooking.slots && currentBooking.slots.length > 0 && (
+                {currentBooking?.slots && currentBooking.slots.length > 0 && (
                     <div className="bg-gray-800 rounded-lg p-4">
                         <h2 className="text-lg font-semibold mb-4 flex items-center">
                             <Users className="w-5 h-5 mr-2" />
@@ -355,7 +416,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                 )}
 
                 {/* Waitlist Specific Info */}
-                {bookingType === 'waitlisted' && currentBooking.metadata && (
+                {bookingType === 'waitlisted' && currentBooking?.metadata && (currentBooking?.metadata?.confirmedSlots || currentBooking?.metadata?.remainingSlotsNeeded || currentBooking?.metadata?.lastConfirmedAt) && (
                     <div className="bg-orange-900/20 rounded-lg p-4">
                         <h2 className="text-lg font-semibold mb-4 flex items-center">
                             <ClockIcon className="w-5 h-5 mr-2" />
@@ -406,7 +467,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                     </Button>
                 )}
 
-                {canInitiatePayment() && (
+                {canPay && (
                     <Button
                         className="w-full bg-green-600 hover:bg-green-700"
                         onClick={handleInitiatePayment}
@@ -425,7 +486,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
             </div>
 
             {/* Partial Slot Selector */}
-            {showPartialSelector && currentBooking?.slots as any && (
+            {showPartialSelector && currentBooking?.slots && (
                 <PartialSlotSelector
                     slots={currentBooking.slots}
                     onConfirm={handlePartialCancelConfirm}

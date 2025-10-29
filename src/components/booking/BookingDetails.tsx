@@ -156,6 +156,11 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             onClose();
             return;
         }
+        console.log("numSlots in handleProceedToPayment", numSlots, bookingType);
+        if (numSlots <= 0) {
+            showToast('Please select at least 1 slot', 'error');
+            return;
+        }
 
         // Calculate final price via API for regular bookings
         if (bookingType === 'regular') {
@@ -755,7 +760,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 <Button
                     className="w-full"
                     onClick={handleProceedToPayment}
-                    disabled={!typedBookingInfo || isLoadingBookingInfo || isCalculatingPrice || isValidatingSlots || isProcessingBooking}
+                    disabled={!typedBookingInfo || numSlots <= 0 || bookingType === null || isLoadingBookingInfo || isCalculatingPrice || isValidatingSlots || isProcessingBooking}
                 >
                     {bookingType === 'waitlist' ? (
                         isProcessingBooking ? 'Processing...' : isValidatingSlots ? 'Validating Slots...' : 'Join Waitlist (Free)'
