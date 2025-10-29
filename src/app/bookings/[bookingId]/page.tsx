@@ -1,13 +1,20 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BookingDetailsPage } from '@/components/booking/BookingDetailsPage';
 
 export default function BookingDetailsRoute() {
     const params = useParams();
     const router = useRouter();
-    const [bookingType, setBookingType] = useState<'confirmed' | 'waitlisted' | 'failed' | 'cancelled'>('confirmed');
+    const searchParams = useSearchParams();
+    const initialTypeParam = (searchParams?.get('type') || '').toLowerCase();
+    const initialType: 'confirmed' | 'waitlisted' | 'failed' | 'cancelled' =
+        initialTypeParam === 'waitlisted' ? 'waitlisted'
+            : initialTypeParam === 'failed' ? 'failed'
+                : initialTypeParam === 'cancelled' ? 'cancelled'
+                    : 'confirmed';
+    const [bookingType, setBookingType] = useState<'confirmed' | 'waitlisted' | 'failed' | 'cancelled'>(initialType);
 
     const bookingId = params.bookingId as string;
 
@@ -15,12 +22,14 @@ export default function BookingDetailsRoute() {
         router.push('/bookings');
     };
 
-    // You might want to fetch booking type from the booking data
-    // For now, we'll determine it from URL params or booking data
     useEffect(() => {
-        // You can add logic here to determine booking type
-        // based on the booking data or URL parameters
-    }, [bookingId]);
+        const typeParam = (searchParams?.get('type') || '').toLowerCase();
+        if (!typeParam) return; // already set from initialType
+        if (typeParam === 'waitlisted') setBookingType('waitlisted');
+        else if (typeParam === 'failed') setBookingType('failed');
+        else if (typeParam === 'cancelled') setBookingType('cancelled');
+        else setBookingType('confirmed');
+    }, [bookingId, searchParams]);
 
     return (
         <div className="h-screen bg-gray-900">

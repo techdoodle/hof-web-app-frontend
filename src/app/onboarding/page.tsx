@@ -40,7 +40,7 @@ export default function OnboardingPage() {
   const queryClient = useQueryClient();
   const userData = queryClient.getQueryData(['user']);
   const { trackOnboardingSkipped, trackStepCompleted } = useOnboardingTracking();
-  
+
   console.log("userData", userData);
   // Only show progress bar and skip after OTP
   const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP' || currentStep === 'POSITION_SELECTION' || currentStep === 'TEAM_SELECTION';
@@ -107,17 +107,17 @@ export default function OnboardingPage() {
   const handleSkip = () => {
     // Track skip event
     console.log('Onboarding skipped at step:', currentStep);
-    
+
     // Track the skip event with current progress
     trackOnboardingSkipped(currentStep, getProgress(currentStep));
-    
+
     // Optional: Send analytics event
     // analytics.track('onboarding_skipped', {
     //   step: currentStep,
     //   progress: getProgress(currentStep),
     //   timestamp: new Date().toISOString()
     // });
-    
+
     router.push('/profile');
   };
 
@@ -133,7 +133,11 @@ export default function OnboardingPage() {
     >
       {currentStep === 'WELCOME' && (
         <WelcomeScreen
-          onContinue={() => setCurrentStep('LOGIN')}
+          onContinue={() => {
+            console.log('onContinue');
+            setCurrentStep('LOGIN');
+            // trackStepCompleted('WELCOME', getProgress('WELCOME'));
+          }}
         />
       )}
 

@@ -27,7 +27,7 @@ interface BookingDetails {
 export function useBookingDetails(bookingId: string) {
     const { user } = useAuthContext();
 
-    return useQuery({
+    const { data, isLoading, error } = useQuery({
         queryKey: ['booking', bookingId],
         queryFn: async (): Promise<BookingDetails> => {
             const response = await api.get(`/bookings/${bookingId}`);
@@ -37,4 +37,10 @@ export function useBookingDetails(bookingId: string) {
         staleTime: 2 * 60 * 1000, // 2 minutes
         gcTime: 5 * 60 * 1000, // 5 minutes
     });
+
+    return {
+        data,
+        loading: isLoading,
+        error: error ? 'Failed to load booking details' : null
+    };
 }
