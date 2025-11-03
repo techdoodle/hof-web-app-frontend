@@ -72,6 +72,24 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         })();
     }, [user?.id, matchId]);
 
+    // Ensure additionalSlots length matches required player count
+    useEffect(() => {
+        const targetLength = isAdditionalBooking ? numSlots : Math.max(0, numSlots - 1);
+        if (additionalSlots.length !== targetLength) {
+            const next = [...additionalSlots];
+            // Add missing entries
+            while (next.length < targetLength) {
+                next.push({ firstName: '', lastName: '', phone: '' });
+            }
+            // Trim extra
+            while (next.length > targetLength) {
+                next.pop();
+            }
+            setAdditionalSlots(next);
+            // Do not auto-open the form; it should open only when user clicks "Book"
+        }
+    }, [isAdditionalBooking, numSlots]);
+
     const handleSlotChange = (increment: boolean) => {
         if (!typedBookingInfo || !bookingType) return;
 
@@ -92,10 +110,21 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
         setNumSlots(newValue);
         // Update additional slots array
-        if (increment) {
-            setAdditionalSlots([...additionalSlots, { firstName: '', lastName: '', phone: '' }]);
+        if (isAdditionalBooking) {
+            // Friends-only mode: we need details for every slot (including first)
+            if (increment) {
+                setAdditionalSlots([...additionalSlots, { firstName: '', lastName: '', phone: '' }]);
+            } else {
+                setAdditionalSlots(additionalSlots.slice(0, -1));
+            }
+            setShowAdditionalDetails(true);
         } else {
-            setAdditionalSlots(additionalSlots.slice(0, -1));
+            // Normal mode: additionalSlots represent slots after the main user
+            if (increment) {
+                setAdditionalSlots([...additionalSlots, { firstName: '', lastName: '', phone: '' }]);
+            } else {
+                setAdditionalSlots(additionalSlots.slice(0, -1));
+            }
         }
     };
 
@@ -110,10 +139,11 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         const userPhone = user?.phoneNumber || '';
 
         // Collect all phone numbers (user + additional slots)
-        const allPhones = [
-            userPhone,
-            ...additionalSlots.map(slot => slot.phone)
-        ].filter(phone => phone && phone.trim() !== '');
+        const allPhones = (
+            isAdditionalBooking
+                ? additionalSlots.map(slot => slot.phone)
+                : [userPhone, ...additionalSlots.map(slot => slot.phone)]
+        ).filter(phone => phone && phone.trim() !== '');
 
         // Check for duplicates
         const uniquePhones = new Set(allPhones);
@@ -125,13 +155,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         for (let i = 0; i < additionalSlots.length; i++) {
             const slot = additionalSlots[i];
             if (!slot.phone?.trim()) {
-                showToast(`Phone number is required for slot ${i + 2}`, 'error');
+                const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
+                showToast(`Phone number is required for slot ${slotNum}`, 'error');
                 return false;
             }
             // Validate phone number format (basic validation)
             const phoneRegex = /^[6-9]\d{9}$/;
             if (!phoneRegex.test(slot.phone.replace(/\D/g, ''))) {
-                showToast(`Invalid phone number format for slot ${i + 2}`, 'error');
+                const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
+                showToast(`Invalid phone number format for slot ${slotNum}`, 'error');
                 return false;
             }
         }
@@ -156,8 +188,9 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             return;
         }
 
-        // Validate additional slots if any
-        if (numSlots > 1 && !validateAdditionalSlots()) {
+        // Validate player details depending on mode
+        const needsFriendDetails = isAdditionalBooking ? numSlots >= 1 : numSlots > 1;
+        if (needsFriendDetails && !validateAdditionalSlots()) {
             return;
         }
 
@@ -287,7 +320,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 userId: user?.id?.toString(),
                 email: userEmail,
                 totalSlots: numSlots,
-                slotNumbers: Array.from({ length: numSlots }, (_, i) => i + 1), // Generate slot numbers
+                slotNumbers: Array.from({ length: numSlots }, (_, i) => i + 1), // Client-side placeholder; server locks actual
                 players: players,
                 metadata: {
                     bookingType,
@@ -616,11 +649,18 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                                         onClick={() => {
                                             setBookingType('regular');
                                             setNumSlots(1);
-                                            setAdditionalSlots([]);
+                                            // Initialize friend details immediately for additional-booking mode
+                                            if (isAdditionalBooking) {
+                                                setAdditionalSlots([{ firstName: '', lastName: '', phone: '' }]);
+                                                setShowAdditionalDetails(true);
+                                            } else {
+                                                setAdditionalSlots([]);
+                                                setShowAdditionalDetails(false);
+                                            }
                                         }}
                                         className="bg-green-600 hover:bg-green-700"
                                     >
-                                        {bookingType === 'regular' ? 'Selected' : 'Select'}
+                                        {bookingType === 'regular' ? 'Selected' : (isAdditionalBooking ? 'Book' : 'Select')}
                                     </Button>
                                 </div>
                             </div>
@@ -672,8 +712,17 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     <div className="bg-gray-800/50 rounded-lg p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-medium">{user?.firstName} {user?.lastName}</p>
-                                <p className="text-sm text-gray-400">You</p>
+                                {isAdditionalBooking ? (
+                                    <>
+                                        <p className="font-medium">Add friends</p>
+                                        <p className="text-sm text-gray-400">Enter player details for each slot</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="font-medium">{user?.firstName} {user?.lastName}</p>
+                                        <p className="text-sm text-gray-400">You</p>
+                                    </>
+                                )}
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button
@@ -696,12 +745,12 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                             </div>
                         </div>
 
-                        {numSlots > 1 && (
+                        {(isAdditionalBooking ? numSlots >= 1 : numSlots > 1) && (
                             <button
                                 className="text-sm text-blue-400 mt-2"
                                 onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
                             >
-                                {showAdditionalDetails ? 'Hide' : 'Add'} details for additional slots
+                                {showAdditionalDetails ? 'Hide' : 'Add'} player details
                             </button>
                         )}
                     </div>
@@ -714,11 +763,11 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 )}
 
                 {/* Additional Slots Details */}
-                {showAdditionalDetails && numSlots > 1 && (
+                {showAdditionalDetails && ((isAdditionalBooking ? numSlots >= 1 : numSlots > 1)) && (
                     <div className="space-y-4">
                         {additionalSlots.map((slot, index) => (
                             <div key={index} className="bg-gray-800/30 rounded-lg p-4">
-                                <p className="text-sm font-medium mb-3">Slot {index + 2} - Player Details</p>
+                                <p className="text-sm font-medium mb-3">Slot {isAdditionalBooking ? (index + 1) : (index + 2)} - Player Details</p>
                                 <div className="space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
                                         <input
