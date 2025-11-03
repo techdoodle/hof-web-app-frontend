@@ -10,7 +10,7 @@ import { useLocation } from "@/contexts/LocationContext";
 import { calculateDistance } from "@/lib/utils/distance";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/contexts/ToastContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api, { hasActiveBookingForMatch } from "@/lib/api";
 import { useAuthContext } from '@/contexts/AuthContext';
 
