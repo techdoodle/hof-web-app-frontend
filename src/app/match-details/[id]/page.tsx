@@ -11,21 +11,35 @@ import { calculateDistance } from "@/lib/utils/distance";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/contexts/ToastContext';
 import { useState } from 'react';
-import api from "@/lib/api";
+import api, { hasActiveBookingForMatch } from "@/lib/api";
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const MatchDetailsPage = () => {
     const { id } = useParams();
     const router = useRouter();
     const { data: matchData, isLoading, error } = useMatchDetails(Number(id));
     const { data: bookingInfo, isLoading: isBookingInfoLoading } = useCriticalBookingInfo(Number(id));
+    const { user } = useAuthContext();
     const { location } = useLocation();
     const { showToast } = useToast();
     const [isBooking, setIsBooking] = useState(false);
+    const [hasUserBooking, setHasUserBooking] = useState(false);
 
     // Type assertion for booking info
     const typedBookingInfo = bookingInfo as CriticalBookingInfo | undefined;
 
     console.log("matchData", matchData);
+    // Determine if user already booked this match to toggle CTA label
+    useEffect(() => {
+        (async () => {
+            if (user?.id && matchData?.id) {
+                const has = await hasActiveBookingForMatch(Number(matchData.id), Number(user.id));
+                setHasUserBooking(has);
+            } else {
+                setHasUserBooking(false);
+            }
+        })();
+    }, [user?.id, matchData?.id]);
     const handleBack = () => {
         router.push("/play");
     };
@@ -215,7 +229,9 @@ const MatchDetailsPage = () => {
                             {isBooking && (
                                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white ml-2"></div>
                             )}
-                            {(!matchData || !typedBookingInfo || ((typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)) <= 0) ? "This match is full" : "Book Slot(s)"}
+                            {(!matchData || !typedBookingInfo || ((typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)) <= 0)
+                                ? "This match is full"
+                                : (hasUserBooking ? "Book more slots" : "Book Slot(s)")}
                         </Button>
                     </div>
                 </div>

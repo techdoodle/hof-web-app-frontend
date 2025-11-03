@@ -82,3 +82,14 @@ export async function fetchLeaderBoard(page: number = 1, limit: number = 20, fil
 }
 
 export default api; 
+
+// Determine if the current user already has an active booking for a given match
+export async function hasActiveBookingForMatch(matchId: number, userId: number) {
+  try {
+    const res = await api.get(`/bookings?userId=${userId}&status=CONFIRMED`);
+    const bookings = res.data || [];
+    return bookings.some((b: any) => Number(b.matchId) === Number(matchId) && (b.slots || []).some((s: any) => s.status === 'ACTIVE'));
+  } catch {
+    return false;
+  }
+}

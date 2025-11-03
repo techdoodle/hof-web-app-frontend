@@ -4,7 +4,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { CriticalBookingInfo, useCriticalBookingInfo } from '@/hooks/useCriticalBookingInfo';
 import { PhoneIcon, MinusIcon, PlusIcon, X } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
-import api from '@/lib/api';
+import api, { hasActiveBookingForMatch } from '@/lib/api';
 import { BookingService } from '@/lib/bookingService';
 import { WaitlistService } from '@/lib/waitlistService';
 import { loadRazorpayScript, openRazorpayCheckout, RazorpayOptions } from '@/lib/razorpay';
@@ -38,6 +38,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     const [bookingId, setBookingId] = useState<string | null>(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [bookingData, setBookingData] = useState<any>(null);
+    const [isAdditionalBooking, setIsAdditionalBooking] = useState(false);
     const [showWaitlistConfirmation, setShowWaitlistConfirmation] = useState(false);
     const [waitlistData, setWaitlistData] = useState<any>(null);
     const [waitlistMatchData, setWaitlistMatchData] = useState<any>(null);
@@ -58,6 +59,18 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             localStorage.removeItem('bookingKeyExpiry');
         };
     }, [matchId]);
+
+    // Detect if user already has an active booking for this match
+    useEffect(() => {
+        (async () => {
+            if (user?.id && matchId) {
+                const has = await hasActiveBookingForMatch(Number(matchId), Number(user.id));
+                setIsAdditionalBooking(has);
+            } else {
+                setIsAdditionalBooking(false);
+            }
+        })();
+    }, [user?.id, matchId]);
 
     const handleSlotChange = (increment: boolean) => {
         if (!typedBookingInfo || !bookingType) return;
@@ -253,19 +266,21 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             console.log('User email:', userEmail);
 
             // Step 1: Create booking
-            // Prepare players array (main user + additional slots)
-            const players = [
-                {
-                    firstName: user?.firstName || '',
-                    lastName: user?.lastName || '',
-                    phone: '' // Main user phone will be extracted from JWT token on backend
-                },
-                ...additionalSlots.map(slot => ({
-                    firstName: slot.firstName,
-                    lastName: slot.lastName,
-                    phone: slot.phone // Additional players provide their own phone
-                }))
-            ];
+            // Prepare players array
+            // If this is an additional booking, do NOT auto-add current user; require friends only
+            const players = (
+                isAdditionalBooking
+                    ? []
+                    : [{
+                        firstName: user?.firstName || '',
+                        lastName: user?.lastName || '',
+                        phone: '' // Main user phone will be extracted from JWT token on backend
+                    }]
+            ).concat(additionalSlots.map(slot => ({
+                firstName: slot.firstName,
+                lastName: slot.lastName,
+                phone: slot.phone
+            })));
 
             const bookingData = {
                 matchId: Number(matchId),
