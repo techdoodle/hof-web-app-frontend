@@ -1,10 +1,13 @@
 {
-	"folders": [
-		{
-			"path": "../hof-web-app-backend"
-		},
-		{
-			"path": "."
-		}
-	]
+    "folders": [
+        {
+            "path": "../hof-web-app-backend"
+        },
+        {
+            "path": "."
+        },
+        {
+            "path": "../hof-admin"
+        }
+    ]
 }

@@ -16,6 +16,7 @@ if (environment === 'development') {
 } else {
   // Default to production for any production build
   baseURL = 'https://hof-web-app-backend-production.up.railway.app';
+  // baseURL = 'http://localhost:8000';
 }
 
 const api = axios.create({
@@ -82,3 +83,18 @@ export async function fetchLeaderBoard(page: number = 1, limit: number = 20, fil
 }
 
 export default api; 
+
+// Determine if the current user already has an active booking for a given match
+export async function hasActiveBookingForMatch(matchId: number, userId: number) {
+  try {
+    const res = await api.get(`/bookings?userId=${userId}&status=CONFIRMED`);
+    const bookings = res.data || [];
+    return bookings.some((b: any) => {
+      const bMatchId = Number(b.matchId ?? b.match_id);
+      const slots = Array.isArray(b.slots) ? b.slots : [];
+      return bMatchId === Number(matchId) && slots.some((s: any) => s.status === 'ACTIVE');
+    });
+  } catch {
+    return false;
+  }
+}

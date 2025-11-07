@@ -50,41 +50,94 @@ export default function YoutubeLinkViewer({
         return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
     };
 
-    // Get mobile app URL (opens YouTube app if available)
-    const getMobileUrl = (youtubeUrl: string): string => {
-        const videoId = getVideoId(youtubeUrl);
-        if (!videoId) return youtubeUrl;
+    // Check if YouTube app is likely installed (iOS specific)
+    const checkYouTubeApp = async (videoId: string): Promise<boolean> => {
+        return new Promise((resolve) => {
+            // For iOS, we can't reliably detect app installation
+            // So we'll use a different approach - create a hidden iframe and test
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-        // Check if mobile device
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (!isIOS) {
+                resolve(false);
+                return;
+            }
 
-        if (isMobile) {
-            return `youtube://watch?v=${videoId}`;
-        }
-        return `https://www.youtube.com/watch?v=${videoId}`;
+            // Create a hidden iframe to test the YouTube app URL
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = `youtube://watch?v=${videoId}`;
+
+            let resolved = false;
+
+            // If the app opens, the page will lose focus
+            const handleVisibilityChange = () => {
+                if (document.hidden && !resolved) {
+                    resolved = true;
+                    resolve(true);
+                    cleanup();
+                }
+            };
+
+            // Cleanup function
+            const cleanup = () => {
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                if (iframe.parentNode) {
+                    iframe.parentNode.removeChild(iframe);
+                }
+            };
+
+            // Listen for visibility change (indicates app opened)
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Timeout after 1 second - assume app not installed
+            setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    resolve(false);
+                    cleanup();
+                }
+            }, 1000);
+
+            // Try to load the iframe
+            try {
+                document.body.appendChild(iframe);
+            } catch (error) {
+                resolved = true;
+                resolve(false);
+                cleanup();
+            }
+        });
     };
 
     // Handle click to open in new tab/app
-    const handleClick = () => {
-        const mobileUrl = getMobileUrl(link);
-
-        // Try to open YouTube app first on mobile
-        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            const videoId = getVideoId(link);
-            if (videoId) {
-                // Try YouTube app first
-                window.location.href = `youtube://watch?v=${videoId}`;
-
-                // Fallback to web after short delay
-                setTimeout(() => {
-                    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-                }, 1000);
-                return;
-            }
+    const handleClick = async () => {
+        const videoId = getVideoId(link);
+        if (!videoId) {
+            window.open(link, '_blank', 'noopener,noreferrer');
+            return;
         }
 
-        // Desktop: open in new tab
-        window.open(mobileUrl, '_blank', 'noopener,noreferrer');
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+
+        // For mobile devices, try to detect if YouTube app is available
+        if (isMobile) {
+            if (isIOS) {
+                // For iOS, always use web URL to avoid Safari's "invalid address" error
+                // The YouTube website will handle redirecting to the app if it's installed
+                window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank', 'noopener,noreferrer');
+            } else if (isAndroid) {
+                // For Android, use intent URL which gracefully falls back to web
+                window.open(`intent://www.youtube.com/watch?v=${videoId}#Intent;package=com.google.android.youtube;scheme=https;end`, '_blank');
+            } else {
+                // Other mobile platforms - use web URL
+                window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank', 'noopener,noreferrer');
+            }
+        } else {
+            // Desktop: always use web URL
+            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank', 'noopener,noreferrer');
+        }
     };
 
     // If not a valid YouTube URL, show error
