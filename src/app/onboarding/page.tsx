@@ -118,7 +118,7 @@ export default function OnboardingPage() {
     //   timestamp: new Date().toISOString()
     // });
 
-    router.push('/profile');
+    router.push('/home');
   };
 
   return (

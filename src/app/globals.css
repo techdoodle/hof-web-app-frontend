@@ -39,6 +39,10 @@
     animation: bounceIn 0.8s ease-out forwards;
   }
 
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -117,6 +121,48 @@
     to {
       transform: translateX(0);
       opacity: 1;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-slide-in-from-right {
+    animation: slideInFromRight 0.4s ease-out forwards;
+  }
+
+  .animate-slide-out-to-right {
+    animation: slideOutToRight 0.4s ease-out forwards;
+  }
+
+  @keyframes slideInFromRight {
+    0% {
+      transform: translateX(calc(50vw + 200px));
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateX(-50%);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideOutToRight {
+    0% {
+      transform: translateX(-50%);
+      opacity: 1;
+    }
+
+    100% {
+      transform: translateX(calc(50vw + 200px));
+      opacity: 0;
     }
   }
 

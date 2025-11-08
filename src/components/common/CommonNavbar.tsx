@@ -1,21 +1,29 @@
 'use client';
 
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { useBottomNavVisibility } from '@/hooks/useBottomNavVisibility';
 
 interface CommonNavbarProps {
-  activeTab: 'leaderboard' | 'play' | 'profile';
+  activeTab: 'home' | 'leaderboard' | 'play' | 'profile';
 }
 
 export function CommonNavbar({ activeTab }: CommonNavbarProps) {
   const navItems: Array<{
-    id: 'leaderboard' | 'play' | 'profile';
+    id: 'home' | 'leaderboard' | 'play' | 'profile';
     label: string;
     href: string;
     iconSrc: { active: string; inactive: string };
   }> = [
+      {
+        id: 'home',
+        label: 'Home',
+        href: '/home',
+        iconSrc: {
+          active: '/icons/nav/home-active.svg',
+          inactive: '/icons/nav/home-inactive.svg',
+        },
+      },
       {
         id: 'leaderboard',
         label: 'Leaderboard',
@@ -69,7 +77,7 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
           borderImageWidth: '1px',
         }}
       >
-        <div className="flex items-center gap-12">
+        <div className="flex items-center gap-8">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             return (
