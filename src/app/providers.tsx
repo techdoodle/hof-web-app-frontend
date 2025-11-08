@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ReactNode } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { GoldenChipProvider } from '@/contexts/GoldenChipContext';
 import { CacheClearer } from '@/components/utils/CacheClearer';
 import { LocationProvider } from '@/contexts/LocationContext';
 
@@ -29,11 +30,13 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ToastProvider>
-          <LocationProvider>
-            <CacheClearer />
-            {children}
-            <ReactQueryDevtools initialIsOpen={false} />
-          </LocationProvider>
+          <GoldenChipProvider>
+            <LocationProvider>
+              <CacheClearer />
+              {children}
+              <ReactQueryDevtools initialIsOpen={false} />
+            </LocationProvider>
+          </GoldenChipProvider>
         </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>

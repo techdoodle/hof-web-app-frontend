@@ -51,8 +51,8 @@ export function useOnboarding() {
           });
 
           if (freshUserData.onboardingComplete) {
-            console.log('Onboarding complete, redirecting to profile...');
-            router.replace('/profile');
+            console.log('Onboarding complete, redirecting to home...');
+            router.replace('/home');
           } else {
             console.log('Onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
@@ -63,8 +63,8 @@ export function useOnboarding() {
           // Fallback to cached data
           console.log('Using cached user data as fallback...');
           if (user.onboardingComplete) {
-            console.log('Cached data shows onboarding complete, redirecting to profile...');
-            router.replace('/profile');
+            console.log('Cached data shows onboarding complete, redirecting to home...');
+            router.replace('/home');
           } else {
             console.log('Cached data shows onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
@@ -121,8 +121,8 @@ export function useOnboarding() {
 
       // Check if user has already completed onboarding
       if (userData.onboardingComplete) {
-        console.log('User already validated, redirecting to profile...');
-        router.replace('/profile');
+        console.log('User already validated, redirecting to home...');
+        router.replace('/home');
       } else {
         console.log('User not validated, starting onboarding...');
         setCurrentStep('USER_INFO');
@@ -206,7 +206,7 @@ export function useOnboarding() {
       // });
 
       // Complete onboarding flow
-      router.push('/profile');
+      router.push('/home');
     },
   });
 
@@ -253,8 +253,8 @@ export function useOnboarding() {
     await updateTeamSelectionMutation.mutateAsync(teamData).then((data) => {
       console.log("updateTeamSelectionMutation data", data);
       queryClient.setQueryData(['user'], data);
-      // Complete onboarding - redirect to profile
-      router.push('/profile');
+      // Complete onboarding - redirect to home
+      router.push('/home');
     });
   };
 

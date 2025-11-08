@@ -16,8 +16,8 @@ export default function HomePage() {
     if (token && user) {
       // Check if user has already completed onboarding
       if (user.onboardingComplete) {
-        // User is validated, redirect to profile
-        router.replace('/profile');
+        // User is validated, redirect to home
+        router.replace('/home');
       } else {
         // User is logged in but not validated, redirect to onboarding
         router.replace('/onboarding');
