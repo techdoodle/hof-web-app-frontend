@@ -7,6 +7,7 @@ interface Venue {
     name: string;
     address: string;
     display_banner?: string;
+    displayBanner?: string;
     distance: number;
 }
 

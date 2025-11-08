@@ -132,7 +132,7 @@ const MatchDetailsPage = () => {
                 </div>
                 <div className="mt-2 w-full h-64 rounded-lg overflow-hidden relative mx-auto">
                     <Image
-                        src={matchData.venue.display_banner || "/play-dummy-venue.jpg"}
+                        src={matchData.venue.displayBanner || "/play-dummy-venue.jpg"}
                         alt={matchData.venue.name}
                         fill
                         className="object-cover"
