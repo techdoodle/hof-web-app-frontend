@@ -415,7 +415,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
                 amount: paymentResponse.razorpayOrder.amount,
                 currency: paymentResponse.razorpayOrder.currency,
-                name: 'HOF - Hall of Football',
+                name: 'HOF - Humans of Football',
                 description: `Booking for ${matchData.venue.name}`,
                 order_id: paymentResponse.razorpayOrder.id,
                 prefill: {
