@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/contexts/ToastContext';
-import { CheckCircle, Calendar, MapPin, Clock, Users, ArrowRight } from 'lucide-react';
+import { AlertCircle, Calendar, MapPin, Clock, Users, ArrowRight, RefreshCw } from 'lucide-react';
 
-interface BookingConfirmationProps {
+interface PaymentFailedConfirmationProps {
     bookingId: string;
     matchData: any;
     bookingData: any;
     onClose: () => void;
 }
 
-export function BookingConfirmation({ bookingId, matchData, bookingData, onClose }: BookingConfirmationProps) {
+export function PaymentFailedConfirmation({ bookingId, matchData, bookingData, onClose }: PaymentFailedConfirmationProps) {
     const router = useRouter();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +20,6 @@ export function BookingConfirmation({ bookingId, matchData, bookingData, onClose
         setIsLoading(true);
         // Navigate back to play page or match details
         router.push('/play');
-        // onClose();
     };
 
     const formatDate = (dateString: string) => {
@@ -50,7 +49,7 @@ export function BookingConfirmation({ bookingId, matchData, bookingData, onClose
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-green-900 flex flex-col">
+        <div className="min-h-screen bg-gradient-to-br from-orange-900 via-orange-800 to-orange-900 flex flex-col">
             {/* Status Bar */}
             <div className="flex justify-between items-center px-4 py-2 text-white text-sm">
                 <div className="flex items-center gap-1">
@@ -60,30 +59,42 @@ export function BookingConfirmation({ bookingId, matchData, bookingData, onClose
                 </div>
             </div>
 
-            {/* Success Icon */}
+            {/* Payment Failed Icon */}
             <div className="flex-1 flex flex-col items-center justify-center px-6">
-                <div className="w-24 h-24 bg-green-400 rounded-full flex items-center justify-center mb-6 shadow-2xl">
-                    <CheckCircle className="w-12 h-12 text-white" />
+                <div className="w-24 h-24 bg-orange-400 rounded-full flex items-center justify-center mb-6 shadow-2xl">
+                    <AlertCircle className="w-12 h-12 text-white" />
                 </div>
 
-                {/* Success Message */}
-                <h1 className="text-3xl font-bold text-white mb-2">Paid Successfully</h1>
+                {/* Payment Failed Message */}
+                <h1 className="text-3xl font-bold text-white mb-2 text-center">Payment Processing</h1>
 
                 {/* Amount */}
                 <div className="text-4xl font-bold text-white mb-2">
                     ₹{bookingData?.amount || 0}
                 </div>
 
-                {/* Recipient */}
-                <p className="text-green-200 text-center mb-8">
-                    Paid to Humans of Football Pvt.
+                {/* Info Message */}
+                <p className="text-orange-200 text-center mb-4 px-4">
+                    Your payment is being reviewed
                 </p>
 
+                {/* Check Again Message */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-8 max-w-sm">
+                    <div className="flex items-center gap-3 mb-2">
+                        <RefreshCw className="w-5 h-5 text-orange-300" />
+                        <p className="text-white font-semibold">Check Again in 30 Minutes</p>
+                    </div>
+                    <p className="text-orange-200 text-sm text-center">
+                        We're reviewing your booking. Please check back in 30 minutes to see the updated status.
+                    </p>
+                </div>
+
                 {/* Transaction Details */}
-                <div className="text-green-200 text-center mb-8">
+                <div className="text-orange-200 text-center mb-8">
                     <p className="text-sm">
                         {formatDate(new Date().toISOString())} {formatTime(new Date().toISOString())}
                     </p>
+                    <p className="text-xs mt-1">Booking ID: {bookingData?.bookingReference || bookingId}</p>
                 </div>
 
                 {/* Booking Details Card */}
@@ -92,26 +103,26 @@ export function BookingConfirmation({ bookingId, matchData, bookingData, onClose
 
                     <div className="space-y-3">
                         <div className="flex items-center gap-3">
-                            <MapPin className="w-5 h-5 text-green-300" />
+                            <MapPin className="w-5 h-5 text-orange-300" />
                             <span className="text-white text-sm">{matchData.venue.name}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Calendar className="w-5 h-5 text-green-300" />
+                            <Calendar className="w-5 h-5 text-orange-300" />
                             <span className="text-white text-sm">
                                 {formatDate(matchData.startTime)}
                             </span>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Clock className="w-5 h-5 text-green-300" />
+                            <Clock className="w-5 h-5 text-orange-300" />
                             <span className="text-white text-sm">
                                 {formatTime(matchData.startTime)} - {formatTime(matchData.endTime)}
                             </span>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Users className="w-5 h-5 text-green-300" />
+                            <Users className="w-5 h-5 text-orange-300" />
                             <span className="text-white text-sm">
                                 {bookingData?.totalSlots || 1} slot(s) • {getDuration()} minutes
                             </span>
@@ -123,7 +134,7 @@ export function BookingConfirmation({ bookingId, matchData, bookingData, onClose
                 <Button
                     onClick={handleDone}
                     disabled={isLoading}
-                    className="w-full max-w-sm bg-green-500 hover:bg-green-600 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2"
+                    className="w-full max-w-sm bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2"
                 >
                     {isLoading ? 'Processing...' : 'Done'}
                     <ArrowRight className="w-5 h-5" />
@@ -132,3 +143,4 @@ export function BookingConfirmation({ bookingId, matchData, bookingData, onClose
         </div>
     );
 }
+
