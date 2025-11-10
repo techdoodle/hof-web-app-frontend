@@ -10,6 +10,7 @@ import { WaitlistService } from '@/lib/waitlistService';
 import { loadRazorpayScript, openRazorpayCheckout, RazorpayOptions } from '@/lib/razorpay';
 import { BookingConfirmation } from './BookingConfirmation';
 import { WaitlistConfirmation } from './WaitlistConfirmation';
+import { PaymentFailedConfirmation } from './PaymentFailedConfirmation';
 
 interface AdditionalSlotInfo {
     firstName: string;
@@ -37,6 +38,8 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     const [isProcessingBooking, setIsProcessingBooking] = useState(false);
     const [bookingId, setBookingId] = useState<string | null>(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [showPaymentFailed, setShowPaymentFailed] = useState(false);
+    const [paymentFailedMessage, setPaymentFailedMessage] = useState('');
     const [bookingData, setBookingData] = useState<any>(null);
     const [isAdditionalBooking, setIsAdditionalBooking] = useState(false);
     const [showWaitlistConfirmation, setShowWaitlistConfirmation] = useState(false);
@@ -450,7 +453,14 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                         setShowConfirmation(true);
                     } catch (error) {
                         console.error('Payment callback error:', error);
-                        showToast('Payment verification failed. Please contact support.', 'error');
+                        // Show payment failed confirmation page
+                        setBookingData({
+                            id: booking.id,
+                            amount: finalPrice,
+                            totalSlots: numSlots,
+                            bookingReference: booking.bookingReference
+                        });
+                        setShowPaymentFailed(true);
                     }
                 },
                 modal: {
@@ -525,6 +535,18 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         );
     }
 
+    // Show payment failed confirmation page
+    if (showPaymentFailed && bookingData) {
+        return (
+            <PaymentFailedConfirmation
+                bookingId={bookingData.id}
+                matchData={matchData}
+                bookingData={bookingData}
+                onClose={onClose}
+            />
+        );
+    }
+
     // Show confirmation page after successful payment
     if (showConfirmation && bookingData) {
         return (
@@ -536,6 +558,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             />
         );
     }
+
 
     return (
         <div className="h-full flex flex-col">
