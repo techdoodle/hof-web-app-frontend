@@ -153,6 +153,7 @@ const MatchDetailsPage = () => {
                                 })?.toFixed(1)} kms away
                             </p>
                         )}
+                        <p className="text-md text-gray-300 italic">{matchData.playerCapacity / 2}v{matchData.playerCapacity / 2} match</p>
                     </div>
 
                     {matchData.isFastFilling && (
@@ -181,25 +182,6 @@ const MatchDetailsPage = () => {
                         </p>
                     </div>
 
-                    {/* Match Stats */}
-                    {/* <div className="bg-gray-800/30 rounded-lg p-4">
-                        <div className="text-sm font-medium mb-2">Match Capacity</div>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span className="text-gray-400">Total Capacity:</span>
-                                <span className="ml-2 font-medium">
-                                    {(matchData.playerCapacity || 0) + (matchData.bufferCapacity || 0)}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="text-gray-400">Available Slots:</span>
-                                <span className="ml-2 font-medium">
-                                    {(typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)}
-                                </span>
-                            </div>
-                        </div>
-                    </div> */}
-
                     {/* Football Chief */}
                     {matchData.footballChief && (
                         <div className="space-y-2">
@@ -223,15 +205,15 @@ const MatchDetailsPage = () => {
                     <div className="mt-auto fixed bottom-0 left-0 right-0 p-4">
                         <Button
                             disabled={isLoading || isBookingInfoLoading || !matchData || !typedBookingInfo || ((typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)) <= 0 || isBooking}
-                            className="w-full bg-green-600 text-white py-4 rounded-lg"
+                            className="w-full bg-[#006633] text-white py-4 rounded-lg hover:bg-[#006633]/80]"
                             onClick={handleBookSlot}
                         >
+                            {(!matchData || !typedBookingInfo || ((typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)) <= 0)
+                                ? "This match is full"
+                                : (hasUserBooking ? "Book more slots" : `Book @ ₹${Number(matchData.offerPrice).toFixed(0)}/slot`)}
                             {isBooking && (
                                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white ml-2"></div>
                             )}
-                            {(!matchData || !typedBookingInfo || ((typedBookingInfo?.availableRegularSlots || 0) + (typedBookingInfo?.availableWaitlistSlots || 0)) <= 0)
-                                ? "This match is full"
-                                : (hasUserBooking ? "Book more slots" : "Book Slot(s)")}
                         </Button>
                     </div>
                 </div>

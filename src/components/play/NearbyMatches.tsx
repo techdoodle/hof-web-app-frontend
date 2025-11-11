@@ -1,5 +1,5 @@
 import { Button } from '../ui/button';
-import { CheckCircleIcon, Loader2Icon, MapPinIcon } from 'lucide-react';
+import { Loader2Icon, MapPinIcon } from 'lucide-react';
 import { useNearbyMatches } from '@/hooks/useNearbyMatches';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -199,7 +199,7 @@ export function NearbyMatches() {
                                                         return {
                                                             ...match,
                                                             venue: venueData.venue,
-                                                            isFastFilling: match.bookedSlots / match.playerCapacity > 0.7,
+                                                            isFastFilling: match.bookedSlots / match.playerCapacity > 0.5,
                                                         };
                                                     },
                                                 });
@@ -212,6 +212,7 @@ export function NearbyMatches() {
                                                         <HofSelectChip />
                                                     </div>
                                                 )}
+                                                <p className="text-sm text-gray-300 italic">{match.playerCapacity / 2}v{match.playerCapacity / 2}</p>
                                                 <p className="text-sm text-gray-300">
                                                     {formatDate(match.startTime)}
                                                 </p>
@@ -227,10 +228,10 @@ export function NearbyMatches() {
                                             <div className="flex-4 text-right">
                                                 {match.offerPrice < match.slotPrice ? (
                                                     <div>
-                                                        <p className="text-xs text-white-500 line-through">
+                                                        <p className="text-sm text-white-500 line-through">
                                                             ₹{match.slotPrice}
                                                         </p>
-                                                        <p className="text-sm font-medium text-green-400">
+                                                        <p className="text-md text-font-bold font-medium text-green-400">
                                                             ₹{match.offerPrice}
                                                         </p>
                                                     </div>
