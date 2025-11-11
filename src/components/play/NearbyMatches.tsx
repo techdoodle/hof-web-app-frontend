@@ -155,7 +155,10 @@ export function NearbyMatches() {
                     <div key={venueData.venue.id} className="overflow-hidden">
                         {/* Venue Header */}
                         <div className="flex items-center p-4">
-                            <div className="w-30 h-16 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0">
+                            <div
+                                className="h-16 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0"
+                                style={{ flex: '0 0 35%' }}
+                            >
                                 {venueData.venue.displayBanner && (venueData.venue.displayBanner.startsWith('data:image/jpeg;base64,') || venueData.venue.displayBanner.startsWith('data:image/png;base64,')) ? (
                                     <Image
                                         src={venueData.venue.displayBanner}
@@ -170,7 +173,10 @@ export function NearbyMatches() {
                                     </div>
                                 )}
                             </div>
-                            <div className="ml-4 flex-1">
+                            <div
+                                className="ml-4"
+                                style={{ flex: '0 0 65%' }}
+                            >
                                 <h3 className="font-large text-xl text-white">{venueData.venue.name}</h3>
                                 <p className="text-sm text-gray-400">{venueData.venue.distance.toFixed(1)} kms away</p>
                             </div>
