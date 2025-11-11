@@ -82,7 +82,7 @@ export async function fetchLeaderBoard(page: number = 1, limit: number = 20, fil
   return response.data;
 }
 
-export default api; 
+export default api;
 
 // Determine if the current user already has an active booking for a given match
 export async function hasActiveBookingForMatch(matchId: number, userId: number) {

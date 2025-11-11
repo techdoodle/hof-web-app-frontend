@@ -7,6 +7,7 @@ export interface MatchDetails {
     name: string;
     address: string;
     display_banner?: string;
+    displayBanner?: string;
     latitude: number;
     longitude: number;
   };

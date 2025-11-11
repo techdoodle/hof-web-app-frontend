@@ -7,6 +7,7 @@ interface Venue {
     name: string;
     address: string;
     display_banner?: string;
+    displayBanner?: string;
     distance: number;
 }
 
@@ -33,6 +34,12 @@ export function useNearbyMatches() {
         queryKey: ['nearby-matches', location?.latitude, location?.longitude],
         queryFn: async () => {
             if (!location) return [];
+            if (typeof location.latitude === 'string') {
+                location.latitude = Number(location.latitude)
+            }
+            if (typeof location.longitude === 'string') {
+                location.longitude = Number(location.longitude)
+            }
             const response = await api.post('/matches/nearby', location);
             return response.data;
         },
