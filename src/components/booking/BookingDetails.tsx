@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/contexts/ToastContext';
 import { CriticalBookingInfo, useCriticalBookingInfo } from '@/hooks/useCriticalBookingInfo';
-import { PhoneIcon, MinusIcon, PlusIcon, X } from 'lucide-react';
+import { PhoneIcon, MinusIcon, PlusIcon, X, CircleX } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import api, { hasActiveBookingForMatch } from '@/lib/api';
 import { BookingService } from '@/lib/bookingService';
@@ -181,6 +181,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         }
     }, [bookingType, numSlots, typedBookingInfo]);
 
+    const [slotVerificationError, setSlotVerificationError] = useState<string | null>(null);
     const handleProceedToPayment = async () => {
         if (!userEmail || userEmail.trim() === '') {
             showToast('Please enter your email', 'error');
@@ -196,6 +197,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         if (needsFriendDetails && !validateAdditionalSlots()) {
             return;
         }
+        setSlotVerificationError(null);
 
         // Validate booking key
         const key = localStorage.getItem('bookingKey');
@@ -276,10 +278,85 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     }
                 }
 
+
+
                 // Additional validation for waitlist
                 if (bookingType === 'waitlist' && bookingData.waitlistedSlots > 0) {
                     showToast(`There are ${bookingData.waitlistedSlots} people already on the waitlist`, 'info');
                 }
+            }
+
+            // Pre-verify: no active slots for selected users on this match
+            try {
+                setIsValidatingSlots(true);
+                // Build slots array with phone numbers for all slots
+                const slotsToVerify: Array<{ phone: string; slotNumber?: number }> = [];
+
+                // Get main user's phone number
+                const mainUserPhone = user?.phoneNumber || '';
+
+                if (isAdditionalBooking) {
+                    // Additional booking mode: only verify friends (main user not included in booking)
+                    // Add all friend phone numbers
+                    additionalSlots.forEach((slot, index) => {
+                        if (slot.phone?.trim()) {
+                            slotsToVerify.push({
+                                phone: slot.phone.trim(),
+                                slotNumber: index + 1
+                            });
+                        }
+                    });
+                } else {
+                    // Regular mode: verify main user + friends
+                    // Main user is first slot
+                    if (mainUserPhone) {
+                        slotsToVerify.push({
+                            phone: mainUserPhone,
+                            slotNumber: 1
+                        });
+                    }
+
+                    // Add friend phone numbers (slots 2, 3, etc.)
+                    additionalSlots.forEach((slot, index) => {
+                        if (slot.phone?.trim()) {
+                            slotsToVerify.push({
+                                phone: slot.phone.trim(),
+                                slotNumber: index + 2
+                            });
+                        }
+                    });
+                }
+
+                if (slotsToVerify.length > 0) {
+                    const verifyResult = await BookingService.verifySlots({
+                        matchId: matchId.toString(),
+                        slots: slotsToVerify
+                    });
+                    console.log("verifyResult", verifyResult);
+
+                    if (!verifyResult.isValid) {
+                        const conflictMessages = verifyResult.conflicts.map(c =>
+                            `Phone ${c.phone}: ${c.reason} (sources: ${c.source.join(', ')})`
+                        ).join(', ');
+                        showToast(
+                            verifyResult.message || `Cannot proceed: ${conflictMessages}`,
+                            'error'
+                        );
+                        console.log("slotVerificationError", `Slots for Phone Number(s): ${verifyResult.conflicts.map(s => s.phone).join(', ')} : already booked. Please book for friends with different phone numbers.`);
+                        setSlotVerificationError(`Slots for Phone Number(s): ${verifyResult.conflicts.map(s => s.phone).join(', ')} : already booked. Please book for friends with different phone numbers.`);
+                        setIsValidatingSlots(false);
+                        return;
+                    }
+                }
+            } catch (error: any) {
+                // If verification endpoint errors, block and ask to retry
+                console.error('Slot verification failed:', error);
+                showToast(
+                    error?.response?.data?.message || 'Could not verify active slots. Please try again.',
+                    'error'
+                );
+                setIsValidatingSlots(false);
+                return;
             }
 
             // Proceed with booking and payment
@@ -782,6 +859,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 {bookingType && (
                     <div className="bg-gray-800/50 rounded-lg p-4">
                         <p className="text-sm text-gray-400">Booking Type: {bookingType}</p>
+                    </div>
+                )}
+
+                {slotVerificationError && (
+                    <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 flex items-center justify-between">
+                        <p className="text-sm text-red-400">{slotVerificationError}</p>
+                        <CircleX onClick={() => setSlotVerificationError(null)} className="text-sm text-red-400 cursor-pointer" />
                     </div>
                 )}
 

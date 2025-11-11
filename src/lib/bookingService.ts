@@ -23,6 +23,25 @@ export interface PaymentCallbackRequest {
     razorpay_signature: string;
 }
 
+export interface VerifySlotsRequest {
+    matchId: string;
+    slots: Array<{
+        phone: string;
+        slotNumber?: number;
+    }>;
+}
+
+export interface VerifySlotsResponse {
+    isValid: boolean;
+    conflicts: Array<{
+        phone: string;
+        userId?: number;
+        reason: string;
+        source: Array<'match_participant' | 'booking_slot'>;
+    }>;
+    message: string;
+}
+
 export interface BookingResponse {
     id: string;
     matchId: number;
@@ -114,5 +133,10 @@ export class BookingService {
                 reason: data.reason
             }
         });
+    }
+
+    static async verifySlots(data: VerifySlotsRequest): Promise<VerifySlotsResponse> {
+        const response = await api.post('/bookings/verify-slots', data);
+        return response.data;
     }
 }
