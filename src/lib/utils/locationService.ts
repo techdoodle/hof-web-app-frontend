@@ -14,7 +14,7 @@ interface LocationError {
 }
 
 const LOCATION_CACHE_KEY = 'userLocation';
-const LOCATION_CACHE_EXPIRY = 3000 * 60 * 1000; // 300 minutes
+const LOCATION_CACHE_EXPIRY = 300 * 60 * 1000; // 300 minutes
 const PERMISSION_DENIED_KEY = 'locationPermissionDenied';
 
 export const locationService = {
