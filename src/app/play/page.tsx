@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, ClockIcon, MapPinIcon } from 'lucide-react';
 import { LocationPicker } from '@/components/play/LocationPicker';
 import { NearbyMatches } from '@/components/play/NearbyMatches';
+import { locationService } from '@/lib/utils/locationService';
 
 export default function PlayPage() {
   const router = useRouter();
@@ -15,9 +16,10 @@ export default function PlayPage() {
   const [showLocationPicker, setShowLocationPicker] = useState(true);
 
   useEffect(() => {
-    const savedLocation = localStorage.getItem('userLocation');
-    if (savedLocation) {
-      setSelectedLocation(JSON.parse(savedLocation));
+    // Use locationService to get validated cached location
+    const cachedLocation = locationService.getCachedLocation();
+    if (cachedLocation) {
+      setSelectedLocation(cachedLocation);
       setShowLocationPicker(false);
     }
   }, []);

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/contexts/ToastContext';
+import { locationService } from '@/lib/utils/locationService';
 
 export interface Location {
     latitude: number;
@@ -11,43 +12,80 @@ export function useUserLocation() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { showToast } = useToast();
+    const hasShownErrorToast = useRef(false);
+    const isInitialMount = useRef(true);
 
     useEffect(() => {
         const getLocation = async () => {
             try {
-                // First try to get from localStorage
-                const cachedLocation = localStorage.getItem('userLocation');
+                // First try to get from cache (validated and not expired)
+                const cachedLocation = locationService.getCachedLocation();
                 if (cachedLocation) {
-                    const parsed = JSON.parse(cachedLocation);
-                    setLocation(parsed);
+                    setLocation(cachedLocation);
+                    setError(null);
                     setIsLoading(false);
-                    return; // Don't try GPS if we have cached location
+                    return; // Don't try GPS if we have valid cached location
+                }
+
+                // Check if permission was previously denied
+                if (locationService.wasPermissionDenied()) {
+                    setError('PERMISSION_DENIED');
+                    setIsLoading(false);
+                    // Only show toast once per session, not on every mount
+                    if (!hasShownErrorToast.current && isInitialMount.current) {
+                        hasShownErrorToast.current = true;
+                        // Don't show toast on initial mount if permission was denied before
+                        // User already knows they denied it
+                    }
+                    return;
+                }
+
+                // Check if geolocation is supported
+                if (!locationService.isSupported()) {
+                    setError('NOT_SUPPORTED');
+                    setIsLoading(false);
+                    if (isInitialMount.current) {
+                        showToast('Geolocation is not supported by your browser', 'error');
+                    }
+                    return;
                 }
 
                 // Get current location only if no cached location
-                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 10000,
-                    });
+                const newLocation = await locationService.getCurrentLocation({
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000, // 1 minute - unified configuration
                 });
 
-                const newLocation = {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                };
-
-                // Cache the location
-                localStorage.setItem('userLocation', JSON.stringify(newLocation));
                 setLocation(newLocation);
                 setError(null);
+                hasShownErrorToast.current = false; // Reset on success
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to get location';
-                setError(errorMessage);
-                showToast('Please enable location access to find nearby matches', 'error');
+                const errorCode = (err as any)?.code || 'UNKNOWN';
+
+                setError(errorCode);
+
+                // Only show toast for permission denied on first attempt, not on every mount
+                if (errorCode === 'PERMISSION_DENIED') {
+                    if (!hasShownErrorToast.current && isInitialMount.current) {
+                        hasShownErrorToast.current = true;
+                        // Don't show toast if permission was already denied - user knows
+                    }
+                } else if (errorCode !== 'PERMISSION_DENIED') {
+                    // Show toast for other errors only on initial mount
+                    if (isInitialMount.current) {
+                        const message = errorCode === 'TIMEOUT'
+                            ? 'Location request timed out. Please try again.'
+                            : errorCode === 'POSITION_UNAVAILABLE'
+                                ? 'Unable to determine your location. Please try again.'
+                                : 'Failed to get your location. Please try again.';
+                        showToast(message, 'error');
+                    }
+                }
             } finally {
                 setIsLoading(false);
+                isInitialMount.current = false;
             }
         };
 
@@ -57,14 +95,15 @@ export function useUserLocation() {
     // Listen for localStorage changes (when city is selected)
     useEffect(() => {
         const handleStorageChange = () => {
-            const cachedLocation = localStorage.getItem('userLocation');
+            const cachedLocation = locationService.getCachedLocation();
             if (cachedLocation) {
-                try {
-                    const parsed = JSON.parse(cachedLocation);
-                    setLocation(parsed);
-                    setError(null);
-                } catch (err) {
-                    console.error('Failed to parse cached location:', err);
+                setLocation(cachedLocation);
+                setError(null);
+            } else {
+                // If cache was cleared, check if we should try to get location again
+                if (!locationService.wasPermissionDenied() && locationService.isSupported()) {
+                    // Don't auto-retry, just clear the location
+                    setLocation(null);
                 }
             }
         };
@@ -81,5 +120,35 @@ export function useUserLocation() {
         };
     }, []);
 
-    return { location, isLoading, error };
+    // Function to manually refresh location (can be exposed if needed)
+    const refreshLocation = async () => {
+        setIsLoading(true);
+        setError(null);
+        hasShownErrorToast.current = false;
+
+        try {
+            // Clear permission denied flag to allow retry
+            locationService.clearPermissionDenied();
+
+            const newLocation = await locationService.getCurrentLocation();
+            setLocation(newLocation);
+            setError(null);
+        } catch (err) {
+            const errorCode = (err as any)?.code || 'UNKNOWN';
+            setError(errorCode);
+
+            if (errorCode === 'PERMISSION_DENIED') {
+                showToast('Please enable location access in your browser settings', 'error');
+            } else {
+                const message = errorCode === 'TIMEOUT'
+                    ? 'Location request timed out. Please try again.'
+                    : 'Failed to get your location. Please try again.';
+                showToast(message, 'error');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { location, isLoading, error, refreshLocation };
 }

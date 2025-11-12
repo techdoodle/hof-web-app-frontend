@@ -50,15 +50,33 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
         setIsLoading(true);
         setError(null);
         try {
+            // Clear permission denied flag to allow retry
+            locationService.clearPermissionDenied();
+
             const coords = await locationService.getCurrentLocation();
-            localStorage.setItem('userLocation', JSON.stringify(coords));
+
+            // Cache location using service (validates and adds timestamp)
+            locationService.cacheLocation(coords, 'gps');
 
             // Dispatch custom event to notify LocationContext
             window.dispatchEvent(new CustomEvent('locationUpdated'));
 
             onLocationSelected(coords);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to get location');
+            const errorCode = (err as any)?.code || 'UNKNOWN';
+            let errorMessage = 'Failed to get location';
+
+            if (errorCode === 'PERMISSION_DENIED') {
+                errorMessage = 'Location access denied. Please enable it in your browser settings.';
+            } else if (errorCode === 'TIMEOUT') {
+                errorMessage = 'Location request timed out. Please try again.';
+            } else if (errorCode === 'POSITION_UNAVAILABLE') {
+                errorMessage = 'Unable to determine your location. Please try again.';
+            } else if (err instanceof Error) {
+                errorMessage = err.message;
+            }
+
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -70,7 +88,9 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
             latitude: city.latitude,
             longitude: city.longitude,
         };
-        localStorage.setItem('userLocation', JSON.stringify(location));
+
+        // Cache location using service (validates and adds timestamp)
+        locationService.cacheLocation(location, 'manual');
 
         // Dispatch custom event to notify LocationContext
         window.dispatchEvent(new CustomEvent('locationUpdated'));

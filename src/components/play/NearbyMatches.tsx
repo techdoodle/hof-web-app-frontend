@@ -1,6 +1,7 @@
 import { Button } from '../ui/button';
 import { Loader2Icon, MapPinIcon } from 'lucide-react';
 import { useNearbyMatches } from '@/hooks/useNearbyMatches';
+import { useLocation } from '@/contexts/LocationContext';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
@@ -11,6 +12,7 @@ type DayFilter = 'all' | 'weekend' | 'weekday';
 
 export function NearbyMatches() {
     const { data: venues, isLoading, error, refetch } = useNearbyMatches();
+    const { location, error: locationError } = useLocation();
     const router = useRouter();
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState('');
@@ -66,6 +68,20 @@ export function NearbyMatches() {
         return `${formatTime(startTime)} (${duration}h)`;
     };
 
+    // Show location error if location is not available
+    if (locationError === 'PERMISSION_DENIED' || !location) {
+        return (
+            <div className="text-center py-8">
+                <p className="text-gray-400 mb-2">Location access is required to find nearby matches.</p>
+                <p className="text-gray-500 text-sm mb-4">
+                    {locationError === 'PERMISSION_DENIED'
+                        ? 'Please enable location access in your browser settings or select a city manually.'
+                        : 'Please select a location to find nearby matches.'}
+                </p>
+            </div>
+        );
+    }
+
     if (isLoading) {
         return (
             <div className="flex justify-center items-center py-8">
@@ -77,7 +93,7 @@ export function NearbyMatches() {
     if (error) {
         return (
             <div className="text-center py-8">
-                <p className="text-red-500">{error?.message}</p>
+                <p className="text-red-500">{error?.message || 'Failed to load nearby matches'}</p>
                 <Button onClick={() => refetch()} className="mt-4">
                     Try Again
                 </Button>

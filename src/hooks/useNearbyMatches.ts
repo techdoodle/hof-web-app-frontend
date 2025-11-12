@@ -34,13 +34,29 @@ export function useNearbyMatches() {
         queryKey: ['nearby-matches', location?.latitude, location?.longitude],
         queryFn: async () => {
             if (!location) return [];
-            if (typeof location.latitude === 'string') {
-                location.latitude = Number(location.latitude)
+
+            // Ensure location is properly typed (should already be validated by locationService)
+            const latitude = typeof location.latitude === 'number'
+                ? location.latitude
+                : Number(location.latitude);
+            const longitude = typeof location.longitude === 'number'
+                ? location.longitude
+                : Number(location.longitude);
+
+            // Validate numbers are valid
+            if (isNaN(latitude) || isNaN(longitude)) {
+                throw new Error('Invalid location coordinates');
             }
-            if (typeof location.longitude === 'string') {
-                location.longitude = Number(location.longitude)
+
+            // Validate ranges
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+                throw new Error('Location coordinates out of valid range');
             }
-            const response = await api.post('/matches/nearby', location);
+
+            const response = await api.post('/matches/nearby', {
+                latitude,
+                longitude,
+            });
             return response.data;
         },
         enabled: !!location && !isLocationLoading,

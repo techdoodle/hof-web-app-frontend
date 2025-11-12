@@ -5,6 +5,7 @@ interface LocationContextType {
     location: Location | null;
     isLoading: boolean;
     error: string | null;
+    refreshLocation: () => Promise<void>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
