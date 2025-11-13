@@ -20,8 +20,8 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
         label: 'Home',
         href: '/home',
         iconSrc: {
-          active: '/icons/nav/Home-active.svg',
-          inactive: '/icons/nav/Home-inactive.svg',
+          active: '/icons/nav-new/Home-active.svg',
+          inactive: '/icons/nav-new/Home-inactive.svg',
         },
       },
       {
@@ -29,8 +29,8 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
         label: 'Leaderboard',
         href: '/leaderboard',
         iconSrc: {
-          active: '/icons/nav/leaderboard-active.svg',
-          inactive: '/icons/nav/Leaderboard-inactive.svg',
+          active: '/icons/nav-new/Leaderboard-active.svg',
+          inactive: '/icons/nav-new/Leaderboard-inactive.svg',
         },
       },
       {
@@ -38,8 +38,8 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
         label: 'Play',
         href: '/play',
         iconSrc: {
-          active: '/icons/nav/HOF-active.svg',
-          inactive: '/icons/nav/HOF-inactive.svg',
+          active: '/icons/nav-new/HOF-active.svg',
+          inactive: '/icons/nav-new/HOF-inactive.svg',
         },
       },
       {
@@ -47,8 +47,8 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
         label: 'Profile',
         href: '/profile',
         iconSrc: {
-          active: '/icons/nav/Profile-active.svg',
-          inactive: '/icons/nav/Profile-inactive.svg',
+          active: '/icons/nav-new/Profile-active.svg',
+          inactive: '/icons/nav-new/Profile-inactive.svg',
         },
       },
     ];
