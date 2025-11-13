@@ -34,7 +34,7 @@ export function useNearbyMatches(customLocation?: { latitude: number; longitude:
 
     return useQuery({
         queryKey: ['nearby-matches', location?.latitude, location?.longitude],
-        queryFn: async () => {
+        queryFn: async ({ signal }) => {
             if (!location) return [];
 
             // Ensure location is properly typed (should already be validated by locationService)
@@ -58,11 +58,16 @@ export function useNearbyMatches(customLocation?: { latitude: number; longitude:
             const response = await api.post('/matches/nearby', {
                 latitude,
                 longitude,
+            }, {
+                signal, // Pass abort signal to cancel the request when query is cancelled
             });
             return response.data;
         },
         enabled: !!location && (customLocation !== undefined || !isLocationLoading),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        gcTime: 10 * 60 * 1000, // 10 minutes
+        staleTime: 0, // Always consider data stale when location changes (query key changes)
+        gcTime: 5 * 60 * 1000, // Keep old location data for 5 minutes (for quick back/forth)
+        refetchOnMount: false, // Don't refetch on mount - we control when to fetch
+        refetchOnWindowFocus: false, // Don't refetch on window focus
+        retry: false, // Don't retry failed requests to avoid multiple calls
     });
 }

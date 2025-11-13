@@ -58,9 +58,8 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
             // Cache location using service (validates and adds timestamp)
             locationService.cacheLocation(coords, 'gps');
 
-            // Dispatch custom event to notify LocationContext
-            window.dispatchEvent(new CustomEvent('locationUpdated'));
-
+            // Call onLocationSelected - this passes location as prop to NearbyMatches
+            // No need to dispatch locationUpdated event since we're using prop location
             onLocationSelected(coords);
         } catch (err) {
             const errorCode = (err as any)?.code || 'UNKNOWN';
@@ -92,9 +91,8 @@ export function LocationPicker({ onLocationSelected, className = '' }: LocationP
         // Cache location using service (validates and adds timestamp)
         locationService.cacheLocation(location, 'manual');
 
-        // Dispatch custom event to notify LocationContext
-        window.dispatchEvent(new CustomEvent('locationUpdated'));
-
+        // Call onLocationSelected - this passes location as prop to NearbyMatches
+        // No need to dispatch locationUpdated event since we're using prop location
         onLocationSelected(location);
     };
 

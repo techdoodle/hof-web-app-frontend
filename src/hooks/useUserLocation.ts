@@ -29,13 +29,16 @@ export function useUserLocation() {
 
                 // Check if permission was previously denied
                 if (locationService.wasPermissionDenied()) {
+                    // Set default fallback location when permission is denied
+                    const defaultLocation = locationService.getDefaultLocation();
+                    locationService.cacheLocation(defaultLocation, 'manual');
+                    setLocation(defaultLocation);
                     setError('PERMISSION_DENIED');
                     setIsLoading(false);
-                    // Only show toast once per session, not on every mount
-                    if (!hasShownErrorToast.current && isInitialMount.current) {
+                    // Show toast when default location is set
+                    if (isInitialMount.current) {
+                        showToast('Location has been set by default to Gurugram. To change, go to HoF play section', 'info');
                         hasShownErrorToast.current = true;
-                        // Don't show toast on initial mount if permission was denied before
-                        // User already knows they denied it
                     }
                     return;
                 }
@@ -104,6 +107,12 @@ export function useUserLocation() {
                 if (!locationService.wasPermissionDenied() && locationService.isSupported()) {
                     // Don't auto-retry, just clear the location
                     setLocation(null);
+                } else if (locationService.wasPermissionDenied()) {
+                    // If permission denied and no cache, set default fallback
+                    const defaultLocation = locationService.getDefaultLocation();
+                    locationService.cacheLocation(defaultLocation, 'manual');
+                    setLocation(defaultLocation);
+                    setError('PERMISSION_DENIED');
                 }
             }
         };
