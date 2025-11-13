@@ -6,18 +6,27 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { HofSelectChip } from '../common/HofSelectChip';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 type DayFilter = 'all' | 'weekend' | 'weekday';
 
-export function NearbyMatches() {
-    const { data: venues, isLoading, error, refetch } = useNearbyMatches();
-    const { location, error: locationError } = useLocation();
+interface NearbyMatchesProps {
+    location?: { latitude: number; longitude: number } | null;
+}
+
+export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {}) {
+    const { location: contextLocation } = useLocation();
+    // Use prop location if provided, otherwise fall back to context location
+    const location = propLocation !== undefined ? propLocation : contextLocation;
+
     const router = useRouter();
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState('');
     const [dayFilter, setDayFilter] = useState<DayFilter>('all');
     const [hofSelectOnly, setHofSelectOnly] = useState(false);
+
+    // Use the hook with a custom location if provided
+    const { data: venues, isLoading, error, refetch } = useNearbyMatches(propLocation);
 
     const filteredVenues = useMemo(() => {
         if (!venues) return [];
@@ -68,19 +77,8 @@ export function NearbyMatches() {
         return `${formatTime(startTime)} (${duration}h)`;
     };
 
-    // Show location error if location is not available
-    if (locationError === 'PERMISSION_DENIED' || !location) {
-        return (
-            <div className="text-center py-8">
-                <p className="text-gray-400 mb-2">Location access is required to find nearby matches.</p>
-                <p className="text-gray-500 text-sm mb-4">
-                    {locationError === 'PERMISSION_DENIED'
-                        ? 'Please enable location access in your browser settings or select a city manually.'
-                        : 'Please select a location to find nearby matches.'}
-                </p>
-            </div>
-        );
-    }
+    // Note: We don't show error here anymore - parent component handles showing LocationPicker
+    // This allows users to select a city even when location is denied
 
     if (isLoading) {
         return (

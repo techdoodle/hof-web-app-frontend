@@ -8,12 +8,14 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, ClockIcon, MapPinIcon } from 'lucide-react';
 import { LocationPicker } from '@/components/play/LocationPicker';
 import { NearbyMatches } from '@/components/play/NearbyMatches';
-import { locationService } from '@/lib/utils/locationService';
+import { locationService, DEFAULT_FALLBACK_LOCATION } from '@/lib/utils/locationService';
+import { useLocation } from '@/contexts/LocationContext';
 
 export default function PlayPage() {
   const router = useRouter();
+  const { location: contextLocation, error: locationError, isLoading: isLocationLoading } = useLocation();
   const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [showLocationPicker, setShowLocationPicker] = useState(true);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   useEffect(() => {
     // Use locationService to get validated cached location
@@ -21,8 +23,22 @@ export default function PlayPage() {
     if (cachedLocation) {
       setSelectedLocation(cachedLocation);
       setShowLocationPicker(false);
+    } else if (!isLocationLoading) {
+      // If no cached location and location loading is done
+      // Check if permission was denied or location unavailable
+      if (locationError === 'PERMISSION_DENIED' || !contextLocation) {
+        // Set default fallback to Gurgaon so matches can be shown
+        setSelectedLocation(DEFAULT_FALLBACK_LOCATION);
+        locationService.cacheLocation(DEFAULT_FALLBACK_LOCATION, 'manual');
+        // Show location picker so user can change city if needed
+        setShowLocationPicker(true);
+      } else if (contextLocation) {
+        // Location is available from context
+        setSelectedLocation(contextLocation);
+        setShowLocationPicker(false);
+      }
     }
-  }, []);
+  }, [contextLocation, locationError, isLocationLoading]);
 
   const handleLocationSelected = (location: { latitude: number; longitude: number }) => {
     setSelectedLocation(location);
@@ -53,13 +69,19 @@ export default function PlayPage() {
 
           {/* Main Content */}
           <div className="flex-1 px-4 py-6 space-y-6">
-            {showLocationPicker ? (
+            {showLocationPicker && (
               <LocationPicker
                 onLocationSelected={handleLocationSelected}
                 className="mb-8"
               />
-            ) : (
-              <NearbyMatches />
+            )}
+            {selectedLocation && (
+              <NearbyMatches location={selectedLocation} />
+            )}
+            {!selectedLocation && !isLocationLoading && (
+              <div className="text-center py-8">
+                <p className="text-gray-400">Loading location...</p>
+              </div>
             )}
           </div>
 

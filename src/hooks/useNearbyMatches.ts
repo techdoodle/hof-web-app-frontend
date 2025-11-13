@@ -27,8 +27,10 @@ interface VenueWithMatches {
     matches: Match[];
 }
 
-export function useNearbyMatches() {
-    const { location, isLoading: isLocationLoading } = useLocation();
+export function useNearbyMatches(customLocation?: { latitude: number; longitude: number } | null) {
+    const { location: contextLocation, isLoading: isLocationLoading } = useLocation();
+    // Use custom location if provided, otherwise use context location
+    const location = customLocation !== undefined ? customLocation : contextLocation;
 
     return useQuery({
         queryKey: ['nearby-matches', location?.latitude, location?.longitude],
@@ -59,7 +61,7 @@ export function useNearbyMatches() {
             });
             return response.data;
         },
-        enabled: !!location && !isLocationLoading,
+        enabled: !!location && (customLocation !== undefined || !isLocationLoading),
         staleTime: 5 * 60 * 1000, // 5 minutes
         gcTime: 10 * 60 * 1000, // 10 minutes
     });

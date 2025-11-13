@@ -17,6 +17,12 @@ const LOCATION_CACHE_KEY = 'userLocation';
 const LOCATION_CACHE_EXPIRY = 300 * 60 * 1000; // 300 minutes
 const PERMISSION_DENIED_KEY = 'locationPermissionDenied';
 
+// Default fallback location: Gurgaon, Haryana, India
+export const DEFAULT_FALLBACK_LOCATION: Coordinates = {
+    latitude: 28.460105,
+    longitude: 77.0266,
+};
+
 export const locationService = {
     /**
      * Check if geolocation is supported
@@ -68,8 +74,16 @@ export const locationService = {
     },
 
     /**
+     * Get default fallback location (Gurgaon)
+     */
+    getDefaultLocation(): Coordinates {
+        return DEFAULT_FALLBACK_LOCATION;
+    },
+
+    /**
      * Get cached location if valid and not expired
      * Handles migration from old format (without timestamp) to new format
+     * Returns null if no valid cached location exists
      */
     getCachedLocation(): Coordinates | null {
         if (typeof window === 'undefined') return null;
