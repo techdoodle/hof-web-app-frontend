@@ -20,8 +20,8 @@ export function CommonNavbar({ activeTab }: CommonNavbarProps) {
         label: 'Home',
         href: '/home',
         iconSrc: {
-          active: '/icons/nav-new/Home-active.svg',
-          inactive: '/icons/nav-new/Home-inactive.svg',
+          active: '/icons/nav/Home-active.svg',
+          inactive: '/icons/nav/Home-inactive.svg',
         },
       },
       {
