@@ -32,11 +32,16 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
       PhoneNumberSchema.parse(phoneNumber);
       setValidationError('');
       await onSubmit(phoneNumber);
-    } catch (err) {
+    } catch (err: any) {
       console.log('in catchhh', err);
-      setValidationError('Network Error! Please try again later.');
+      if (err?.message?.includes('ThrottlerException') || err?.message?.includes('Too many requests')) {
+        setValidationError('Too many attempts. Please wait a minute and try again.');
+      } else {
+        setValidationError('Network Error! Please try again later.');
+      }
     }
   };
+
   // Check if phone number is valid (exactly 10 digits)
   const isPhoneNumberValid = phoneNumber.length === 10;
 
@@ -114,4 +119,4 @@ export function LoginScreen({ onSubmit, isLoading, error, onBack }: LoginScreenP
       </div>
     </div>
   );
-} 
+}

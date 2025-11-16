@@ -12,8 +12,8 @@ export function HomeBanner() {
             {/* Background Image */}
             <div className="absolute inset-0">
                 <Image
-                    src="/hof-home-banner.png"
-                    alt="Football Championship League"
+                    src="/hof-banner.svg"
+                    alt="Humans of Football Select Games Banner"
                     fill
                     className="object-cover"
                     priority
