@@ -1,5 +1,5 @@
 import { Button } from '../ui/button';
-import { Loader2Icon, MapPinIcon } from 'lucide-react';
+import { Loader2Icon, MapPinIcon, MapPin } from 'lucide-react';
 import { useNearbyMatches } from '@/hooks/useNearbyMatches';
 import { useLocation } from '@/contexts/LocationContext';
 import { useRouter } from 'next/navigation';
@@ -75,6 +75,33 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
         const end = new Date(endTime);
         const duration = Number(((end.getTime() - start.getTime()) / (1000 * 60 * 60)).toFixed(2)); // hours
         return `${formatTime(startTime)} (${duration}h)`;
+    };
+
+    // Helper function to validate if the URL is a valid Google Maps URL
+    const isValidGoogleMapsUrl = (url: string | null | undefined): boolean => {
+        if (!url || typeof url !== 'string') return false;
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname.includes('google.com') && urlObj.pathname.includes('maps');
+        } catch {
+            return false;
+        }
+    };
+
+    // Helper function to open Google Maps (app on mobile, web on desktop)
+    const handleMapClick = (mapsUrl: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering parent click handlers
+
+        // Check if we're on a mobile device
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // Try to open Google Maps app, fallback to browser
+            window.location.href = mapsUrl;
+        } else {
+            // Open in new tab on desktop
+            window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+        }
     };
 
     // Note: We don't show error here anymore - parent component handles showing LocationPicker
@@ -220,7 +247,15 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
                                 style={{ flex: '0 0 65%' }}
                             >
                                 <h3 className="font-large text-xl text-white">{venueData.venue.name}</h3>
-                                <p className="text-sm text-gray-400">{venueData.venue.distance.toFixed(1)} kms away</p>
+                                <div className="flex items-center gap-1">
+                                    {isValidGoogleMapsUrl(venueData.venue.mapsUrl) && (
+                                        <MapPin
+                                            className="w-4 h-4 text-primary cursor-pointer hover:text-primary/80 transition-colors"
+                                            onClick={(e) => handleMapClick(venueData.venue.mapsUrl, e)}
+                                        />
+                                    )}
+                                    <p className="text-sm text-gray-400">{venueData.venue.distance.toFixed(1)} kms away</p>
+                                </div>
                             </div>
                         </div>
 

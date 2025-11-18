@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { format, parseISO } from "date-fns";
-import { CalendarIcon, ChevronLeft, ClockIcon, ContactIcon, PhoneIcon, Share2, WatchIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ClockIcon, ContactIcon, PhoneIcon, Share2, WatchIcon, MapPin } from "lucide-react";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
 import { useCriticalBookingInfo, CriticalBookingInfo } from "@/hooks/useCriticalBookingInfo";
 import { useLocation } from "@/contexts/LocationContext";
@@ -42,6 +42,33 @@ const MatchDetailsPage = () => {
     }, [user?.id, matchData?.id]);
     const handleBack = () => {
         router.push("/play");
+    };
+
+    // Helper function to validate if the URL is a valid Google Maps URL
+    const isValidGoogleMapsUrl = (url: string | null | undefined): boolean => {
+        if (!url || typeof url !== 'string') return false;
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname.includes('google.com') && urlObj.pathname.includes('maps');
+        } catch {
+            return false;
+        }
+    };
+
+    // Helper function to open Google Maps (app on mobile, web on desktop)
+    const handleMapClick = (mapsUrl: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering parent click handlers
+
+        // Check if we're on a mobile device
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // Try to open Google Maps app, fallback to browser
+            window.location.href = mapsUrl;
+        } else {
+            // Open in new tab on desktop
+            window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+        }
     };
 
     const handleBookSlot = async () => {
@@ -144,14 +171,24 @@ const MatchDetailsPage = () => {
                 <div className="flex flex-col gap-4 rounded-lg py-2">
                     <div className="space-y-2">
                         <h1 className="text-2xl font-semibold">{matchData.venue.name}</h1>
-                        <p className="text-gray-400">{matchData.venue.address}</p>
+                        <div className="flex items-start gap-2">
+                            {isValidGoogleMapsUrl(matchData.venue.mapsUrl) && (
+                                <MapPin
+                                    className="w-5 h-5 text-primary cursor-pointer hover:text-primary/80 transition-colors flex-shrink-0 mt-0.5"
+                                    onClick={(e) => handleMapClick(matchData.venue.mapsUrl, e)}
+                                />
+                            )}
+                            <p className="text-gray-400">{matchData.venue.address}</p>
+                        </div>
                         {location && matchData.venue.latitude && matchData.venue.longitude && (
-                            <p className="text-sm text-gray-400">
-                                {calculateDistance(location, {
-                                    latitude: matchData.venue.latitude,
-                                    longitude: matchData.venue.longitude
-                                })?.toFixed(1)} kms away
-                            </p>
+                            <div className="flex items-center gap-1">
+                                <p className="text-sm text-gray-400">
+                                    {calculateDistance(location, {
+                                        latitude: matchData.venue.latitude,
+                                        longitude: matchData.venue.longitude
+                                    })?.toFixed(1)} kms away
+                                </p>
+                            </div>
                         )}
                         <p className="text-md text-gray-300 italic">{matchData.playerCapacity / 2}v{matchData.playerCapacity / 2} match</p>
                     </div>
