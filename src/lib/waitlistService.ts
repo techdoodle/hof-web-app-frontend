@@ -50,12 +50,17 @@ export class WaitlistService {
         return response.data;
     }
 
-    static async initiateWaitlistBooking(waitlistId: string): Promise<{
+    static async initiateWaitlistBooking(
+        waitlistId: string,
+        teamSelections?: Array<{ phone: string; teamName: string }>
+    ): Promise<{
         orderId: string;
         amount: number;
         currency: string;
     }> {
-        const response = await api.post(`/waitlist/${waitlistId}/initiate-booking`);
+        const response = await api.post(`/waitlist/${waitlistId}/initiate-booking`, {
+            teamSelections
+        });
         return response.data;
     }
 
@@ -63,12 +68,14 @@ export class WaitlistService {
         waitlistId: string,
         paymentOrderId: string,
         paymentId: string,
-        signature: string
+        signature: string,
+        teamSelections?: Array<{ phone: string; teamName: string }>
     ): Promise<any> {
         const response = await api.post(`/waitlist/${waitlistId}/confirm-booking`, {
             paymentOrderId,
             paymentId,
-            signature
+            signature,
+            teamSelections
         });
         return response.data;
     }
