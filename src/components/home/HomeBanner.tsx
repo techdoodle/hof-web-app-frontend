@@ -12,7 +12,7 @@ export function HomeBanner() {
             {/* Background Image */}
             <div className="absolute inset-0">
                 <Image
-                    src="/hof-banner.svg"
+                    src="/hof-banner-1.svg"
                     alt="Humans of Football Select Games Banner"
                     fill
                     className="object-cover"
