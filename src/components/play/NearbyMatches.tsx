@@ -89,10 +89,38 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
     }
 
     if (error) {
+        let errorMessage = (error as any)?.response?.data?.message
+            || (error as any)?.message
+            || 'Failed to load nearby matches';
+
+        const errorStatus = (error as any)?.response?.status;
+
+        // Determine error title based on status
+        let errorTitle = 'Network Error';
+        if (errorStatus === 429) {
+            errorTitle = 'Too Many Requests';
+        } else if (errorStatus >= 500) {
+            errorTitle = 'Server Error';
+        } else if (errorStatus >= 400 && errorStatus < 500) {
+            errorTitle = `Oops! Encountered an unexpected error`;
+            errorMessage = `Please try again later or contact support if the problem persists.`;
+        }
+
         return (
-            <div className="text-center py-8">
-                <p className="text-red-500">{error?.message || 'Failed to load nearby matches'}</p>
-                <Button onClick={() => refetch()} className="mt-4">
+            <div className="text-center py-8 px-4">
+                <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-4">
+                    <p className="text-red-500 font-semibold mb-2">
+                        {errorTitle}
+                    </p>
+                    <p className="text-red-400 text-sm">
+                        {errorMessage}
+                    </p>
+                </div>
+                <Button
+                    onClick={() => refetch()}
+                    className="mt-4"
+                    variant="default"
+                >
                     Try Again
                 </Button>
             </div>
