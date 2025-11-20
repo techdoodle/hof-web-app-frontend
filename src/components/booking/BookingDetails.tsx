@@ -189,6 +189,25 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
         return true;
     };
+
+    // Helper function to check if all team selections are complete
+    const areTeamSelectionsComplete = (): boolean => {
+        if (bookingType !== 'regular') return true; // No team selection required for waitlist
+
+        // Check main user's team selection (if not additional booking)
+        if (!isAdditionalBooking && !mainUserTeam) {
+            return false;
+        }
+
+        // Check all additional slots have team selections
+        for (const slot of additionalSlots) {
+            if (!slot.teamName) {
+                return false;
+            }
+        }
+
+        return true;
+    };
     // Initialize price when booking type is selected
     useEffect(() => {
         if (bookingType === 'waitlist') {
@@ -197,6 +216,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             setFinalPrice(typedBookingInfo.offerPrice * numSlots);
         }
     }, [bookingType, numSlots, typedBookingInfo]);
+
+    // Auto-expand player details for confirmed bookings with multiple slots
+    useEffect(() => {
+        if (bookingType === 'regular' && (isAdditionalBooking ? numSlots >= 1 : numSlots > 1)) {
+            setShowAdditionalDetails(true);
+        }
+    }, [bookingType, numSlots, isAdditionalBooking]);
 
     const [slotVerificationError, setSlotVerificationError] = useState<string | null>(null);
     const handleProceedToPayment = async () => {
@@ -881,8 +907,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
                         {/* Team Selection for Main User (Confirmed Bookings Only) */}
                         {bookingType === 'regular' && !isAdditionalBooking && typedBookingInfo && (
-                            <div className="pt-3 border-t border-gray-700">
-                                <label className="text-sm font-medium text-gray-300 block mb-3">Select Your Team *</label>
+                            <div className={`pt-3 border-t ${!mainUserTeam ? 'border-orange-500/50' : 'border-gray-700'} ${!mainUserTeam ? 'animate-pulse' : ''}`}>
+                                <label className="text-sm font-medium text-gray-300 block mb-2">
+                                    Select Your Team *
+                                    {!mainUserTeam && (
+                                        <span className="ml-2 text-xs text-orange-400">(Required)</span>
+                                    )}
+                                </label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         type="button"
@@ -963,10 +994,10 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
                         {(isAdditionalBooking ? numSlots >= 1 : numSlots > 1) && (
                             <button
-                                className="text-sm text-blue-400 mt-2"
+                                className="text-sm text-blue-400 hover:text-blue-300 mt-2 transition-colors"
                                 onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
                             >
-                                {showAdditionalDetails ? 'Hide' : 'Add'} player details
+                                {showAdditionalDetails ? '▼ Hide' : '▶ Add'} player details {bookingType === 'regular' && <span className="text-orange-400">*</span>}
                             </button>
                         )}
                     </div>
@@ -1022,8 +1053,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
                                     {/* Team Selection for Additional Players (Confirmed Bookings Only) */}
                                     {bookingType === 'regular' && typedBookingInfo && (
-                                        <div className="pt-3 border-t border-gray-600 mt-3">
-                                            <label className="text-sm font-medium text-gray-300 block mb-3">Select Team *</label>
+                                        <div className={`pt-3 border-t ${!slot.teamName ? 'border-orange-500/50 bg-orange-900/10' : 'border-gray-600'} mt-3 ${!slot.teamName ? 'animate-pulse' : ''}`}>
+                                            <label className="text-sm font-medium text-gray-300 block mb-2">
+                                                Select Team *
+                                                {!slot.teamName && (
+                                                    <span className="ml-2 text-xs text-orange-400">(Required)</span>
+                                                )}
+                                            </label>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <button
                                                     type="button"
@@ -1129,7 +1165,16 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 <Button
                     className="w-full"
                     onClick={handleProceedToPayment}
-                    disabled={!typedBookingInfo || numSlots <= 0 || bookingType === null || isLoadingBookingInfo || isCalculatingPrice || isValidatingSlots || isProcessingBooking}
+                    disabled={
+                        !typedBookingInfo ||
+                        numSlots <= 0 ||
+                        bookingType === null ||
+                        isLoadingBookingInfo ||
+                        isCalculatingPrice ||
+                        isValidatingSlots ||
+                        isProcessingBooking ||
+                        (bookingType === 'regular' && !areTeamSelectionsComplete())
+                    }
                 >
                     {bookingType === 'waitlist' ? (
                         isProcessingBooking ? 'Processing...' : isValidatingSlots ? 'Validating Slots...' : 'Join Waitlist (Free)'
@@ -1141,6 +1186,8 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                                 'Calculating Final Price...'
                             ) : isValidatingSlots ? (
                                 'Validating Slots...'
+                            ) : !areTeamSelectionsComplete() ? (
+                                'Select Teams to Continue'
                             ) : (
                                 `Pay ₹${finalPrice.toLocaleString()}`
                             )}

@@ -71,6 +71,18 @@ function WaitlistConfirmContent() {
         fetchWaitlistData();
     }, [searchParams, showToast, router, user]);
 
+    // Helper to check if all team selections are complete
+    const areAllTeamsSelected = () => {
+        if (!waitlistData) return false;
+        const numSlots = waitlistData.slots.length;
+        for (let i = 0; i < numSlots; i++) {
+            if (!teamSelections[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     const handleInitiatePayment = async () => {
         if (!waitlistData) return;
 
@@ -226,13 +238,18 @@ function WaitlistConfirmContent() {
                         <div className="space-y-3">
                             {waitlistData.slots.map((slotNum, index) => (
                                 <div key={index} className="group">
-                                    <div className="bg-gray-800/60 backdrop-blur-sm rounded-lg p-4 border border-gray-700/50 hover:border-orange-500/50 transition-all duration-200">
+                                    <div className={`bg-gray-800/60 backdrop-blur-sm rounded-lg p-4 border ${!teamSelections[index] ? 'border-orange-500/70 animate-pulse' : 'border-gray-700/50 hover:border-orange-500/50'} transition-all duration-200`}>
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-semibold text-gray-300">
                                                     #{slotNum}
                                                 </div>
-                                                <span className="text-sm font-medium text-gray-300">Slot {index + 1}</span>
+                                                <span className="text-sm font-medium text-gray-300">
+                                                    Slot {index + 1}
+                                                    {!teamSelections[index] && (
+                                                        <span className="ml-2 text-xs text-orange-400">(Required)</span>
+                                                    )}
+                                                </span>
                                             </div>
                                             {teamSelections[index] && (
                                                 <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
@@ -344,12 +361,17 @@ function WaitlistConfirmContent() {
 
                 {/* Action Button */}
                 <div className="text-center">
+                    {bookingInfo && !areAllTeamsSelected() && (
+                        <div className="mb-4 px-4 py-3 bg-orange-900/30 border border-orange-500/50 rounded-lg text-sm text-orange-300 text-center">
+                            ⚠️ Please select a team for all slots before proceeding
+                        </div>
+                    )}
                     <Button
                         onClick={handleInitiatePayment}
-                        disabled={processing || !bookingInfo}
-                        className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-lg"
+                        disabled={processing || !bookingInfo || !areAllTeamsSelected()}
+                        className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {processing ? 'Processing...' : `Book ${waitlistData.slots.length} Slot(s) Now`}
+                        {processing ? 'Processing...' : !areAllTeamsSelected() ? 'Select Teams to Continue' : `Book ${waitlistData.slots.length} Slot(s) Now`}
                     </Button>
                 </div>
 

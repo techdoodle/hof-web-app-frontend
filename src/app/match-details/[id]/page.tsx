@@ -225,13 +225,13 @@ const MatchDetailsPage = () => {
                             <p className="text-sm text-gray-400">Football Chief</p>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                                    {matchData.footballChief?.name?.charAt(0) || 'FC'}
+                                    {matchData.footballChief?.name?.charAt(0) || matchData.footballChief?.firstName?.charAt(0) + matchData.footballChief?.lastName?.charAt(0) || 'FC'}
                                 </div>
                                 <div>
-                                    <p className="font-medium">{matchData.footballChief?.name || 'Football Chief'}</p>
+                                    <p className="font-medium">{matchData.footballChief?.name || matchData.footballChief?.firstName + ' ' + matchData.footballChief?.lastName || 'Football Chief'}</p>
                                     <p className="text-sm text-gray-400 flex items-center">
                                         <PhoneIcon className="w-4 h-4 mr-2 cursor-pointer" onClick={() => window.open(`tel:${matchData.footballChief?.number}`, '_blank')} />
-                                        {matchData.footballChief?.number || 'Contact info not available'}
+                                        {matchData.footballChief?.number || matchData.footballChief?.phoneNumber || 'Contact info not available'}
                                     </p>
                                 </div>
                             </div>
