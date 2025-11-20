@@ -8,7 +8,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useBookingDetails } from '@/hooks/useBookingDetails';
 import { useWaitlistDetails } from '@/hooks/useWaitlistDetails';
-import { BookingService } from '@/lib/bookingService';
+import { BookingService, RefundBreakdown } from '@/lib/bookingService';
 import { WaitlistService } from '@/lib/waitlistService';
 import { Button } from '@/components/ui/button';
 import { PartialSlotSelector } from './PartialSlotSelector';
@@ -46,6 +46,8 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
     const [showPartialSelector, setShowPartialSelector] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [canPay, setCanPay] = useState(false);
+    const [refundInfo, setRefundInfo] = useState<RefundBreakdown | null>(null);
+    const [loadingRefund, setLoadingRefund] = useState(false);
 
     // Use React Query hooks based on booking type
     const {
@@ -121,11 +123,23 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
         checkPaymentAvailability();
     }, [bookingType, currentBooking?.matchId, currentBooking?.totalSlots]);
 
-    const handlePartialCancel = () => {
+    const handlePartialCancel = async () => {
         if (currentBooking?.slots && currentBooking.slots.length > 1) {
             setShowPartialSelector(true);
         } else {
-            // If only one slot, show confirmation for full cancellation
+            // If only one slot, fetch refund info and show confirmation for full cancellation
+            if (bookingType !== 'waitlisted') {
+                try {
+                    setLoadingRefund(true);
+                    const breakdown = await BookingService.getRefundBreakdown(bookingId);
+                    setRefundInfo(breakdown);
+                } catch (error) {
+                    console.error('Failed to fetch refund breakdown:', error);
+                    setRefundInfo(null);
+                } finally {
+                    setLoadingRefund(false);
+                }
+            }
             setShowCancelModal(true);
         }
     };
@@ -488,6 +502,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
             {/* Partial Slot Selector */}
             {showPartialSelector && currentBooking?.slots && (
                 <PartialSlotSelector
+                    bookingId={bookingId}
                     slots={currentBooking.slots}
                     onConfirm={handlePartialCancelConfirm}
                     onCancel={() => setShowPartialSelector(false)}
@@ -499,7 +514,10 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
             <CancelConfirmationModal
                 isOpen={showCancelModal}
                 onConfirm={handleCancelBooking}
-                onCancel={() => setShowCancelModal(false)}
+                onCancel={() => {
+                    setShowCancelModal(false);
+                    setRefundInfo(null);
+                }}
                 loading={actionLoading}
                 title={bookingType === 'waitlisted' ? 'Cancel Waitlist Entry' : 'Cancel Booking'}
                 message={bookingType === 'waitlisted'
@@ -508,6 +526,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                 }
                 confirmText={bookingType === 'waitlisted' ? 'Yes, Remove from Waitlist' : 'Yes, Cancel Booking'}
                 cancelText="Keep Booking"
+                refundInfo={bookingType !== 'waitlisted' ? refundInfo : undefined}
             />
         </div>
     );
