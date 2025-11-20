@@ -56,6 +56,17 @@ export interface BookingResponse {
     updatedAt: string;
 }
 
+export interface RefundBreakdown {
+    refundPercentage: number;
+    refundAmount: number;
+    hoursUntilMatch: number;
+    eligibleForRefund: boolean;
+    perSlotAmount: number;
+    totalSlotsToCancel: number;
+    baseRefundAmount: number;
+    timeWindow: 'FULL_REFUND' | 'PARTIAL_REFUND' | 'NO_REFUND';
+}
+
 export interface PaymentInitiationResponse {
     booking: BookingResponse;
     razorpayOrder: {
@@ -137,6 +148,15 @@ export class BookingService {
 
     static async verifySlots(data: VerifySlotsRequest): Promise<VerifySlotsResponse> {
         const response = await api.post('/bookings/verify-slots', data);
+        return response.data;
+    }
+
+    static async getRefundBreakdown(bookingId: string, slotNumbers?: number[]): Promise<RefundBreakdown> {
+        const params: any = {};
+        if (slotNumbers && slotNumbers.length > 0) {
+            params.slotNumbers = slotNumbers.join(',');
+        }
+        const response = await api.get(`/bookings/${bookingId}/refund-breakdown`, { params });
         return response.data;
     }
 }
