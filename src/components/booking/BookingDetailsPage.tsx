@@ -526,7 +526,7 @@ export function BookingDetailsPage({ bookingId, bookingType, onClose }: BookingD
                 }
                 confirmText={bookingType === 'waitlisted' ? 'Yes, Remove from Waitlist' : 'Yes, Cancel Booking'}
                 cancelText="Keep Booking"
-                refundInfo={bookingType !== 'waitlisted' ? refundInfo : undefined}
+                refundInfo={bookingType !== 'waitlisted' ? (refundInfo ?? undefined) : undefined}
             />
         </div>
     );
