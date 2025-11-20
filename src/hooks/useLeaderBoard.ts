@@ -1,4 +1,6 @@
-import { fetchLeaderBoard } from "@/lib/api";
+{/*
+    
+    import { fetchLeaderBoard } from "@/lib/api";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -178,3 +180,163 @@ export const useLeaderBoard = (limit: number = 20, initialType?: string) => {
         prefetchNextPage
     };
 }
+
+*/}
+
+import { fetchLeaderBoard } from "@/lib/api";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+const LEADERBOARD_QUERY_KEY = 'leaderboard';
+const LEADERBOARD_STALE_TIME = 60 * 60 * 1000;
+
+// UPDATED FILTER STRUCTURE - Removed timeframes, added gender
+const LEADERBOARD_FILTERS = {
+    cities: {
+        'All Cities': 'all',
+        'Delhi': 'delhi',
+        'Mumbai': 'mumbai',
+        'Bangalore': 'bangalore',
+    },
+    positions: {
+        'All Positions': 'all',
+        'ATK': 'atk',
+        'DEF': 'def',
+        'GK': 'gk',
+    },
+    gender: {
+        'All': 'all',
+        'Male': 'male',
+        'Female': 'female',
+    }
+};
+
+const defaultFilters = {
+    city: 'all',
+    position: 'all',
+    gender: 'all',
+    limit: 50
+};
+
+export const useLeaderBoard = (limit: number = 50) => {
+    const queryClient = useQueryClient();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const getInitialFilters = () => {
+        const city = searchParams.get('city') || defaultFilters.city;
+        const position = searchParams.get('position') || defaultFilters.position;
+        const gender = searchParams.get('gender') || defaultFilters.gender;
+
+        return {
+            city,
+            position,
+            gender,
+            limit
+        };
+    };
+
+    const [filters, setFilters] = useState(getInitialFilters());
+
+    const updateURL = (newFilters: typeof filters) => {
+        const params = new URLSearchParams();
+        
+        if (newFilters.city !== 'all') params.set('city', newFilters.city);
+        if (newFilters.position !== 'all') params.set('position', newFilters.position);
+        if (newFilters.gender !== 'all') params.set('gender', newFilters.gender);
+        
+        const newUrl = params.toString() ? `/leaderboard?${params.toString()}` : '/leaderboard';
+        router.push(newUrl, { scroll: false });
+    };
+
+    const handleFilterClick = (filterType: 'city' | 'position' | 'gender', value: string) => {
+        const newFilters = { ...filters, [filterType]: value };
+        setFilters(newFilters);
+        updateURL(newFilters);
+    };
+
+    useEffect(() => {
+        const urlCity = searchParams.get('city') || 'all';
+        const urlPosition = searchParams.get('position') || 'all';
+        const urlGender = searchParams.get('gender') || 'all';
+
+        if (urlCity !== filters.city || urlPosition !== filters.position || urlGender !== filters.gender) {
+            setFilters({
+                city: urlCity,
+                position: urlPosition,
+                gender: urlGender,
+                limit
+            });
+        }
+    }, [searchParams]);
+
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        error,
+        refetch
+    } = useInfiniteQuery({
+        queryKey: [LEADERBOARD_QUERY_KEY, limit, filters],
+        queryFn: ({ pageParam = 1 }) => fetchLeaderBoard(pageParam, limit, filters),
+        getNextPageParam: (lastPage) => {
+            if (Array.isArray(lastPage)) {
+                return lastPage.length === limit ? 2 : undefined;
+            } else if (lastPage?.pagination?.hasNextPage) {
+                return lastPage.pagination.currentPage + 1;
+            }
+            return undefined;
+        },
+        staleTime: LEADERBOARD_STALE_TIME,
+        refetchOnWindowFocus: false,
+        initialPageParam: 1,
+    });
+
+    const prefetchNextPage = () => {
+        if (hasNextPage && !isFetchingNextPage && data?.pages) {
+            const lastPage = data.pages[data.pages.length - 1];
+            let nextPage = 2;
+
+            if (Array.isArray(lastPage)) {
+                nextPage = 2;
+            } else if (lastPage?.pagination?.currentPage) {
+                nextPage = lastPage.pagination.currentPage + 1;
+            }
+
+            queryClient.prefetchQuery({
+                queryKey: [LEADERBOARD_QUERY_KEY, limit, nextPage, filters],
+                queryFn: () => fetchLeaderBoard(nextPage, limit, filters),
+                staleTime: LEADERBOARD_STALE_TIME,
+            });
+        }
+    };
+
+    const leaderboard = data?.pages?.flatMap(page => {
+        if (Array.isArray(page)) {
+            return page;
+        } else if (page?.data && Array.isArray(page.data)) {
+            return page.data;
+        }
+        return [];
+    }) || [];
+
+    const pagination = data?.pages?.[data.pages.length - 1]?.pagination;
+
+    return {
+        LEADERBOARD_FILTERS,
+        filters,
+        handleFilterClick,
+        leaderboard,
+        pagination,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLeaderboardLoading: isLoading,
+        leaderboardError: error,
+        refetchLeaderboard: refetch,
+        prefetchNextPage
+    };
+};

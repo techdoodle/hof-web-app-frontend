@@ -55,7 +55,12 @@ const PodiumImage = ({
   );
 };
 
-export const Podium = (props: { first: any; second: any; third: any }) => {
+export const Podium = (props: {
+  first: any;
+  second: any;
+  third: any;
+  currentUserId?: string;
+}) => {
   const leaderboardData = [
     {
       rank: 2,
@@ -63,6 +68,7 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
       score: props.second?.score ?? 0,
       imageUrl: props.second?.imageUrl ?? "/skeleton.png",
       category: "silver" as const,
+      userId: props.second?.userId,
     },
     {
       rank: 1,
@@ -70,6 +76,7 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
       score: props.first?.score ?? 0,
       imageUrl: props.first?.imageUrl ?? "/skeleton.png",
       category: "gold" as const,
+      userId: props.first?.userId,
     },
     {
       rank: 3,
@@ -77,8 +84,22 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
       score: props.third?.score ?? 0,
       imageUrl: props.third?.imageUrl ?? "/skeleton.png",
       category: "bronze" as const,
+      userId: props.third?.userId,
     },
   ];
+
+  const getXPTextColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "text-yellow-400";
+      case 2:
+        return "text-gray-300";
+      case 3:
+        return "text-orange-400";
+      default:
+        return "text-white";
+    }
+  };
 
   const getPodiumHeight = (rank: number) => {
     switch (rank) {
@@ -143,6 +164,12 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
             }}
           >
             <div className="relative mb-2 transform hover:scale-110 transition-transform duration-300">
+              {player.rank === 1 && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-2xl z-20">
+                  👑
+                </div>
+              )}
+
               <div
                 className={`absolute -top-1 -right-1 w-6 h-6 rounded-full ${getRankBadgeColor(
                   player.rank
@@ -154,7 +181,11 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
               <div
                 className={`w-14 h-14 rounded-full bg-gradient-to-br ${getAvatarBorderColor(
                   player.category
-                )} p-0.5 shadow-xl`}
+                )} p-0.5 shadow-xl ${
+                  player.userId === props.currentUserId
+                    ? "ring-2 ring-green-400 ring-offset-2 ring-offset-gray-900"
+                    : ""
+                }`}
               >
                 <PodiumImage
                   src={player.imageUrl}
@@ -164,14 +195,23 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
               </div>
             </div>
 
-            <div className="text-white font-bold text-sm mb-1 text-center truncate w-full px-1">
+            <div
+              className={`font-bold text-sm mb-0.5 text-center truncate w-full px-1 ${
+                player.userId === props.currentUserId
+                  ? "text-green-400"
+                  : "text-white"
+              }`}
+            >
               {player.name}
             </div>
 
             <div className="flex items-center gap-0.5 mb-2">
-              <span className="text-purple-300 text-sm">✦</span>
-              <span className="text-white font-semibold text-base">
-                {player.score}
+              <span
+                className={`font-semibold text-sm ${getXPTextColor(
+                  player.rank
+                )}`}
+              >
+                {player.score} XP
               </span>
             </div>
 
@@ -183,12 +223,12 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
               <div
                 className={`absolute inset-0 bg-gradient-to-t ${getPodiumColor(
                   player.rank
-                )} backdrop-blur-sm border border-white/20 rounded-t-lg overflow-hidden shadow-2xl`}
+                )} backdrop-blur-sm rounded-t-lg overflow-hidden shadow-2xl`}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-black to-black/20"></div>
 
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-grey-500/30 font-bold text-7xl pt-3">
+                  <span className="text-white/40 font-bold text-7xl pt-3">
                     {player.rank}
                   </span>
                 </div>
@@ -199,11 +239,22 @@ export const Podium = (props: { first: any; second: any; third: any }) => {
               <div
                 className={`absolute top-0 left-0 right-0 h-3 bg-gradient-to-br ${getPodiumColor(
                   player.rank
-                )} border-t border-l border-r border-white/10 rounded-t-lg`}
+                )} border-t border-l border-r border-white/30 rounded-t-lg`}
                 style={{
-                  transform: "perspective(400px) rotateX(85deg)",
+                  transform: "perspective(400px) rotateX(60deg)",
                   transformOrigin: "bottom",
                   filter: "brightness(1.3)",
+                }}
+              ></div>
+
+              <div
+                className={`absolute top-3 right-0 bottom-0 bg-gradient-to-b ${getPodiumColor(
+                  player.rank
+                )} border-r border-white/20`}
+                style={{
+                  transform: "perspective(400px) rotateY(65deg)",
+                  transformOrigin: "left",
+                  filter: "brightness(0.7)",
                 }}
               ></div>
             </div>

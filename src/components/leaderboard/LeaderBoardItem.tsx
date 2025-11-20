@@ -86,11 +86,13 @@ export function LeaderboardItem({
   item,
   isUser = false,
   isVisible = false,
+  rankChange = 0,
 }: {
   floating?: boolean;
   item: any;
   isUser?: boolean;
   isVisible?: boolean;
+  rankChange?: number;
 }) {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -112,62 +114,87 @@ export function LeaderboardItem({
       className={`
                 relative flex items-center justify-between p-4 rounded-2xl transition-all duration-300 overflow-hidden
                 ${
-                  isUser && floating
-                    ? "bg-[#00CC6661] border border-[#00CC66] hover:scale-[1.02] shadow-xl"
+                  isUser
+                    ? "bg-[#00CC66]/10 border-2 border-[#00CC66] hover:scale-[1.02] shadow-xl ring-2 ring-[#00CC66]/50"
                     : "bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 hover:bg-gray-700/50 shadow-lg"
                 }
                 ${isUser && isVisible ? "scale-[1.02] shadow-xl" : ""}
             `}
     >
-      {/* Large background rank number */}
-      <div className="absolute -left-2 top-11 -translate-y-1/2 pointer-events-none">
-        <span className="text-[120px] font-black text-gray-600/60 leading font-serif">
+      <div className="absolute left-1 top-1/2 -translate-y-1/2 pointer-events-none">
+        <span
+          className={`text-[110px] font-black font-serif leading-none ${
+            isUser ? "text-[#00CC66]/20" : "text-gray-600/50"
+          }`}
+        >
           {item.rank}
         </span>
       </div>
 
-      {/* Content (on top of background number) */}
       <div className="relative z-10 flex items-center justify-between w-full">
-        {/* Left section: Avatar + Name */}
         <div className="flex items-center gap-4 ml-16">
-          {/* Avatar with gradient border */}
-          <div
-            className={`
-                        w-12 h-12 rounded-full p-0.5 shadow-lg flex-shrink-0
-                        ${
-                          isUser
-                            ? "bg-gradient-to-br from-[#00CC66] to-[#00AA55]"
-                            : "bg-gradient-to-br from-gray-400 to-gray-600"
-                        }
-                    `}
-          >
-            <div className="w-full h-full rounded-full overflow-hidden bg-gray-800 border-2 border-gray-700">
-              <Image
-                src={imageSrc}
-                alt={item.name}
-                width={48}
-                height={48}
-                onError={handleImageError}
-                onLoad={handleImageLoad}
-                className={`${
-                  imageLoading ? "opacity-50" : "opacity-100"
-                } w-full h-full object-cover transition-opacity duration-200`}
-              />
+          <div className="relative w-16 h-16 flex-shrink-0">
+            <div
+              className={`
+            w-full h-full rounded-xl overflow-hidden
+            ${
+              isUser
+                ? "ring-2 ring-[#00CC66] shadow-[0_0_20px_rgba(0,204,102,0.6)]"
+                : "ring-1 ring-gray-600"
+            }
+        `}
+            >
+              <div
+                className={`
+                w-full h-full p-0.5
+                ${
+                  isUser
+                    ? "bg-gradient-to-br from-[#00CC66] to-[#00AA55]"
+                    : "bg-gradient-to-br from-gray-500 to-gray-700"
+                }
+            `}
+              >
+                <div className="w-full h-full rounded-lg overflow-hidden bg-gray-900">
+                  <Image
+                    src={imageSrc}
+                    alt={item.name}
+                    width={64}
+                    height={64}
+                    onError={handleImageError}
+                    onLoad={handleImageLoad}
+                    className={`${
+                      imageLoading ? "opacity-50" : "opacity-100"
+                    } w-full h-full object-cover`}
+                    quality={95}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Name */}
-          <span
-            className={`
-                        font-semibold text-base truncate
-                        ${isUser ? "text-[#00CC66]" : "text-white"}
-                    `}
-          >
-            {item.name}
-          </span>
+          <div className="flex flex-col">
+            <span
+              className={`
+                            font-semibold text-base truncate
+                            ${isUser ? "text-[#00CC66]" : "text-white"}
+                        `}
+            >
+              {item.name}
+            </span>
+
+            {rankChange !== 0 && (
+              <div
+                className={`flex items-center gap-1 text-xs ${
+                  rankChange > 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                <span>{rankChange > 0 ? "▲" : "▼"}</span>
+                <span>{Math.abs(rankChange)}</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Right section: Score */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <span
             className={`text-lg ${
@@ -182,8 +209,7 @@ export function LeaderboardItem({
                         ${isUser ? "text-[#00CC66]" : "text-white"}
                     `}
           >
-            {item.score}
-            {item?.suffix ?? ""}
+            {item.score} XP
           </span>
         </div>
       </div>
