@@ -12,10 +12,10 @@ if (environment === 'development') {
   // baseURL = 'https://hof-web-app-backend-production.up.railway.app';
   // baseURL = 'https://hof-web-app-backend-staging.up.railway.app';
 } else if (deploymentEnv === 'staging') {
-  baseURL = 'testapi.humansoffootball.in';
+  baseURL = 'https://testapi.humansoffootball.in';
 } else {
   // Default to production for any production build
-  baseURL = 'api.humansoffootball.in';
+  baseURL = 'https://api.humansoffootball.in';
   // baseURL = 'http://localhost:8000';
 }
 
