@@ -59,7 +59,7 @@ export const Podium = (props: {
   first: any;
   second: any;
   third: any;
-  currentUserId?: string;
+  currentUserId?: number | null; // Allow null
 }) => {
   const leaderboardData = [
     {
@@ -182,7 +182,7 @@ export const Podium = (props: {
                 className={`w-14 h-14 rounded-full bg-gradient-to-br ${getAvatarBorderColor(
                   player.category
                 )} p-0.5 shadow-xl ${
-                  player.userId === props.currentUserId
+                  props.currentUserId && player.userId === props.currentUserId
                     ? "ring-2 ring-green-400 ring-offset-2 ring-offset-gray-900"
                     : ""
                 }`}
@@ -197,7 +197,7 @@ export const Podium = (props: {
 
             <div
               className={`font-bold text-sm mb-0.5 text-center truncate w-full px-1 ${
-                player.userId === props.currentUserId
+                props.currentUserId && player.userId === props.currentUserId
                   ? "text-green-400"
                   : "text-white"
               }`}
