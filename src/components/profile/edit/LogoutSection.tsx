@@ -28,7 +28,7 @@ export function LogoutSection() {
 
             // Wait a moment for the toast to be visible, then redirect
             setTimeout(() => {
-                router.push('/onboarding');
+                router.push('/');
             }, 500);
         } catch (error) {
             console.error('Logout failed:', error);
