@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { UserData } from '@/modules/onboarding/types';
 import { Button } from '@/lib/ui/components/Button/Button';
 import { CameraSelfieModal } from '@/modules/onboarding/components/CameraSelfieModal';
+import { ImageUploadService } from '@/lib/utils/imageUpload';
 
 interface ProfilePictureEditModalProps {
     userData: UserData;
@@ -21,15 +22,47 @@ export function ProfilePictureEditModal({
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [showCamera, setShowCamera] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [validationError, setValidationError] = useState<string | null>(null);
+    const [isValidating, setIsValidating] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setSelectedFile(file);
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
+        setIsValidating(true);
+        setValidationError(null);
+
+        try {
+            // Validate the uploaded file
+            const result = await ImageUploadService.validateAndUpload(file, {
+                requireValidation: true,
+                updateProfile: false // We'll handle the upload separately
+            });
+
+            if (result.success && result.url) {
+                // Convert the processed image back to a file
+                const response = await fetch(result.url);
+                const blob = await response.blob();
+                const processedFile = new File([blob], file.name, { type: 'image/jpeg' });
+
+                setSelectedFile(processedFile);
+                setPreviewUrl(result.url);
+                setIsValidating(false);
+            } else {
+                setValidationError(result.error || 'Validation failed');
+                setIsValidating(false);
+            }
+        } catch (error) {
+            console.error('File validation failed:', error);
+            setValidationError('Failed to validate image. Please try again.');
+            setIsValidating(false);
+        }
+
+        // Reset file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const handleCameraClick = () => {
@@ -112,12 +145,33 @@ export function ProfilePictureEditModal({
                             </div>
                         )}
 
+                        {/* Validation Error */}
+                        {validationError && (
+                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg animate-fade-in">
+                                <p className="text-sm text-red-400 text-center">{validationError}</p>
+                                <p className="text-xs text-gray-400 text-center mt-1">
+                                    Please ensure photo includes face, ears, and shoulders
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Validating Indicator */}
+                        {isValidating && (
+                            <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg animate-fade-in">
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+                                    <p className="text-sm text-blue-400">Validating image...</p>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Action Buttons */}
                         {!previewUrl ? (
                             <div className="space-y-3 mb-6 animate-slide-up">
                                 <Button
                                     variant="secondary"
                                     onClick={handleCameraClick}
+                                    disabled={isValidating}
                                     className="w-full transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 >
                                     Take Photo
@@ -125,10 +179,15 @@ export function ProfilePictureEditModal({
                                 <Button
                                     variant="secondary"
                                     onClick={handleGalleryClick}
+                                    disabled={isValidating}
+                                    isLoading={isValidating}
                                     className="w-full transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 >
-                                    Choose from Gallery
+                                    🖼️ Choose from Gallery
                                 </Button>
+                                <p className="text-xs text-gray-400 text-center">
+                                    Accepted formats: JPEG, JPG, PNG
+                                </p>
                             </div>
                         ) : (
                             <div className="space-y-3 mb-6 animate-slide-up">
@@ -141,16 +200,37 @@ export function ProfilePictureEditModal({
                                 >
                                     Save Changes
                                 </Button>
-                                <Button
-                                    variant="secondary"
-                                    onClick={() => {
-                                        setPreviewUrl(null);
-                                        setSelectedFile(null);
-                                    }}
-                                    className="w-full transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                >
-                                    Retake
-                                </Button>
+
+                                {/* Retake Options */}
+                                <div className="space-y-2">
+                                    <p className="text-xs text-gray-400 text-center">Want to use a different photo?</p>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => {
+                                                setPreviewUrl(null);
+                                                setSelectedFile(null);
+                                                setValidationError(null);
+                                                handleCameraClick();
+                                            }}
+                                            className="flex-1 transform hover:scale-105 active:scale-95"
+                                        >
+                                            Take Photo
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => {
+                                                setPreviewUrl(null);
+                                                setSelectedFile(null);
+                                                setValidationError(null);
+                                                handleGalleryClick();
+                                            }}
+                                            className="flex-1 transform hover:scale-105 active:scale-95"
+                                        >
+                                            Upload Photo
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -167,7 +247,7 @@ export function ProfilePictureEditModal({
                         <input
                             ref={fileInputRef}
                             type="file"
-                            accept="image/*"
+                            accept="image/jpeg,image/jpg,image/png"
                             onChange={handleFileSelect}
                             className="hidden"
                         />

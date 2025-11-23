@@ -6,9 +6,12 @@ import { Button } from '@/lib/ui/components/Button/Button';
 interface SelfieInstructionsPageProps {
     onBack: () => void;
     onReady: () => void;
+    onUpload?: () => void;
+    uploadError?: string | null;
+    isUploading?: boolean;
 }
 
-export function SelfieInstructionsPage({ onBack, onReady }: SelfieInstructionsPageProps) {
+export function SelfieInstructionsPage({ onBack, onReady, onUpload, uploadError, isUploading }: SelfieInstructionsPageProps) {
     const instructions = [
         {
             image: '/selfie-instructions/masked.jpg',
@@ -54,14 +57,14 @@ export function SelfieInstructionsPage({ onBack, onReady }: SelfieInstructionsPa
                 {/* Content */}
                 <div className="flex-1 px-4 pb-6">
                     {/* Title */}
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-6">
                         <h1 className="text-2xl font-bold text-white mb-2">
                             Ready to take a selfie?
                         </h1>
                     </div>
 
                     {/* Main selfie display */}
-                    <div className="flex justify-center mb-8">
+                    <div className="flex justify-center mb-6">
                         <div className="w-48 h-48 rounded-full border-4 border-primary p-2">
                             <img
                                 src="/selfie-instructions/sample-selfie.jpg"
@@ -94,15 +97,43 @@ export function SelfieInstructionsPage({ onBack, onReady }: SelfieInstructionsPa
                         ))}
                     </div>
 
-                    {/* Action Button */}
-                    <div className="mt-auto">
+                    {/* Upload Error */}
+                    {uploadError && (
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                            <p className="text-sm text-red-400 text-center">{uploadError}</p>
+                            <p className="text-xs text-gray-400 text-center mt-1">
+                                Please ensure photo includes face, ears, and shoulders
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="mt-auto space-y-3">
                         <Button
                             variant="gradient"
                             onClick={onReady}
+                            disabled={isUploading}
                             className="w-full py-4 text-lg font-semibold"
                         >
-                            I'm Ready
+                            Take Selfie
                         </Button>
+                        {onUpload && (
+                            <>
+                                <div className="text-center text-gray-400 text-sm">or</div>
+                                <Button
+                                    variant="secondary"
+                                    onClick={onUpload}
+                                    isLoading={isUploading}
+                                    disabled={isUploading}
+                                    className="w-full py-4 text-lg font-semibold"
+                                >
+                                    Upload Photo
+                                </Button>
+                                <p className="text-xs text-gray-400 text-center">
+                                    Accepted formats: JPEG, JPG, PNG
+                                </p>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
