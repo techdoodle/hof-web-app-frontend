@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/lib/ui/components/Button/Button';
 import { GenderSelectionSchema, GenderSelection } from '../types';
 import { CameraSelfieModal } from './CameraSelfieModal';
 import { OnboardingRepository } from '../repository/onboarding.repository';
 import { getAccessToken, getUser } from '@/lib/utils/auth';
 import { UserData } from '../types';
+import { ImageUploadService } from '@/lib/utils/imageUpload';
 
 interface GenderSelectionScreenProps {
   onSubmit: (data: GenderSelection & { profilePicture?: string }) => Promise<void>;
@@ -27,6 +28,7 @@ export function GenderSelectionScreen({
   const [validationError, setValidationError] = useState('');
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const repository = OnboardingRepository.getInstance();
 
@@ -51,12 +53,40 @@ export function GenderSelectionScreen({
     try {
       GenderSelectionSchema.parse({ gender: selectedGender });
       setValidationError('');
+
+      // If profilePicture is a base64 data URL, upload it to cloud storage first
+      let finalProfilePictureUrl = profilePicture;
+
+      if (profilePicture.startsWith('data:image')) {
+        console.log('Uploading base64 image to cloud storage...');
+        setIsProcessingImage(true);
+
+        try {
+          const token = getAccessToken();
+          if (!token) {
+            throw new Error('No authentication token available');
+          }
+
+          // Upload to cloud storage and get permanent URL
+          const result = await repository.processProfilePictureBase64(profilePicture, token);
+          finalProfilePictureUrl = result.url;
+
+          setIsProcessingImage(false);
+        } catch (uploadError) {
+          console.error('Failed to upload to cloud storage:', uploadError);
+          setProcessingError('Failed to save image. Please try again.');
+          setIsProcessingImage(false);
+          return;
+        }
+      }
+
       await onSubmit({
         gender: selectedGender,
-        ...(profilePicture && { profilePicture })
+        profilePicture: finalProfilePictureUrl
       });
     } catch (err) {
       setValidationError('Please select a valid option');
+      setIsProcessingImage(false);
     }
   };
 
@@ -87,6 +117,43 @@ export function GenderSelectionScreen({
       // Fallback: use the original image
       setProfilePicture(originalImage);
     }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessingImage(true);
+    setProcessingError(null);
+
+    try {
+      // Use unified validation and upload service
+      const result = await ImageUploadService.validateAndUpload(file, {
+        requireValidation: true,
+        updateProfile: false // Don't save to profile yet (onboarding)
+      });
+
+      if (result.success && result.url) {
+        setProfilePicture(result.url);
+        setIsProcessingImage(false);
+      } else {
+        setProcessingError(result.error || 'Failed to process image');
+        setIsProcessingImage(false);
+      }
+    } catch (error) {
+      console.error('File upload failed:', error);
+      setProcessingError('Failed to upload image. Please try again.');
+      setIsProcessingImage(false);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleGalleryClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -136,25 +203,22 @@ export function GenderSelectionScreen({
         </div>
 
         <div className="mb-4">
-          <h2 className="text-mb mb-2">Click your photo *</h2>
+          <h2 className="text-mb mb-2">Add your photo *</h2>
 
           <div className="flex flex-col items-center">
-            <div className="relative">
-              <button
-                onClick={() => setShowCamera(true)}
-                disabled={isProcessingImage}
-                className="relative w-32 h-32 mx-auto rounded-full border-2 border-dashed border-gray-400 flex flex-col items-center justify-center hover:border-primary/50 transition-colors disabled:opacity-50"
-              >
+            {/* Photo Preview */}
+            <div className="relative mb-4">
+              <div className="w-32 h-32 mx-auto rounded-full border-2 border-dashed border-gray-400 flex flex-col items-center justify-center overflow-hidden">
                 {isProcessingImage ? (
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                    <span className="text-xs text-gray-400">Processing...</span>
+                    <span className="text-xs text-gray-400">Validating...</span>
                   </div>
                 ) : profilePicture ? (
                   <img
                     src={profilePicture}
                     alt="Profile"
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <>
@@ -162,23 +226,83 @@ export function GenderSelectionScreen({
                       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                       <circle cx="12" cy="13" r="3" />
                     </svg>
-                    <span className="text-sm text-gray-400">Take Selfie!</span>
+                    <span className="text-sm text-gray-400 mt-2">Add Photo</span>
                   </>
                 )}
-              </button>
+              </div>
             </div>
 
-            {processingError && (
-              <>
-                {/* <p className="mt-2 text-sm text-red-500 text-center">{processingError}</p> */}
-                <p className="mt-2 text-sm text-yellow-500 text-center">Click on continue, we will process your photo in the background</p>
-              </>
+            {/* Action Buttons */}
+            {!profilePicture && !isProcessingImage && (
+              <div className="space-y-2 w-full max-w-xs">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowCamera(true)}
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <span>Take Photo</span>
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={handleGalleryClick}
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <span>Upload Photo</span>
+                </Button>
+                <p className="text-xs text-gray-400 text-center mt-2">
+                  Photo must show face, ears, and shoulders
+                </p>
+              </div>
             )}
 
-            {!processingError && profilePicture && !isProcessingImage && (
-              <p className="mt-2 text-md text-green-500 text-center">
-                ✓ Photo captured successfully
-              </p>
+            {/* Change Photo Options */}
+            {profilePicture && !isProcessingImage && (
+              <div className="space-y-2 w-full max-w-xs mt-3">
+                <p className="text-xs text-gray-300 text-center mb-2">Want to use a different photo?</p>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setProfilePicture(null);
+                    setProcessingError(null);
+                    setShowCamera(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-2"
+                  size="sm"
+                >
+                  <span>Take Another Photo</span>
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setProfilePicture(null);
+                    setProcessingError(null);
+                    handleGalleryClick();
+                  }}
+                  className="w-full flex items-center justi fy-center gap-2"
+                  size="sm"
+                >
+                  <span>Upload Another Photo</span>
+                </Button>
+              </div>
+            )}
+
+            {/* Validation Error */}
+            {processingError && (
+              <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg max-w-xs w-full">
+                <p className="text-sm text-red-400 text-center">{processingError}</p>
+                <p className="text-xs text-gray-400 text-center mt-1">
+                  Please ensure photo includes face, ears, and shoulders
+                </p>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {profilePicture && !isProcessingImage && !processingError && (
+              <div className="mt-2 p-2 bg-green-500/10 border border-green-500/20 rounded-lg max-w-xs w-full">
+                <p className="text-sm text-green-400 text-center">
+                  ✓ Photo validated successfully
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -220,6 +344,15 @@ export function GenderSelectionScreen({
           onClose={() => setShowCamera(false)}
         />
       )}
+
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
     </div>
   );
 } 
