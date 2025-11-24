@@ -28,16 +28,38 @@ export function GenderSelectionScreen({
   const [validationError, setValidationError] = useState('');
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    console.log('imageLoadError', imageLoadError);
+  }, [imageLoadError]);
 
   const repository = OnboardingRepository.getInstance();
 
   useEffect(() => {
     if (userData) {
       setSelectedGender(userData.gender as 'MALE' | 'FEMALE' | 'OTHER');
-      setProfilePicture(userData.profilePicture);
+      if (userData.profilePicture && userData.profilePicture !== 'undefined') {
+        console.log('Setting profile picture from userData:', userData.profilePicture);
+        setProfilePicture(userData.profilePicture);
+        setImageLoadError(false);
+      }
     }
   }, [userData]);
+
+  // Helper function to add cache-busting for Firebase URLs
+  const getImageUrlWithCacheBust = (url: string) => {
+    if (!url) return url;
+
+    // If it's a Firebase Storage URL, add cache busting parameter
+    if (url.includes('storage.googleapis.com') || url.includes('firebasestorage.googleapis.com')) {
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}t=${Date.now()}`;
+    }
+
+    return url;
+  };
 
   const handleSubmit = async () => {
     if (!selectedGender) {
@@ -214,12 +236,25 @@ export function GenderSelectionScreen({
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
                     <span className="text-xs text-gray-400">Validating...</span>
                   </div>
-                ) : profilePicture ? (
-                  <img
-                    src={profilePicture}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
+                ) : profilePicture && profilePicture !== 'undefined' && !imageLoadError ? (
+                  <>
+                    <img
+                      src={getImageUrlWithCacheBust(profilePicture)}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error('Failed to load profile picture:', profilePicture);
+                        console.error('Image error event:', e);
+                        setImageLoadError(true);
+                        setProcessingError('Failed to load image. Please upload a new photo.');
+                      }}
+                      onLoad={() => {
+                        console.log('Profile picture loaded successfully:', profilePicture);
+                        setImageLoadError(false);
+                      }}
+                    />
+                  </>
                 ) : (
                   <>
                     <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mb-2">
