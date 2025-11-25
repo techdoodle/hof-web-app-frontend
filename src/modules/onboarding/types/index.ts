@@ -62,6 +62,7 @@ export type UserData = {
   gender: string;
   preferredTeam: FootballTeam | null;
   isCalibrated?: boolean;
+  calibrated?: boolean;
 };
 
 export type FootballTeam = {

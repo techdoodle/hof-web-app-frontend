@@ -21,8 +21,9 @@ export default function HomePage() {
         <AuthWrapper>
             {(userData: UserData) => (
                 <div className="min-h-screen flex flex-col pb-24 max-w-md mx-auto">
+
                     {/* Banner Section */}
-                    <HomeBanner />
+                    <HomeBanner calibrated={userData.calibrated ?? true} />
 
                     {/* Pickup Matches Today Section */}
                     <div className="px-4 py-6 space-y-4">

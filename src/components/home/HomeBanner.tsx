@@ -3,12 +3,18 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
+import { CalibrationChip } from './CalibrationChip';
 
-export function HomeBanner() {
+export function HomeBanner({ calibrated }: { calibrated: boolean }) {
     const router = useRouter();
 
     return (
         <div className="relative w-full h-[400px] overflow-hidden">
+            {calibrated === false && (
+                <div className="absolute z-10 top-0 left-0 w-full ">
+                    <CalibrationChip />
+                </div>
+            )}
             {/* Background Image */}
             <div className="absolute inset-0">
                 <Image
