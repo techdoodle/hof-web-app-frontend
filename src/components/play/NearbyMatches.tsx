@@ -31,10 +31,26 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
     const filteredVenues = useMemo(() => {
         if (!venues) return [];
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tenDaysFromNow = new Date(today);
+        tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 10);
+        tenDaysFromNow.setHours(23, 59, 59, 999);
+
         return venues.map((venueData: any) => ({
             ...venueData,
             matches: venueData.matches.filter((match: any) => {
+                // Filter out cancelled matches
+                if (match.status === 'CANCELLED') {
+                    return false;
+                }
+
+                // Filter to only show matches within next 10 days
                 const matchDate = new Date(match.startTime);
+                if (matchDate > tenDaysFromNow) {
+                    return false;
+                }
+
                 const isWeekend = matchDate.getDay() === 0 || matchDate.getDay() === 6;
                 const matchesDayFilter =
                     dayFilter === 'all' ? true :

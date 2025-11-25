@@ -31,14 +31,23 @@ export function HorizontalMatchCards() {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
+        const tenDaysFromNow = new Date(today);
+        tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 10);
+        tenDaysFromNow.setHours(23, 59, 59, 999);
+
         const matches: Match[] = [];
         venues.forEach((venueData: any) => {
             console.log("venueData", venueData);
             if (Array.isArray(venueData.matches)) {
                 venueData.matches.forEach((match: any) => {
+                    // Filter out cancelled matches
+                    if (match.status === 'CANCELLED') {
+                        return;
+                    }
+
                     const matchDate = new Date(match.startTime);
-                    // Only include matches that are today
-                    if (matchDate >= today) {
+                    // Only include matches within the next 10 days
+                    if (matchDate >= today && matchDate <= tenDaysFromNow) {
                         matches.push({
                             ...match,
                             venue: {
