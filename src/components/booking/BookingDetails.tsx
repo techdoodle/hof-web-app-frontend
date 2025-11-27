@@ -160,22 +160,27 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
         for (let i = 0; i < additionalSlots.length; i++) {
             const slot = additionalSlots[i];
+            const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
+
+            // First name required for each additional player
+            if (!slot.firstName?.trim()) {
+                showToast(`First name is required for slot ${slotNum}`, 'error');
+                return false;
+            }
+
             if (!slot.phone?.trim()) {
-                const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
                 showToast(`Phone number is required for slot ${slotNum}`, 'error');
                 return false;
             }
             // Validate phone number format (basic validation)
             const phoneRegex = /^[6-9]\d{9}$/;
             if (!phoneRegex.test(slot.phone.replace(/\D/g, ''))) {
-                const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
                 showToast(`Invalid phone number format for slot ${slotNum}`, 'error');
                 return false;
             }
 
             // Validate team selection for confirmed bookings
             if (bookingType === 'regular' && !slot.teamName) {
-                const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
                 showToast(`Team selection is required for slot ${slotNum}`, 'error');
                 return false;
             }
