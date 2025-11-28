@@ -47,9 +47,8 @@ const PodiumImage = ({
           setImageLoading(false);
         }}
         onLoad={() => setImageLoading(false)}
-        className={`${
-          imageLoading ? "opacity-50" : "opacity-100"
-        } w-full h-full object-cover transition-opacity duration-200`}
+        className={`${imageLoading ? "opacity-50" : "opacity-100"
+          } w-full h-full object-cover transition-opacity duration-200`}
       />
     </div>
   );
@@ -102,15 +101,17 @@ export const Podium = (props: {
   };
 
   const getPodiumHeight = (rank: number) => {
+    // Responsive, slightly shorter podium heights
+    // mobile: shorter, md+: a bit taller for visual emphasis
     switch (rank) {
       case 1:
-        return "h-36";
+        return "h-24 sm:h-28 md:h-32";
       case 2:
-        return "h-28";
+        return "h-20 sm:h-24 md:h-28";
       case 3:
-        return "h-20";
+        return "h-16 sm:h-20 md:h-24";
       default:
-        return "h-20";
+        return "h-16 sm:h-20 md:h-24";
     }
   };
 
@@ -152,9 +153,9 @@ export const Podium = (props: {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-4">
+    <div className="w-full max-w-md mx-auto p-4 pb-0">
       <div className="flex items-end justify-center">
-        {leaderboardData.map((player) => (
+        {leaderboardData.filter((player) => player.score).map((player) => (
           <div
             key={player.rank}
             className="flex flex-col items-center relative flex-1"
@@ -181,11 +182,10 @@ export const Podium = (props: {
               <div
                 className={`w-14 h-14 rounded-full bg-gradient-to-br ${getAvatarBorderColor(
                   player.category
-                )} p-0.5 shadow-xl ${
-                  props.currentUserId && player.userId === props.currentUserId
-                    ? "ring-2 ring-green-400 ring-offset-2 ring-offset-gray-900"
-                    : ""
-                }`}
+                )} p-0.5 shadow-xl ${props.currentUserId && player.userId === props.currentUserId
+                  ? "ring-2 ring-green-400 ring-offset-2 ring-offset-gray-900"
+                  : ""
+                  }`}
               >
                 <PodiumImage
                   src={player.imageUrl}
@@ -196,11 +196,10 @@ export const Podium = (props: {
             </div>
 
             <div
-              className={`font-bold text-sm mb-0.5 text-center truncate w-full px-1 ${
-                props.currentUserId && player.userId === props.currentUserId
-                  ? "text-green-400"
-                  : "text-white"
-              }`}
+              className={`font-bold text-sm mb-0.5 text-center truncate w-full px-1 ${props.currentUserId && player.userId === props.currentUserId
+                ? "text-green-400"
+                : "text-white"
+                }`}
             >
               {player.name}
             </div>

@@ -42,22 +42,26 @@ export const LeaderBoardFilters = ({ filter_data, filters, handleFilterClick }: 
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, RefreshCw } from "lucide-react";
+import { Button } from "../ui/button";
 
-type FilterType = "city" | "position" | "gender";
+type FilterType = "city" | "position" | "gender" | "leaderboard_type";
 
 interface LeaderboardFiltersProps {
   filters: {
+    leaderboard_type?: string;
     city: string;
     position: string;
     gender: string;
   };
   filterData: {
+    leaderboard_types: Record<string, string>;
     cities: Record<string, string>;
     positions: Record<string, string>;
     gender: Record<string, string>;
   };
   handleFilterClick: (filterType: FilterType, value: string) => void;
+  resetFilters: () => void;
 }
 
 const FilterDropdown = ({
@@ -169,6 +173,7 @@ export const LeaderBoardFilters = ({
   filters,
   filterData,
   handleFilterClick,
+  resetFilters,
 }: LeaderboardFiltersProps) => {
   // ADD NULL CHECKS
   if (!filterData || !filters) {
@@ -177,6 +182,17 @@ export const LeaderBoardFilters = ({
   console.log("filters", filters, filterData);
   return (
     <div className="flex flex-row gap-2 overflow-x-auto pb-2 scrollbar-hide" style={{ position: 'relative', zIndex: 50 }}>
+      <Button onClick={resetFilters} className="p-2 rounded-full bg-gray-800/80 border border-gray-700/50 text-white text-sm font-medium hover:bg-gray-700/80 transition-all">
+        <RefreshCw className="w-4 h-4" />
+      </Button>
+      {filterData.leaderboard_types && (
+        <FilterDropdown
+          label="Leaderboard Type"
+          options={filterData.leaderboard_types}
+          activeValue={(filters.leaderboard_type || (filters as any).type || 'overall')}
+          onSelect={(value) => handleFilterClick("leaderboard_type" as FilterType, value)}
+        />
+      )}
       {filterData.cities && (
         <FilterDropdown
           label="City"

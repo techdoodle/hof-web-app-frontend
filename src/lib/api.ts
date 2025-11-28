@@ -82,13 +82,18 @@ export async function fetchLeaderBoard(page: number = 1, limit: number = 20, fil
   return response.data;
 }
 
-export async function fetchNewLeaderBoard(page: number = 1, limit: number = 50, filters: { city?: string; position?: string; gender?: string }) {
+export async function fetchNewLeaderBoard(
+  page: number = 1,
+  limit: number = 50,
+  filters: { city?: string; position?: string; gender?: string; leaderboard_type?: string }
+) {
   const params = new URLSearchParams();
   params.set('page', page.toString());
   params.set('limit', limit.toString());
   params.set('city', filters.city || 'all');
   params.set('position', filters.position || 'all');
   params.set('gender', filters.gender || 'male');
+  params.set('type', filters.leaderboard_type || 'overall');
 
   const response = await api.get(`/leaderboard/overall?${params.toString()}`);
   return response.data;
