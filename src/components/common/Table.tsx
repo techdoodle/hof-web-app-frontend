@@ -112,10 +112,10 @@ export function Table({
     };
 
     return (
-        <div className={`overflow-x-auto scrollbar-hide ${className}`}>
+        <div className={`overflow-x-auto scrollbar-hide pb-24 ${className}`}>
             <div className="min-w-fit w-full lg:min-w-full">
-                {/* Table Header */}
-                <div className="flex items-center bg-surface/50 rounded-t-xl p-3 border-b border-primary/20">
+                {/* Table Header - Sticky */}
+                <div className="sticky top-0 z-10 flex items-center bg-surface/95 backdrop-blur-sm rounded-t-xl p-3 border-b border-primary/20 shadow-sm">
                     {showRank && (
                         <div className="flex-none w-12 text-sm font-semibold text-primary">
                             #
@@ -149,7 +149,7 @@ export function Table({
                 </div>
 
                 {/* Table Body */}
-                <div className="bg-background/90 rounded-b-xl">
+                <div className="bg-background/90 rounded-b-xl pb-8">
                     {sortedData.map((row, index) => {
                         const isCurrentUser = currentUserId && row.id === currentUserId;
 

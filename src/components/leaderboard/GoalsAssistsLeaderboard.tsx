@@ -21,8 +21,9 @@ export function GoalsAssistsLeaderboard() {
         prefetchNextPage,
         filters,
         handleFilterClick,
-        LEADERBOARD_CUMULATIVE_FILTERS
-    } = useLeaderBoard(itemsPerPage, 'gna'); // Force G+A type
+        resetFilters,
+        LEADERBOARD_FILTERS
+    } = useLeaderBoard(itemsPerPage); // Force G+A type
 
     console.log("G+A leaderboard", leaderboard, "pagination:", pagination, "error:", leaderboardError, "loading:", isLeaderboardLoading, "hasNextPage:", hasNextPage);
     const { userData, isLoading: isUserDataLoading } = useUserData();
@@ -133,9 +134,10 @@ export function GoalsAssistsLeaderboard() {
     return (
         <div className="flex flex-col gap-4 p-4">
             <LeaderBoardFilters
-                filter_data={LEADERBOARD_CUMULATIVE_FILTERS}
+                filterData={LEADERBOARD_FILTERS}
                 filters={filters}
                 handleFilterClick={handleFilterClick}
+                resetFilters={resetFilters}
             />
 
             {leaderboard && leaderboard.length === 0 && !isLeaderboardLoading && (

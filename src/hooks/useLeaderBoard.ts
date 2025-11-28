@@ -9,7 +9,7 @@ const LEADERBOARD_STALE_TIME = 300 * 60 * 1000;
 // UPDATED FILTER STRUCTURE - Removed timeframes, added gender & leaderboard types
 const LEADERBOARD_FILTERS = {
     leaderboard_types: {
-        'Overall': 'overall',
+        'Overall Leaderboards': 'overall',
         'Goals + Assists': 'gna',
         'Appearances': 'appearances',
         'Shot Accuracy': 'shot_accuracy',
@@ -28,7 +28,7 @@ const LEADERBOARD_FILTERS = {
         'Goalkeeper': 'gk',
     },
     gender: {
-        'All': 'all',
+        'All Genders': 'all',
         'Male': 'male',
         'Female': 'female',
     }
