@@ -159,7 +159,7 @@ export function PartialSlotSelector({ bookingId, slots, onConfirm, onCancel, loa
                                         )}
                                         
                                         {refundInfo.timeWindow === 'PARTIAL_REFUND' && (
-                                            <div className="text-sm text-orange-300">
+                        <div className="text-sm text-orange-300">
                                                 <strong>50% refund:</strong> ₹{refundInfo.refundAmount.toFixed(2)} 
                                                 <span className="text-xs text-gray-400 ml-2">
                                                     (Match is 3-6 hours away)
@@ -188,7 +188,7 @@ export function PartialSlotSelector({ bookingId, slots, onConfirm, onCancel, loa
                         ) : (
                             <div className="text-sm text-gray-400">
                                 Unable to calculate refund information
-                            </div>
+                        </div>
                         )}
                     </div>
                 )}
