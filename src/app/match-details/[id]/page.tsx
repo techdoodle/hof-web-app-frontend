@@ -46,24 +46,35 @@ const MatchDetailsPage = () => {
 
     const handleShare = async () => {
         const shareUrl = `${window.location.origin}/match-details/${id}`;
+        const matchType = matchData?.playerCapacity ? `${matchData.playerCapacity / 2}v${matchData.playerCapacity / 2}` : '';
+        
+        const shareText = `Boots laced and ready to go! 💪⚽
+
+Think you can take us on? Join the match — let's settle it on the pitch 
+
+Check all match details👇
+
+${shareUrl}
+
+Every player matters. Every moment counts.`;
         
         // Check if Web Share API is available (mobile devices)
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: `Check out this match at ${matchData?.venue?.name || 'Humans of Football'}`,
-                    text: `Join us for a ${matchData?.playerCapacity ? matchData.playerCapacity / 2 : ''}v${matchData?.playerCapacity ? matchData.playerCapacity / 2 : ''} match!`,
+                    title: `Join the ${matchType} match at ${matchData?.venue?.name || 'Humans of Football'}`,
+                    text: shareText,
                     url: shareUrl,
                 });
             } catch (error) {
                 // User cancelled or error occurred, fall back to clipboard
                 if ((error as Error).name !== 'AbortError') {
-                    await copyToClipboard(shareUrl);
+                    await copyToClipboard(shareText);
                 }
             }
         } else {
-            // Fallback to clipboard for desktop
-            await copyToClipboard(shareUrl);
+            // Fallback to clipboard for desktop - copy the full message
+            await copyToClipboard(shareText);
         }
     };
 
