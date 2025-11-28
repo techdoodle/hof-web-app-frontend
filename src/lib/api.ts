@@ -98,3 +98,17 @@ export async function hasActiveBookingForMatch(matchId: number, userId: number) 
     return false;
   }
 }
+
+// Validate promo code
+export async function validatePromoCode(code: string, bookingAmount: number, matchId?: number) {
+  try {
+    const response = await api.post('/promo-codes/validate', {
+      code,
+      bookingAmount,
+      matchId
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { success: false, message: 'Failed to validate promo code' };
+  }
+}
