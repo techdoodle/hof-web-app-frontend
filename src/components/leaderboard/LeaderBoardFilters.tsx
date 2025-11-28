@@ -126,7 +126,11 @@ const FilterDropdown = ({
             e.stopPropagation();
             setIsOpen(!isOpen);
           }}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 border border-gray-700/50 text-white text-sm font-medium hover:bg-gray-700/80 transition-all min-w-[120px] justify-between"
+          className="flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm font-medium transition-all min-w-[120px] justify-between"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0, 102, 51, 0.5) -40.91%, rgba(0, 204, 102, 0.8) 132.95%)",
+          }}
         >
           <span className="truncate">{activeLabel}</span>
           <ChevronDown

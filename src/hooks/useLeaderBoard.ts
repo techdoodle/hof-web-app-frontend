@@ -23,9 +23,9 @@ const LEADERBOARD_FILTERS = {
     },
     positions: {
         'All Positions': 'all',
-        'ATK': 'atk',
-        'DEF': 'def',
-        'GK': 'gk',
+        'Striker': 'atk',
+        'Defender': 'def',
+        'Goalkeeper': 'gk',
     },
     gender: {
         'All': 'all',
