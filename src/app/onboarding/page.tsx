@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useOnboarding } from '@/modules/onboarding/hooks/useOnboarding';
 import { OnboardingContainer } from '@/modules/onboarding/components/OnboardingContainer';
 import { WelcomeScreen } from '@/modules/onboarding/components/WelcomeScreen';
@@ -15,7 +16,7 @@ import { TeamSelectionScreen } from '@/modules/onboarding/components/TeamSelecti
 import { useQueryClient } from '@tanstack/react-query';
 import { useOnboardingTracking } from '@/hooks/useOnboardingTracking';
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const {
     currentStep,
@@ -214,5 +215,17 @@ export default function OnboardingPage() {
         />
       )}
     </OnboardingContainer>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <OnboardingContent />
+    </Suspense>
   );
 } 
