@@ -44,6 +44,61 @@ const MatchDetailsPage = () => {
         router.push("/play");
     };
 
+    const handleShare = async () => {
+        const shareUrl = `${window.location.origin}/match-details/${id}`;
+        const matchType = matchData?.playerCapacity ? `${matchData.playerCapacity / 2}v${matchData.playerCapacity / 2}` : '';
+
+        const shareText = `Boots laced and ready to go! 💪⚽
+
+Think you can take us on? Join the match — let's settle it on the pitch 
+
+Check all match details👇
+
+${shareUrl}
+
+Every player matters. Every moment counts.`;
+
+        // Check if Web Share API is available (mobile devices)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Join the ${matchType} match at ${matchData?.venue?.name || 'Humans of Football'}`,
+                    text: shareText,
+                });
+            } catch (error) {
+                // User cancelled or error occurred, fall back to clipboard
+                if ((error as Error).name !== 'AbortError') {
+                    await copyToClipboard(shareText);
+                }
+            }
+        } else {
+            // Fallback to clipboard for desktop - copy the full message
+            await copyToClipboard(shareText);
+        }
+    };
+
+    const copyToClipboard = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('Link copied to clipboard!', 'success');
+        } catch (error) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Link copied to clipboard!', 'success');
+            } catch (err) {
+                showToast('Failed to copy link', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+    };
+
     // Helper function to validate if the URL is a valid Google Maps URL
     const isValidGoogleMapsUrl = (url: string | null | undefined): boolean => {
         if (!url || typeof url !== 'string') return false;
@@ -154,7 +209,9 @@ const MatchDetailsPage = () => {
                         <div className="text-lg font-semibold">Match Details</div>
                     </div>
                     <div className="w-8">
-                        <Share2 className="w-6 h-6 text-white" />
+                        <button onClick={handleShare} className="cursor-pointer hover:opacity-80 transition-opacity">
+                            <Share2 className="w-6 h-6 text-white" />
+                        </button>
                     </div>
                 </div>
                 <div className="mt-2 w-full h-64 rounded-lg overflow-hidden relative mx-auto">

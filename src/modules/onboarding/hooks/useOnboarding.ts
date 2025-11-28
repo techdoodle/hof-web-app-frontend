@@ -5,7 +5,7 @@ import { OnboardingStep, UserInfo, GenderSelection, PositionSelection, TeamSelec
 import { storeAuthData } from '@/lib/utils/auth';
 import { getAccessToken } from '@/lib/utils/auth';
 import { getUser } from '@/lib/utils/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
 
 export function useOnboarding() {
@@ -23,6 +23,17 @@ export function useOnboarding() {
 
   const queryClient = useQueryClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for redirect parameter - if present, start at LOGIN step (skip WELCOME screen)
+  useEffect(() => {
+    const redirectParam = searchParams.get('redirect');
+    const stepParam = searchParams.get('step');
+    // If redirect parameter is present with step=LOGIN, ensure we start at LOGIN
+    if (redirectParam && stepParam === 'LOGIN') {
+      setCurrentStep('LOGIN');
+    }
+  }, [searchParams, setCurrentStep]);
 
   // Persist login state across refreshes
   useEffect(() => {
@@ -51,8 +62,9 @@ export function useOnboarding() {
           });
 
           if (freshUserData.onboardingComplete) {
-            console.log('Onboarding complete, redirecting to home...');
-            router.replace('/home');
+            console.log('Onboarding complete, redirecting...');
+            const redirectPath = searchParams.get('redirect') || '/home';
+            router.replace(redirectPath);
           } else {
             console.log('Onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
@@ -63,8 +75,9 @@ export function useOnboarding() {
           // Fallback to cached data
           console.log('Using cached user data as fallback...');
           if (user.onboardingComplete) {
-            console.log('Cached data shows onboarding complete, redirecting to home...');
-            router.replace('/home');
+            console.log('Cached data shows onboarding complete, redirecting...');
+            const redirectPath = searchParams.get('redirect') || '/home';
+            router.replace(redirectPath);
           } else {
             console.log('Cached data shows onboarding not complete, starting from USER_INFO...');
             setCurrentStep('USER_INFO');
@@ -121,8 +134,9 @@ export function useOnboarding() {
 
       // Check if user has already completed onboarding
       if (userData.onboardingComplete) {
-        console.log('User already validated, redirecting to home...');
-        router.replace('/home');
+        console.log('User already validated, redirecting...');
+        const redirectPath = searchParams.get('redirect') || '/home';
+        router.replace(redirectPath);
       } else {
         console.log('User not validated, starting onboarding...');
         setCurrentStep('USER_INFO');
@@ -205,8 +219,9 @@ export function useOnboarding() {
       //   method: 'full_completion'
       // });
 
-      // Complete onboarding flow
-      router.push('/home');
+      // Complete onboarding flow - check for redirect parameter
+      const redirectPath = searchParams.get('redirect') || '/home';
+      router.push(redirectPath);
     },
   });
 
@@ -253,8 +268,9 @@ export function useOnboarding() {
     await updateTeamSelectionMutation.mutateAsync(teamData).then((data) => {
       console.log("updateTeamSelectionMutation data", data);
       queryClient.setQueryData(['user'], data);
-      // Complete onboarding - redirect to home
-      router.push('/home');
+      // Complete onboarding - check for redirect parameter
+      const redirectPath = searchParams.get('redirect') || '/home';
+      router.push(redirectPath);
     });
   };
 
