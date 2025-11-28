@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/contexts/ToastContext';
 import { CriticalBookingInfo, useCriticalBookingInfo } from '@/hooks/useCriticalBookingInfo';
@@ -28,7 +29,8 @@ interface BookingDetailsProps {
 
 export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsProps) {
     const { showToast } = useToast();
-    const { user } = useAuthContext();
+    const { user, isAuthenticated } = useAuthContext();
+    const router = useRouter();
     const [bookingType, setBookingType] = useState<'regular' | 'waitlist' | null>(null);
     const [numSlots, setNumSlots] = useState(1);
     const [userEmail, setUserEmail] = useState(user?.email || '');
@@ -59,6 +61,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
     // Type assertion to fix TypeScript error
     const typedBookingInfo = bookingInfo as CriticalBookingInfo | undefined;
+
+    // Require login before booking - redirect to login page if not authenticated
+    useEffect(() => {
+        if (!isAuthenticated || !user) {
+            showToast('Please login to book a match', 'info');
+            // Redirect to login with redirect parameter to return to booking after login
+            router.push(`/onboarding?redirect=/book-match/${matchId}&step=LOGIN`);
+        }
+    }, [isAuthenticated, user, router, matchId, showToast]);
 
     // Generate booking idempotency key with 15-min expiry
     useEffect(() => {
