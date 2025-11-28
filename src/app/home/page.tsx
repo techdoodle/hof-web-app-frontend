@@ -8,10 +8,17 @@ import { HorizontalMatchCards } from '@/components/home/HorizontalMatchCards';
 import { useRouter } from 'next/navigation';
 import { useGoldenChip } from '@/hooks/useGoldenChip';
 import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCalibrationStatus } from '@/lib/api';
 
 export default function HomePage() {
     const router = useRouter();
     const { showNotification } = useGoldenChip();
+    const { data: calibrationStatus } = useQuery({
+        queryKey: ['calibration-status'],
+        queryFn: fetchCalibrationStatus,
+        staleTime: 5 * 60 * 60 * 1000, // 5 hours
+    });
 
     useEffect(() => {
         showNotification('Play a match and win XP', 5000);

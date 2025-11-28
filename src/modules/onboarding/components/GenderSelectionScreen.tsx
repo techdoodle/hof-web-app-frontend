@@ -67,19 +67,14 @@ export function GenderSelectionScreen({
       return;
     }
 
-    if (!profilePicture) {
-      setValidationError('Please take a profile picture');
-      return;
-    }
-
     try {
       GenderSelectionSchema.parse({ gender: selectedGender });
       setValidationError('');
 
       // If profilePicture is a base64 data URL, upload it to cloud storage first
-      let finalProfilePictureUrl = profilePicture;
+      let finalProfilePictureUrl: string | undefined = profilePicture ?? undefined;
 
-      if (profilePicture.startsWith('data:image')) {
+      if (profilePicture && profilePicture.startsWith('data:image')) {
         console.log('Uploading base64 image to cloud storage...');
         setIsProcessingImage(true);
 
@@ -104,7 +99,8 @@ export function GenderSelectionScreen({
 
       await onSubmit({
         gender: selectedGender,
-        profilePicture: finalProfilePictureUrl
+        // Only send profilePicture if the user actually provided one
+        ...(finalProfilePictureUrl ? { profilePicture: finalProfilePictureUrl as string } : {})
       });
     } catch (err) {
       setValidationError('Please select a valid option');
@@ -225,7 +221,7 @@ export function GenderSelectionScreen({
         </div>
 
         <div className="mb-4">
-          <h2 className="text-mb mb-2">Add your photo *</h2>
+          <h2 className="text-mb mb-2">Add your photo <span className="text-gray-400 text-xs font-normal">(optional)</span></h2>
 
           <div className="flex flex-col items-center">
             {/* Photo Preview */}
@@ -284,8 +280,15 @@ export function GenderSelectionScreen({
                 >
                   <span>Upload Photo</span>
                 </Button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="w-full flex items-center justify-center gap-2 text-xs text-gray-400 underline"
+                >
+                  <span>Skip for now</span>
+                </button>
                 <p className="text-xs text-gray-400 text-center mt-2">
-                  Photo must show face, ears, and shoulders
+                  Photo must show face, ears, and shoulders. You can also add it later from your profile.
                 </p>
               </div>
             )}
@@ -366,7 +369,7 @@ export function GenderSelectionScreen({
           isLoading={isLoading}
           size="lg"
           variant="gradient"
-          disabled={!selectedGender || !profilePicture || isProcessingImage}
+          disabled={!selectedGender || isProcessingImage}
           className="w-full"
         >
           Continue

@@ -115,3 +115,9 @@ export async function hasActiveBookingForMatch(matchId: number, userId: number) 
     return false;
   }
 }
+
+// Fetch calibration status for the current user
+export async function fetchCalibrationStatus() {
+  const response = await api.get('/users/calibration-status');
+  return response.data;
+}

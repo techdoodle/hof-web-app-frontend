@@ -3,13 +3,57 @@
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCalibrationStatus } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export function CalibrationChip() {
     const router = useRouter();
+    const { user } = useAuth();
+
+    // Use cached data from React Query (same query key as home page)
+    const { data: calibrationStatus } = useQuery({
+        queryKey: ['calibration-status'],
+        queryFn: fetchCalibrationStatus,
+        staleTime: 5 * 60 * 60 * 1000, // 5 hours
+    });
 
     const handleNavigate = () => {
-        router.push('/play');
+        if (calibrationStatus?.isCalibrated && calibrationStatus?.isMinimumRequisiteCompleteForCalibration) {
+            router.push('/leaderboard');
+        } else {
+            router.push('/play');
+        }
     };
+
+    // Determine text based on calibration status
+    let titleText = 'Your profile is not calibrated';
+    let subtitleText = 'Play a match to calibrate';
+
+    if (calibrationStatus) {
+        if (calibrationStatus.isCalibrated && !calibrationStatus.isMinimumRequisiteCompleteForCalibration) {
+            titleText = 'Your stats are not calibrated';
+            switch (user?.playerCategory?.toLowerCase()) {
+                case 'goalkeeper':
+                    subtitleText = 'Save a goal to level up';
+                    break;
+                case 'defender':
+                    subtitleText = 'Make a tackle to level up';
+                    break;
+                case 'midfielder':
+                    subtitleText = 'Make a key pass to level up';
+                    break;
+                case 'striker':
+                    subtitleText = 'Score a goal to level up';
+                    break;
+                default:
+                    subtitleText = 'Play a match to level up';
+            }
+        } else if (calibrationStatus.isCalibrated && calibrationStatus.isMinimumRequisiteCompleteForCalibration) {
+            titleText = 'You are ranked #' + calibrationStatus.rank;
+            subtitleText = 'in the Leaderboard, check it out!';
+        }
+    }
 
     return (
         <div className="w-full px-4 pt-2 pb-2 z-10">
@@ -25,9 +69,9 @@ export function CalibrationChip() {
                 role="button"
                 tabIndex={0}
             >
-                <div className="flex items-center justify-between px-2 gap-2">
+                <div className="flex items-center justify-between pr-4 pl-8 gap-2">
                     <Image
-                        src="/skeleton.png"
+                        src={user?.profilePicture ?? "/skeleton.png"}
                         alt="Calibration Icon"
                         width={40}
                         height={40}
@@ -35,11 +79,13 @@ export function CalibrationChip() {
                     />
                     <div className="flex flex-col items-start justify-center gap-0 flex-1">
                         <p className="text-sm text-[#FFA726] font-medium leading-relaxed">
-                            Your profile is not calibrated
+                            {titleText}
                         </p>
-                        <p className="text-xs text-white font-medium leading-relaxed">
-                            Play a match to calibrate
-                        </p>
+                        {subtitleText && (
+                            <p className="text-xs text-white font-medium leading-relaxed">
+                                {subtitleText}
+                            </p>
+                        )}
                     </div>
                     <ChevronRight className="w-4 h-4 text-orange-100 flex-shrink-0 pointer-events-none" />
                 </div>
