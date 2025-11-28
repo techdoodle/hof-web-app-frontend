@@ -69,7 +69,7 @@ function LeaderboardContent() {
   return (
     <AuthWrapper>
       {(userData: UserData) => (
-        <div className="min-h-screen flex flex-col pb-24 max-w-md mx-auto">
+        <div className="min-h-screen flex flex-col max-w-md mx-auto">
           {/* REMOVED THE HEADER SECTION */}
 
           {/* Leaderboard Content */}

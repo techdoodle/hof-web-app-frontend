@@ -183,21 +183,21 @@ export const useLeaderBoard = (limit: number = 20, initialType?: string) => {
 
 */}
 
-import { fetchLeaderBoard } from "@/lib/api";
+import { fetchLeaderBoard, fetchNewLeaderBoard } from "@/lib/api";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const LEADERBOARD_QUERY_KEY = 'leaderboard';
-const LEADERBOARD_STALE_TIME = 60 * 60 * 1000;
+const LEADERBOARD_STALE_TIME = 300 * 60 * 1000;
 
 // UPDATED FILTER STRUCTURE - Removed timeframes, added gender
 const LEADERBOARD_FILTERS = {
     cities: {
         'All Cities': 'all',
-        'Delhi': 'delhi',
+        'Gurugram': 'gurugram',
         'Mumbai': 'mumbai',
-        'Bangalore': 'bangalore',
+        'Bengaluru': 'bengaluru',
     },
     positions: {
         'All Positions': 'all',
@@ -215,7 +215,7 @@ const LEADERBOARD_FILTERS = {
 const defaultFilters = {
     city: 'all',
     position: 'all',
-    gender: 'all',
+    gender: 'all', // UI has "All" option, API handles 'all' correctly
     limit: 50
 };
 
@@ -230,9 +230,9 @@ export const useLeaderBoard = (limit: number = 50) => {
         const gender = searchParams.get('gender') || defaultFilters.gender;
 
         return {
-            city,
-            position,
-            gender,
+            city: city.toLowerCase(),
+            position: position.toLowerCase(),
+            gender: gender.toLowerCase(),
             limit
         };
     };
@@ -241,11 +241,11 @@ export const useLeaderBoard = (limit: number = 50) => {
 
     const updateURL = (newFilters: typeof filters) => {
         const params = new URLSearchParams();
-        
+
         if (newFilters.city !== 'all') params.set('city', newFilters.city);
         if (newFilters.position !== 'all') params.set('position', newFilters.position);
         if (newFilters.gender !== 'all') params.set('gender', newFilters.gender);
-        
+
         const newUrl = params.toString() ? `/leaderboard?${params.toString()}` : '/leaderboard';
         router.push(newUrl, { scroll: false });
     };
@@ -281,7 +281,7 @@ export const useLeaderBoard = (limit: number = 50) => {
         refetch
     } = useInfiniteQuery({
         queryKey: [LEADERBOARD_QUERY_KEY, limit, filters],
-        queryFn: ({ pageParam = 1 }) => fetchLeaderBoard(pageParam, limit, filters),
+        queryFn: ({ pageParam = 1 }) => fetchNewLeaderBoard(pageParam, limit, filters),
         getNextPageParam: (lastPage) => {
             if (Array.isArray(lastPage)) {
                 return lastPage.length === limit ? 2 : undefined;
@@ -298,7 +298,7 @@ export const useLeaderBoard = (limit: number = 50) => {
     const prefetchNextPage = () => {
         if (hasNextPage && !isFetchingNextPage && data?.pages) {
             const lastPage = data.pages[data.pages.length - 1];
-            let nextPage = 2;
+            let nextPage = 1;
 
             if (Array.isArray(lastPage)) {
                 nextPage = 2;
@@ -306,9 +306,19 @@ export const useLeaderBoard = (limit: number = 50) => {
                 nextPage = lastPage.pagination.currentPage + 1;
             }
 
-            queryClient.prefetchQuery({
-                queryKey: [LEADERBOARD_QUERY_KEY, limit, nextPage, filters],
-                queryFn: () => fetchLeaderBoard(nextPage, limit, filters),
+            // Use prefetchInfiniteQuery with the same query key to cache pages together
+            queryClient.prefetchInfiniteQuery({
+                queryKey: [LEADERBOARD_QUERY_KEY, limit, filters],
+                queryFn: ({ pageParam = nextPage }) => fetchNewLeaderBoard(pageParam, limit, filters),
+                getNextPageParam: (lastPage: any) => {
+                    if (Array.isArray(lastPage)) {
+                        return lastPage.length === limit ? nextPage + 1 : undefined;
+                    } else if (lastPage?.pagination?.hasNextPage) {
+                        return lastPage.pagination.currentPage + 1;
+                    }
+                    return undefined;
+                },
+                initialPageParam: nextPage,
                 staleTime: LEADERBOARD_STALE_TIME,
             });
         }

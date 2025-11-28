@@ -41,6 +41,7 @@ export const LeaderBoardFilters = ({ filter_data, filters, handleFilterClick }: 
 }
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 
 type FilterType = "city" | "position" | "gender";
@@ -71,12 +72,29 @@ const FilterDropdown = ({
   onSelect: (value: string) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Calculate dropdown position when opening
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+      });
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node) &&
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
@@ -86,31 +104,42 @@ const FilterDropdown = ({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   // Get the display label for active value - ADD NULL CHECK
   const activeLabel = options
     ? Object.entries(options).find(
-        ([_, value]) => value === activeValue
-      )?.[0] || label
+      ([_, value]) => value === activeValue
+    )?.[0] || label
     : label;
 
   return (
-    <div ref={dropdownRef} className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 border border-gray-700/50 text-white text-sm font-medium hover:bg-gray-700/80 transition-all min-w-[120px] justify-between"
-      >
-        <span className="truncate">{activeLabel}</span>
-        <ChevronDown
-          className={`w-4 h-4 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {isOpen && options && (
-        <div className="absolute top-full mt-2 left-0 min-w-[160px] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+    <>
+      <div className="relative z-50">
+        <button
+          ref={buttonRef}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 border border-gray-700/50 text-white text-sm font-medium hover:bg-gray-700/80 transition-all min-w-[120px] justify-between"
+        >
+          <span className="truncate">{activeLabel}</span>
+          <ChevronDown
+            className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""
+              }`}
+          />
+        </button>
+      </div>
+      {isOpen && options && typeof document !== 'undefined' && createPortal(
+        <div
+          ref={dropdownRef}
+          className="fixed min-w-[160px] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-[9999]"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+          }}
+        >
           {Object.entries(options).map(([label, value]) => (
             <button
               key={value}
@@ -119,20 +148,20 @@ const FilterDropdown = ({
                 setIsOpen(false);
               }}
               className={`
-                                w-full text-left px-4 py-3 text-sm transition-colors
-                                ${
-                                  activeValue === value
-                                    ? "bg-white/10 text-white font-semibold"
-                                    : "text-gray-300 hover:bg-gray-700/50"
-                                }
-                            `}
+                w-full text-left px-4 py-3 text-sm transition-colors
+                ${activeValue === value
+                  ? "bg-white/10 text-white font-semibold"
+                  : "text-gray-300 hover:bg-gray-700/50"
+                }
+              `}
             >
               {label}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 
@@ -145,9 +174,9 @@ export const LeaderBoardFilters = ({
   if (!filterData || !filters) {
     return null;
   }
-
+  console.log("filters", filters, filterData);
   return (
-    <div className="flex flex-row gap-2 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="flex flex-row gap-2 overflow-x-auto pb-2 scrollbar-hide" style={{ position: 'relative', zIndex: 50 }}>
       {filterData.cities && (
         <FilterDropdown
           label="City"
