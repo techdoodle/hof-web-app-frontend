@@ -21,7 +21,6 @@ export function UserInfoScreen({
   userData,
 }: UserInfoScreenProps) {
 
-  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<UserInfo>({
     firstName: '',
     lastName: '',

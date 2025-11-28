@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, X } from 'lucide-react';
+import { CheckCircle, X, Info, Loader2 } from 'lucide-react';
+import { BookingService, RefundBreakdown } from '@/lib/bookingService';
 
 interface PartialSlotSelectorProps {
+    bookingId: string;
     slots: Array<{
         slotNumber: number;
         playerName: string;
@@ -15,8 +17,10 @@ interface PartialSlotSelectorProps {
     loading?: boolean;
 }
 
-export function PartialSlotSelector({ slots, onConfirm, onCancel, loading = false }: PartialSlotSelectorProps) {
+export function PartialSlotSelector({ bookingId, slots, onConfirm, onCancel, loading = false }: PartialSlotSelectorProps) {
     const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+    const [refundInfo, setRefundInfo] = useState<RefundBreakdown | null>(null);
+    const [loadingRefund, setLoadingRefund] = useState(false);
 
     const handleSlotToggle = (slotNumber: number) => {
         setSelectedSlots(prev =>
@@ -25,6 +29,29 @@ export function PartialSlotSelector({ slots, onConfirm, onCancel, loading = fals
                 : [...prev, slotNumber]
         );
     };
+
+    // Fetch refund breakdown when selected slots change
+    useEffect(() => {
+        const fetchRefundInfo = async () => {
+            if (selectedSlots.length === 0) {
+                setRefundInfo(null);
+                return;
+            }
+
+            try {
+                setLoadingRefund(true);
+                const breakdown = await BookingService.getRefundBreakdown(bookingId, selectedSlots);
+                setRefundInfo(breakdown);
+            } catch (error) {
+                console.error('Failed to fetch refund breakdown:', error);
+                setRefundInfo(null);
+            } finally {
+                setLoadingRefund(false);
+            }
+        };
+
+        fetchRefundInfo();
+    }, [bookingId, selectedSlots]);
 
     const handleConfirm = () => {
         onConfirm(selectedSlots);
@@ -101,10 +128,68 @@ export function PartialSlotSelector({ slots, onConfirm, onCancel, loading = fals
                 </div>
 
                 {selectedSlots.length > 0 && (
-                    <div className="mt-3 p-3 bg-orange-900/20 rounded-lg">
+                    <div className={`mt-3 p-3 rounded-lg border ${
+                        loadingRefund 
+                            ? 'bg-gray-800/50 border-gray-700'
+                            : refundInfo?.timeWindow === 'FULL_REFUND'
+                            ? 'bg-green-900/20 border-green-700'
+                            : refundInfo?.timeWindow === 'PARTIAL_REFUND'
+                            ? 'bg-orange-900/20 border-orange-700'
+                            : 'bg-red-900/20 border-red-700'
+                    }`}>
+                        {loadingRefund ? (
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>Calculating refund...</span>
+                            </div>
+                        ) : refundInfo ? (
+                            <div className="space-y-2">
+                                <div className="flex items-start gap-2">
+                                    <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <div className="text-sm font-semibold text-white mb-1">Refund Information</div>
+                                        
+                                        {refundInfo.timeWindow === 'FULL_REFUND' && (
+                                            <div className="text-sm text-green-300">
+                                                <strong>100% refund:</strong> ₹{refundInfo.refundAmount.toFixed(2)} 
+                                                <span className="text-xs text-gray-400 ml-2">
+                                                    (Match is more than 6 hours away)
+                                                </span>
+                                            </div>
+                                        )}
+                                        
+                                        {refundInfo.timeWindow === 'PARTIAL_REFUND' && (
                         <div className="text-sm text-orange-300">
-                            <strong>Refund Amount:</strong> ₹{Math.round((selectedSlots.length / slots.length) * 100)}% of total booking amount
+                                                <strong>50% refund:</strong> ₹{refundInfo.refundAmount.toFixed(2)} 
+                                                <span className="text-xs text-gray-400 ml-2">
+                                                    (Match is 3-6 hours away)
+                                                </span>
+                                            </div>
+                                        )}
+                                        
+                                        {refundInfo.timeWindow === 'NO_REFUND' && (
+                                            <div className="text-sm text-red-300">
+                                                <strong>No refund</strong> 
+                                                <span className="text-xs text-gray-400 ml-2">
+                                                    (Match is less than 3 hours away)
+                                                </span>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="text-xs text-gray-400 mt-2">
+                                            Time until match: {refundInfo.hoursUntilMatch > 0 
+                                                ? `${Math.floor(refundInfo.hoursUntilMatch)}h ${Math.round((refundInfo.hoursUntilMatch % 1) * 60)}m`
+                                                : 'Match has started'
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-sm text-gray-400">
+                                Unable to calculate refund information
                         </div>
+                        )}
                     </div>
                 )}
             </div>

@@ -19,6 +19,16 @@ export interface CriticalBookingInfo {
     offerPrice: number;
     slotPrice: number;
     isLocked: boolean;
+
+    // Team information
+    teamAName: string;          // Name of team A
+    teamBName: string;          // Name of team B
+    perTeamCapacity: number;    // Capacity per team (playerCapacity / 2)
+    teamASlots: number;         // Currently booked slots for team A
+    teamBSlots: number;         // Currently booked slots for team B
+    unassignedSlots: number;    // Slots not assigned to any team
+    availableTeamASlots: number; // Available slots for team A
+    availableTeamBSlots: number; // Available slots for team B
 }
 
 export function useCriticalBookingInfo(matchId: string | number, options?: any) {

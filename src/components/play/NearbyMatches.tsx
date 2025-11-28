@@ -1,5 +1,5 @@
 import { Button } from '../ui/button';
-import { Loader2Icon, MapPinIcon } from 'lucide-react';
+import { Loader2Icon, MapPinIcon, MapPin } from 'lucide-react';
 import { useNearbyMatches } from '@/hooks/useNearbyMatches';
 import { useLocation } from '@/contexts/LocationContext';
 import { useRouter } from 'next/navigation';
@@ -31,10 +31,26 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
     const filteredVenues = useMemo(() => {
         if (!venues) return [];
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tenDaysFromNow = new Date(today);
+        tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 10);
+        tenDaysFromNow.setHours(23, 59, 59, 999);
+
         return venues.map((venueData: any) => ({
             ...venueData,
             matches: venueData.matches.filter((match: any) => {
+                // Filter out cancelled matches
+                if (match.status === 'CANCELLED') {
+                    return false;
+                }
+
+                // Filter to only show matches within next 10 days
                 const matchDate = new Date(match.startTime);
+                if (matchDate > tenDaysFromNow) {
+                    return false;
+                }
+
                 const isWeekend = matchDate.getDay() === 0 || matchDate.getDay() === 6;
                 const matchesDayFilter =
                     dayFilter === 'all' ? true :
@@ -77,6 +93,33 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
         return `${formatTime(startTime)} (${duration}h)`;
     };
 
+    // Helper function to validate if the URL is a valid Google Maps URL
+    const isValidGoogleMapsUrl = (url: string | null | undefined): boolean => {
+        if (!url || typeof url !== 'string') return false;
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname.includes('google.com') && urlObj.pathname.includes('maps');
+        } catch {
+            return false;
+        }
+    };
+
+    // Helper function to open Google Maps (app on mobile, web on desktop)
+    const handleMapClick = (mapsUrl: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering parent click handlers
+
+        // Check if we're on a mobile device
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // Try to open Google Maps app, fallback to browser
+            window.location.href = mapsUrl;
+        } else {
+            // Open in new tab on desktop
+            window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+        }
+    };
+
     // Note: We don't show error here anymore - parent component handles showing LocationPicker
     // This allows users to select a city even when location is denied
 
@@ -89,10 +132,38 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
     }
 
     if (error) {
+        let errorMessage = (error as any)?.response?.data?.message
+            || (error as any)?.message
+            || 'Failed to load nearby matches';
+
+        const errorStatus = (error as any)?.response?.status;
+
+        // Determine error title based on status
+        let errorTitle = 'Network Error';
+        if (errorStatus === 429) {
+            errorTitle = 'Too Many Requests';
+        } else if (errorStatus >= 500) {
+            errorTitle = 'Server Error';
+        } else if (errorStatus >= 400 && errorStatus < 500) {
+            errorTitle = `Oops! Encountered an unexpected error`;
+            errorMessage = `Please try again later or contact support if the problem persists.`;
+        }
+
         return (
-            <div className="text-center py-8">
-                <p className="text-red-500">{error?.message || 'Failed to load nearby matches'}</p>
-                <Button onClick={() => refetch()} className="mt-4">
+            <div className="text-center py-8 px-4">
+                <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-4">
+                    <p className="text-red-500 font-semibold mb-2">
+                        {errorTitle}
+                    </p>
+                    <p className="text-red-400 text-sm">
+                        {errorMessage}
+                    </p>
+                </div>
+                <Button
+                    onClick={() => refetch()}
+                    className="mt-4"
+                    variant="default"
+                >
                     Try Again
                 </Button>
             </div>
@@ -192,7 +263,15 @@ export function NearbyMatches({ location: propLocation }: NearbyMatchesProps = {
                                 style={{ flex: '0 0 65%' }}
                             >
                                 <h3 className="font-large text-xl text-white">{venueData.venue.name}</h3>
-                                <p className="text-sm text-gray-400">{venueData.venue.distance.toFixed(1)} kms away</p>
+                                <div className="flex items-center gap-1">
+                                    {isValidGoogleMapsUrl(venueData.venue.mapsUrl) && (
+                                        <MapPin
+                                            className="w-4 h-4 text-primary cursor-pointer hover:text-primary/80 transition-colors"
+                                            onClick={(e) => handleMapClick(venueData.venue.mapsUrl, e)}
+                                        />
+                                    )}
+                                    <p className="text-sm text-gray-400">{venueData.venue.distance.toFixed(1)} kms away</p>
+                                </div>
                             </div>
                         </div>
 

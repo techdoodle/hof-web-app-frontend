@@ -9,12 +9,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'gradient', size = 'md', isLoading, children, ...props }, ref) => {
-    const baseStyles = 'rounded-lg font-medium transition-colors flex items-center justify-center';
-    
+  ({ className, variant = 'gradient', size = 'md', isLoading, children, type = 'button', ...props }, ref) => {
+    const baseStyles = 'rounded-lg font-medium transition-all duration-200 flex items-center justify-center';
+
     const variants = {
       primary: 'bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc]',
-      secondary: 'border border-solid border-black/[.08] dark:border-white/[.145] hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a]',
+      secondary: 'border border-solid border-black/[.08] dark:border-white/[.145] hover:bg-primary/20 hover:border-primary/50 dark:hover:bg-primary/20 dark:hover:border-primary/50',
       gradient: 'btn-gradient text-foreground w-full',
     };
 
@@ -27,6 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
+        type={type}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         disabled={isLoading}
         {...props}

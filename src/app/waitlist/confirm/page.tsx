@@ -9,11 +9,15 @@ import { loadRazorpayScript, openRazorpayCheckout } from '@/lib/razorpay';
 import { Button } from '@/components/ui/button';
 import { Clock, Users, Phone, MapPin, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import api from '@/lib/api';
+import { useCriticalBookingInfo, CriticalBookingInfo } from '@/hooks/useCriticalBookingInfo';
 
 interface WaitlistConfirmData {
     waitlistId: string;
     slots: string[];
     matchDetails: any;
+    matchId?: number;
+    userPhone?: string;
 }
 
 function WaitlistConfirmContent() {
@@ -26,27 +30,83 @@ function WaitlistConfirmContent() {
     const [processing, setProcessing] = useState(false);
     const [waitlistData, setWaitlistData] = useState<WaitlistConfirmData | null>(null);
     const [orderData, setOrderData] = useState<any>(null);
+    const [teamSelections, setTeamSelections] = useState<Record<number, string>>({});
+    const [bookingInfo, setBookingInfo] = useState<CriticalBookingInfo | null>(null);
 
     useEffect(() => {
-        const waitlistId = searchParams.get('id');
-        const slots = searchParams.get('slots')?.split(',') || [];
+        const fetchWaitlistData = async () => {
+            const waitlistId = searchParams.get('id');
+            const slots = searchParams.get('slots')?.split(',') || [];
 
-        if (!waitlistId || !slots.length) {
-            showToast('Invalid waitlist confirmation link', 'error');
-            router.push('/play');
-            return;
+            if (!waitlistId || !slots.length) {
+                showToast('Invalid waitlist confirmation link', 'error');
+                router.push('/play');
+                return;
+            }
+
+            try {
+                // Fetch waitlist entry to get match ID and user info
+                const waitlistEntry = await WaitlistService.getWaitlistEntry(waitlistId);
+                const matchId = waitlistEntry.matchId;
+
+                // Fetch booking info to get team details
+                const bookingInfoResponse = await api.get(`/matches/${matchId}/booking-info`);
+                setBookingInfo(bookingInfoResponse.data);
+
+                setWaitlistData({
+                    waitlistId,
+                    slots,
+                    matchDetails: waitlistEntry,
+                    matchId: matchId,
+                    userPhone: user?.phoneNumber || ''
+                });
+            } catch (error) {
+                showToast('Failed to load waitlist details', 'error');
+                router.push('/play');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchWaitlistData();
+    }, [searchParams, showToast, router, user]);
+
+    // Helper to check if all team selections are complete
+    const areAllTeamsSelected = () => {
+        if (!waitlistData) return false;
+        const numSlots = waitlistData.slots.length;
+        for (let i = 0; i < numSlots; i++) {
+            if (!teamSelections[i]) {
+                return false;
+            }
         }
-
-        setWaitlistData({ waitlistId, slots, matchDetails: null });
-        setLoading(false);
-    }, [searchParams, showToast, router]);
+        return true;
+    };
 
     const handleInitiatePayment = async () => {
         if (!waitlistData) return;
 
+        // Validate team selections
+        const numSlots = waitlistData.slots.length;
+        for (let i = 0; i < numSlots; i++) {
+            if (!teamSelections[i]) {
+                showToast(`Please select a team for slot ${i + 1}`, 'error');
+                return;
+            }
+        }
+
+        // Build team selections array
+        const teamSelectionsArray = waitlistData.slots.map((_, index) => ({
+            phone: waitlistData.userPhone || user?.phoneNumber || '',
+            teamName: teamSelections[index]
+        }));
+
         setProcessing(true);
         try {
-            const order = await WaitlistService.initiateWaitlistBooking(waitlistData.waitlistId);
+            const order = await WaitlistService.initiateWaitlistBooking(
+                waitlistData.waitlistId,
+                teamSelectionsArray
+            );
             setOrderData(order);
 
             // Load Razorpay script and open checkout
@@ -77,7 +137,8 @@ function WaitlistConfirmContent() {
                             waitlistData.waitlistId,
                             order.orderId,
                             response.razorpay_payment_id,
-                            response.razorpay_signature
+                            response.razorpay_signature,
+                            teamSelectionsArray
                         );
 
                         showToast('Waitlist booking confirmed successfully!', 'success');
@@ -161,14 +222,156 @@ function WaitlistConfirmContent() {
                     </ul>
                 </div>
 
+                {/* Team Selection */}
+                {bookingInfo && (
+                    <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/60 rounded-xl p-6 mb-6 border border-gray-700/50">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                                <span className="text-2xl">⚽</span>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Select Your Team</h3>
+                                <p className="text-sm text-gray-400">Choose a team for each slot</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            {waitlistData.slots.map((slotNum, index) => (
+                                <div key={index} className="group">
+                                    <div className={`bg-gray-800/60 backdrop-blur-sm rounded-lg p-4 border ${!teamSelections[index] ? 'border-orange-500/70 animate-pulse' : 'border-gray-700/50 hover:border-orange-500/50'} transition-all duration-200`}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-semibold text-gray-300">
+                                                    #{slotNum}
+                                                </div>
+                                                <span className="text-sm font-medium text-gray-300">
+                                                    Slot {index + 1}
+                                                    {!teamSelections[index] && (
+                                                        <span className="ml-2 text-xs text-orange-400">(Required)</span>
+                                                    )}
+                                                </span>
+                                            </div>
+                                            {teamSelections[index] && (
+                                                <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
+                                                    ✓ Selected
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Team Selection Buttons */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setTeamSelections({
+                                                    ...teamSelections,
+                                                    [index]: bookingInfo.teamAName
+                                                })}
+                                                disabled={bookingInfo.availableTeamASlots === 0}
+                                                className={`
+                                                    relative p-4 rounded-lg border-2 transition-all duration-200
+                                                    ${teamSelections[index] === bookingInfo.teamAName
+                                                        ? 'border-orange-500 bg-orange-500/20 shadow-lg shadow-orange-500/20'
+                                                        : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                                                    }
+                                                    ${bookingInfo.availableTeamASlots === 0
+                                                        ? 'opacity-50 cursor-not-allowed'
+                                                        : 'cursor-pointer hover:scale-105 active:scale-95'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="text-left">
+                                                    <div className="font-bold text-white mb-1 truncate">
+                                                        {bookingInfo.teamAName}
+                                                    </div>
+                                                    <div className={`text-xs ${bookingInfo.availableTeamASlots === 0
+                                                        ? 'text-red-400'
+                                                        : 'text-gray-400'
+                                                        }`}>
+                                                        {bookingInfo.availableTeamASlots === 0
+                                                            ? 'Full'
+                                                            : `${bookingInfo.availableTeamASlots} available`
+                                                        }
+                                                    </div>
+                                                </div>
+                                                {teamSelections[index] === bookingInfo.teamAName && (
+                                                    <div className="absolute top-2 right-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-white text-xs">✓</span>
+                                                    </div>
+                                                )}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setTeamSelections({
+                                                    ...teamSelections,
+                                                    [index]: bookingInfo.teamBName
+                                                })}
+                                                disabled={bookingInfo.availableTeamBSlots === 0}
+                                                className={`
+                                                    relative p-4 rounded-lg border-2 transition-all duration-200
+                                                    ${teamSelections[index] === bookingInfo.teamBName
+                                                        ? 'border-orange-500 bg-orange-500/20 shadow-lg shadow-orange-500/20'
+                                                        : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                                                    }
+                                                    ${bookingInfo.availableTeamBSlots === 0
+                                                        ? 'opacity-50 cursor-not-allowed'
+                                                        : 'cursor-pointer hover:scale-105 active:scale-95'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="text-left">
+                                                    <div className="font-bold text-white mb-1 truncate">
+                                                        {bookingInfo.teamBName}
+                                                    </div>
+                                                    <div className={`text-xs ${bookingInfo.availableTeamBSlots === 0
+                                                        ? 'text-red-400'
+                                                        : 'text-gray-400'
+                                                        }`}>
+                                                        {bookingInfo.availableTeamBSlots === 0
+                                                            ? 'Full'
+                                                            : `${bookingInfo.availableTeamBSlots} available`
+                                                        }
+                                                    </div>
+                                                </div>
+                                                {teamSelections[index] === bookingInfo.teamBName && (
+                                                    <div className="absolute top-2 right-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-white text-xs">✓</span>
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                            <div className="flex items-start gap-3">
+                                <div className="w-5 h-5 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-blue-400 text-xs">ℹ</span>
+                                </div>
+                                <div className="text-xs text-blue-300">
+                                    <p className="font-medium mb-1">Team Capacity</p>
+                                    <p className="text-blue-400/80">Each team can have up to {bookingInfo.perTeamCapacity} players. Select wisely!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Action Button */}
                 <div className="text-center">
+                    {bookingInfo && !areAllTeamsSelected() && (
+                        <div className="mb-4 px-4 py-3 bg-orange-900/30 border border-orange-500/50 rounded-lg text-sm text-orange-300 text-center">
+                            ⚠️ Please select a team for all slots before proceeding
+                        </div>
+                    )}
                     <Button
                         onClick={handleInitiatePayment}
-                        disabled={processing}
-                        className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-lg"
+                        disabled={processing || !bookingInfo || !areAllTeamsSelected()}
+                        className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {processing ? 'Processing...' : `Book ${waitlistData.slots.length} Slot(s) Now`}
+                        {processing ? 'Processing...' : !areAllTeamsSelected() ? 'Select Teams to Continue' : `Book ${waitlistData.slots.length} Slot(s) Now`}
                     </Button>
                 </div>
 

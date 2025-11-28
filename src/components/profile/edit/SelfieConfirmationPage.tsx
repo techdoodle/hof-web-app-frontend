@@ -9,6 +9,7 @@ interface SelfieConfirmationPageProps {
     onRetake: () => void;
     onBack: () => void;
     isUploading: boolean;
+    onUploadAnother?: () => void;
 }
 
 export function SelfieConfirmationPage({
@@ -16,7 +17,8 @@ export function SelfieConfirmationPage({
     onConfirm,
     onRetake,
     onBack,
-    isUploading
+    isUploading,
+    onUploadAnother
 }: SelfieConfirmationPageProps) {
     return (
         <div className="min-h-screen bg-background flex flex-col" style={{
@@ -73,14 +75,30 @@ export function SelfieConfirmationPage({
                             {isUploading ? 'Uploading...' : 'Use This Photo'}
                         </Button>
 
-                        <Button
-                            variant="secondary"
-                            onClick={onRetake}
-                            disabled={isUploading}
-                            className="w-full py-4 text-lg font-semibold"
-                        >
-                            Take Another Photo
-                        </Button>
+                        {/* Retake Options */}
+                        <div className="space-y-2">
+                            <p className="text-xs text-white/60 text-center">Want to use a different photo?</p>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="secondary"
+                                    onClick={onRetake}
+                                    disabled={isUploading}
+                                    className="flex-1 py-3 font-semibold"
+                                >
+                                    Take Photo
+                                </Button>
+                                {onUploadAnother && (
+                                    <Button
+                                        variant="secondary"
+                                        onClick={onUploadAnother}
+                                        disabled={isUploading}
+                                        className="flex-1 py-3 font-semibold"
+                                    >
+                                        Upload Photo
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

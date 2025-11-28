@@ -42,12 +42,13 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
 
       {/* Fixed Continue Button */}
       <div
-        className="fixed left-0 right-0 p-4 z-20"
+        className="fixed left-0 right-0 p-4 z-50"
         style={{
           bottom: 'calc(env(safe-area-inset-bottom, 0px))',
           paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
           background: 'linear-gradient(to top, var(--background) 70%, transparent)',
-          backdropFilter: 'blur(8px)'
+          backdropFilter: 'blur(8px)',
+          pointerEvents: 'auto'
         }}
       >
         <Button
@@ -55,6 +56,7 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
           onClick={onContinue}
           size="lg"
           className="w-full"
+          style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
         >
           Get Started <ArrowRightIcon className="w-4 h-4" />
         </Button>

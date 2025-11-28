@@ -3,16 +3,24 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
+import { CalibrationChip } from './CalibrationChip';
 
-export function HomeBanner() {
+export function HomeBanner({ calibrated }: { calibrated: boolean }) {
     const router = useRouter();
 
     return (
         <div className="relative w-full h-[400px] overflow-hidden">
+            {calibrated === false && (
+                <div className="absolute z-50 top-0 left-0 w-full pointer-events-none">
+                    <div className="pointer-events-auto">
+                        <CalibrationChip />
+                    </div>
+                </div>
+            )}
             {/* Background Image */}
             <div className="absolute inset-0">
                 <Image
-                    src="/hof-banner.svg"
+                    src="/hof-banner-1.svg"
                     alt="Humans of Football Select Games Banner"
                     fill
                     className="object-cover"

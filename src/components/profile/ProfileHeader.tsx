@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuItem } from '@/components/ui/DropdownMenu';
 import { useRouter } from 'next/navigation';
 import { BookCheckIcon, EllipsisVertical, HistoryIcon, LogOutIcon } from 'lucide-react';
 import { NotificationTest } from '@/components/common/NotificationTest';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProfileHeaderProps {
   userData: UserData;
@@ -11,6 +12,12 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ userData }: ProfileHeaderProps) {
   const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   const dropdownItems: DropdownMenuItem[] = [
     {
@@ -28,10 +35,7 @@ export function ProfileHeader({ userData }: ProfileHeaderProps) {
     {
       id: 'logout',
       label: 'Logout',
-      onClick: () => {
-        localStorage.removeItem('token');
-        router.push('/login');
-      },
+      onClick: handleLogout,
       icon: <LogOutIcon className="w-4 h-4" />
     }
   ];

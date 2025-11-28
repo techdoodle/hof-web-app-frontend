@@ -41,6 +41,8 @@ export default function OnboardingPage() {
   const userData = queryClient.getQueryData(['user']);
   const { trackOnboardingSkipped, trackStepCompleted } = useOnboardingTracking();
 
+  // Note: If using AuthWrapper here, set requireOnboarding={false} to prevent redirect loops
+
   console.log("userData", userData);
   // Only show progress bar and skip after OTP
   const showProgress = currentStep === 'USER_INFO' || currentStep === 'GENDER_SELECTION' || currentStep === 'PROFILE_SETUP' || currentStep === 'POSITION_SELECTION' || currentStep === 'TEAM_SELECTION';

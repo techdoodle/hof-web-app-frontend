@@ -11,11 +11,13 @@ import { loadRazorpayScript, openRazorpayCheckout, RazorpayOptions } from '@/lib
 import { BookingConfirmation } from './BookingConfirmation';
 import { WaitlistConfirmation } from './WaitlistConfirmation';
 import { PaymentFailedConfirmation } from './PaymentFailedConfirmation';
+import { TeammatesModal } from './TeammatesModal';
 
 interface AdditionalSlotInfo {
     firstName: string;
     lastName: string;
     phone: string;
+    teamName?: string; // Team selection for this player
 }
 
 interface BookingDetailsProps {
@@ -39,12 +41,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     const [bookingId, setBookingId] = useState<string | null>(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showPaymentFailed, setShowPaymentFailed] = useState(false);
-    const [paymentFailedMessage, setPaymentFailedMessage] = useState('');
     const [bookingData, setBookingData] = useState<any>(null);
     const [isAdditionalBooking, setIsAdditionalBooking] = useState(false);
     const [showWaitlistConfirmation, setShowWaitlistConfirmation] = useState(false);
     const [waitlistData, setWaitlistData] = useState<any>(null);
     const [waitlistMatchData, setWaitlistMatchData] = useState<any>(null);
+    const [mainUserTeam, setMainUserTeam] = useState<string>(''); // Team selection for main user
+    const [showTeammatesModal, setShowTeammatesModal] = useState(false);
 
     const { data: bookingInfo, isLoading: isLoadingBookingInfo, error: bookingInfoError, isError: hasBookingInfoError, refetch: refetchBookingInfo } = useCriticalBookingInfo(matchId);
 
@@ -157,19 +160,57 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
         for (let i = 0; i < additionalSlots.length; i++) {
             const slot = additionalSlots[i];
+            const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
+
+            // First name required for each additional player
+            if (!slot.firstName?.trim()) {
+                showToast(`First name is required for slot ${slotNum}`, 'error');
+                return false;
+            }
+
             if (!slot.phone?.trim()) {
-                const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
                 showToast(`Phone number is required for slot ${slotNum}`, 'error');
                 return false;
             }
             // Validate phone number format (basic validation)
             const phoneRegex = /^[6-9]\d{9}$/;
             if (!phoneRegex.test(slot.phone.replace(/\D/g, ''))) {
-                const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
                 showToast(`Invalid phone number format for slot ${slotNum}`, 'error');
                 return false;
             }
+
+            // Validate team selection for confirmed bookings
+            if (bookingType === 'regular' && !slot.teamName) {
+                showToast(`Team selection is required for slot ${slotNum}`, 'error');
+                return false;
+            }
         }
+
+        // Validate main user's team selection for confirmed bookings
+        if (bookingType === 'regular' && !isAdditionalBooking && !mainUserTeam) {
+            showToast('Please select your team', 'error');
+            return false;
+        }
+
+        return true;
+    };
+
+    // Helper function to check if all team selections are complete
+    const areTeamSelectionsComplete = (): boolean => {
+        if (bookingType !== 'regular') return true; // No team selection required for waitlist
+
+        // Check main user's team selection (if not additional booking)
+        if (!isAdditionalBooking && !mainUserTeam) {
+            return false;
+        }
+
+        // Check all additional slots have team selections
+        for (const slot of additionalSlots) {
+            if (!slot.teamName) {
+                return false;
+            }
+        }
+
         return true;
     };
     // Initialize price when booking type is selected
@@ -180,6 +221,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             setFinalPrice(typedBookingInfo.offerPrice * numSlots);
         }
     }, [bookingType, numSlots, typedBookingInfo]);
+
+    // Auto-expand player details for confirmed bookings with multiple slots
+    useEffect(() => {
+        if (bookingType === 'regular' && (isAdditionalBooking ? numSlots >= 1 : numSlots > 1)) {
+            setShowAdditionalDetails(true);
+        }
+    }, [bookingType, numSlots, isAdditionalBooking]);
 
     const [slotVerificationError, setSlotVerificationError] = useState<string | null>(null);
     const handleProceedToPayment = async () => {
@@ -387,12 +435,14 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     : [{
                         firstName: user?.firstName || '',
                         lastName: user?.lastName || '',
-                        phone: '' // Main user phone will be extracted from JWT token on backend
+                        phone: '', // Main user phone will be extracted from JWT token on backend
+                        teamName: mainUserTeam || undefined // Include team selection for main user
                     }]
             ).concat(additionalSlots.map(slot => ({
                 firstName: slot.firstName,
                 lastName: slot.lastName,
-                phone: slot.phone
+                phone: slot.phone,
+                teamName: slot.teamName || undefined // Include team selection for each additional player
             })));
 
             const bookingData = {
@@ -402,13 +452,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 totalSlots: numSlots,
                 slotNumbers: Array.from({ length: numSlots }, (_, i) => i + 1), // Client-side placeholder; server locks actual
                 players: players,
+                isWaitlist: bookingType === 'waitlist', // Flag to indicate waitlist booking
                 metadata: {
                     bookingType,
                     amount: finalPrice, // Add amount to metadata
                     additionalSlots: additionalSlots.map(slot => ({
                         firstName: slot.firstName,
                         lastName: slot.lastName,
-                        phone: slot.phone
+                        phone: slot.phone,
+                        teamName: slot.teamName || undefined
                     }))
                 }
             };
@@ -655,7 +707,20 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
                 {/* Match Details */}
                 <div className="bg-gray-800/30 rounded-lg p-4">
-                    <div className="text-sm font-medium mb-2">Match Information</div>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-medium">Match Information</div>
+                        {matchData.participants && Object.values(matchData.participants).some((team: any) => team.length > 0) && (
+                            <button
+                                onClick={() => setShowTeammatesModal(true)}
+                                className="text-xs text-orange-400 hover:text-orange-300 font-medium flex items-center gap-1 transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                View Teammates
+                            </button>
+                        )}
+                    </div>
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-gray-400">Venue:</span>
@@ -809,7 +874,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
                 {/* User and Slots Selection */}
                 {bookingType && (
-                    <div className="bg-gray-800/50 rounded-lg p-4">
+                    <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
                         <div className="flex items-center justify-between">
                             <div>
                                 {isAdditionalBooking ? (
@@ -845,12 +910,99 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                             </div>
                         </div>
 
+                        {/* Team Selection for Main User (Confirmed Bookings Only) */}
+                        {bookingType === 'regular' && !isAdditionalBooking && typedBookingInfo && (
+                            <div className={`pt-3 border-t ${!mainUserTeam ? 'border-orange-500/50' : 'border-gray-700'} ${!mainUserTeam ? 'animate-pulse' : ''}`}>
+                                <label className="text-sm font-medium text-gray-300 block mb-2">
+                                    Select Your Team *
+                                    {!mainUserTeam && (
+                                        <span className="ml-2 text-xs text-orange-400">(Required)</span>
+                                    )}
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMainUserTeam(typedBookingInfo.teamAName)}
+                                        disabled={typedBookingInfo.availableTeamASlots === 0}
+                                        className={`
+                                            relative p-3 rounded-lg border-2 transition-all duration-200
+                                            ${mainUserTeam === typedBookingInfo.teamAName
+                                                ? 'border-green-500 bg-green-500/20 shadow-lg shadow-green-500/20'
+                                                : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                                            }
+                                            ${typedBookingInfo.availableTeamASlots === 0
+                                                ? 'opacity-50 cursor-not-allowed'
+                                                : 'cursor-pointer hover:scale-105 active:scale-95'
+                                            }
+                                        `}
+                                    >
+                                        <div className="text-left">
+                                            <div className="font-bold text-white text-sm mb-1 truncate">
+                                                {typedBookingInfo.teamAName}
+                                            </div>
+                                            <div className={`text-xs ${typedBookingInfo.availableTeamASlots === 0
+                                                ? 'text-red-400'
+                                                : 'text-gray-400'
+                                                }`}>
+                                                {typedBookingInfo.availableTeamASlots === 0
+                                                    ? 'Full'
+                                                    : `${typedBookingInfo.availableTeamASlots} slots`
+                                                }
+                                            </div>
+                                        </div>
+                                        {mainUserTeam === typedBookingInfo.teamAName && (
+                                            <div className="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                                <span className="text-white text-xs">✓</span>
+                                            </div>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setMainUserTeam(typedBookingInfo.teamBName)}
+                                        disabled={typedBookingInfo.availableTeamBSlots === 0}
+                                        className={`
+                                            relative p-3 rounded-lg border-2 transition-all duration-200
+                                            ${mainUserTeam === typedBookingInfo.teamBName
+                                                ? 'border-green-500 bg-green-500/20 shadow-lg shadow-green-500/20'
+                                                : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                                            }
+                                            ${typedBookingInfo.availableTeamBSlots === 0
+                                                ? 'opacity-50 cursor-not-allowed'
+                                                : 'cursor-pointer hover:scale-105 active:scale-95'
+                                            }
+                                        `}
+                                    >
+                                        <div className="text-left">
+                                            <div className="font-bold text-white text-sm mb-1 truncate">
+                                                {typedBookingInfo.teamBName}
+                                            </div>
+                                            <div className={`text-xs ${typedBookingInfo.availableTeamBSlots === 0
+                                                ? 'text-red-400'
+                                                : 'text-gray-400'
+                                                }`}>
+                                                {typedBookingInfo.availableTeamBSlots === 0
+                                                    ? 'Full'
+                                                    : `${typedBookingInfo.availableTeamBSlots} slots`
+                                                }
+                                            </div>
+                                        </div>
+                                        {mainUserTeam === typedBookingInfo.teamBName && (
+                                            <div className="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                                <span className="text-white text-xs">✓</span>
+                                            </div>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {(isAdditionalBooking ? numSlots >= 1 : numSlots > 1) && (
                             <button
-                                className="text-sm text-blue-400 mt-2"
+                                className="text-sm text-blue-400 hover:text-blue-300 mt-2 transition-colors"
                                 onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
                             >
-                                {showAdditionalDetails ? 'Hide' : 'Add'} player details
+                                {showAdditionalDetails ? '▼ Hide' : '▶ Add'} player details {bookingType === 'regular' && <span className="text-orange-400">*</span>}
                             </button>
                         )}
                     </div>
@@ -903,6 +1055,93 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                                             required
                                         />
                                     </div>
+
+                                    {/* Team Selection for Additional Players (Confirmed Bookings Only) */}
+                                    {bookingType === 'regular' && typedBookingInfo && (
+                                        <div className={`pt-3 border-t ${!slot.teamName ? 'border-orange-500/50 bg-orange-900/10' : 'border-gray-600'} mt-3 ${!slot.teamName ? 'animate-pulse' : ''}`}>
+                                            <label className="text-sm font-medium text-gray-300 block mb-2">
+                                                Select Team *
+                                                {!slot.teamName && (
+                                                    <span className="ml-2 text-xs text-orange-400">(Required)</span>
+                                                )}
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAdditionalSlotUpdate(index, 'teamName', typedBookingInfo.teamAName)}
+                                                    disabled={typedBookingInfo.availableTeamASlots === 0}
+                                                    className={`
+                                                        relative p-2.5 rounded-lg border-2 transition-all duration-200
+                                                        ${slot.teamName === typedBookingInfo.teamAName
+                                                            ? 'border-green-500 bg-green-500/20 shadow-md shadow-green-500/20'
+                                                            : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                                                        }
+                                                        ${typedBookingInfo.availableTeamASlots === 0
+                                                            ? 'opacity-50 cursor-not-allowed'
+                                                            : 'cursor-pointer hover:scale-105 active:scale-95'
+                                                        }
+                                                    `}
+                                                >
+                                                    <div className="text-left">
+                                                        <div className="font-bold text-white text-xs mb-0.5 truncate">
+                                                            {typedBookingInfo.teamAName}
+                                                        </div>
+                                                        <div className={`text-[10px] ${typedBookingInfo.availableTeamASlots === 0
+                                                            ? 'text-red-400'
+                                                            : 'text-gray-400'
+                                                            }`}>
+                                                            {typedBookingInfo.availableTeamASlots === 0
+                                                                ? 'Full'
+                                                                : `${typedBookingInfo.availableTeamASlots} slots`
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    {slot.teamName === typedBookingInfo.teamAName && (
+                                                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                                            <span className="text-white text-[9px]">✓</span>
+                                                        </div>
+                                                    )}
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAdditionalSlotUpdate(index, 'teamName', typedBookingInfo.teamBName)}
+                                                    disabled={typedBookingInfo.availableTeamBSlots === 0}
+                                                    className={`
+                                                        relative p-2.5 rounded-lg border-2 transition-all duration-200
+                                                        ${slot.teamName === typedBookingInfo.teamBName
+                                                            ? 'border-green-500 bg-green-500/20 shadow-md shadow-green-500/20'
+                                                            : 'border-gray-600 bg-gray-700/50 hover:border-gray-500'
+                                                        }
+                                                        ${typedBookingInfo.availableTeamBSlots === 0
+                                                            ? 'opacity-50 cursor-not-allowed'
+                                                            : 'cursor-pointer hover:scale-105 active:scale-95'
+                                                        }
+                                                    `}
+                                                >
+                                                    <div className="text-left">
+                                                        <div className="font-bold text-white text-xs mb-0.5 truncate">
+                                                            {typedBookingInfo.teamBName}
+                                                        </div>
+                                                        <div className={`text-[10px] ${typedBookingInfo.availableTeamBSlots === 0
+                                                            ? 'text-red-400'
+                                                            : 'text-gray-400'
+                                                            }`}>
+                                                            {typedBookingInfo.availableTeamBSlots === 0
+                                                                ? 'Full'
+                                                                : `${typedBookingInfo.availableTeamBSlots} slots`
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    {slot.teamName === typedBookingInfo.teamBName && (
+                                                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                                            <span className="text-white text-[9px]">✓</span>
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -931,7 +1170,16 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 <Button
                     className="w-full"
                     onClick={handleProceedToPayment}
-                    disabled={!typedBookingInfo || numSlots <= 0 || bookingType === null || isLoadingBookingInfo || isCalculatingPrice || isValidatingSlots || isProcessingBooking}
+                    disabled={
+                        !typedBookingInfo ||
+                        numSlots <= 0 ||
+                        bookingType === null ||
+                        isLoadingBookingInfo ||
+                        isCalculatingPrice ||
+                        isValidatingSlots ||
+                        isProcessingBooking ||
+                        (bookingType === 'regular' && !areTeamSelectionsComplete())
+                    }
                 >
                     {bookingType === 'waitlist' ? (
                         isProcessingBooking ? 'Processing...' : isValidatingSlots ? 'Validating Slots...' : 'Join Waitlist (Free)'
@@ -943,6 +1191,8 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                                 'Calculating Final Price...'
                             ) : isValidatingSlots ? (
                                 'Validating Slots...'
+                            ) : !areTeamSelectionsComplete() ? (
+                                'Select Teams to Continue'
                             ) : (
                                 `Pay ₹${finalPrice.toLocaleString()}`
                             )}
@@ -950,6 +1200,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     )}
                 </Button>
             </div>
+
+            {/* Teammates Modal */}
+            {matchData.participants && (
+                <TeammatesModal
+                    isOpen={showTeammatesModal}
+                    onClose={() => setShowTeammatesModal(false)}
+                    participants={matchData.participants}
+                />
+            )}
         </div>
     );
 }
