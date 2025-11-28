@@ -1,3 +1,4 @@
+/*
 import { PodiumFrame } from "../common/PodiumFrame";
 
 export const Podium = (props: { first: any, second: any, third: any }) => {
@@ -15,3 +16,250 @@ export const Podium = (props: { first: any, second: any, third: any }) => {
         </div>
     );
 }
+*/
+
+import React, { useState } from "react";
+import Image from "next/image";
+
+const PodiumImage = ({
+  src,
+  alt,
+  size,
+}: {
+  src: string;
+  alt: string;
+  size: number;
+}) => {
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  const imageSrc = imageError || !src ? "/skeleton.png" : src;
+
+  return (
+    <div className="w-full h-full rounded-full bg-gray-800 border-2 border-gray-700 overflow-hidden">
+      <Image
+        src={imageSrc}
+        alt={alt}
+        width={size * 4}
+        height={size * 4}
+        onError={() => {
+          setImageError(true);
+          setImageLoading(false);
+        }}
+        onLoad={() => setImageLoading(false)}
+        className={`${imageLoading ? "opacity-50" : "opacity-100"
+          } w-full h-full object-cover transition-opacity duration-200`}
+      />
+    </div>
+  );
+};
+
+export const Podium = (props: {
+  first: any;
+  second: any;
+  third: any;
+  currentUserId?: number | null; // Allow null
+}) => {
+  const leaderboardData = [
+    {
+      rank: 2,
+      name: props.second?.name ?? "User",
+      score: props.second?.score ?? 0,
+      imageUrl: props.second?.imageUrl ?? "/skeleton.png",
+      category: "silver" as const,
+      userId: props.second?.userId,
+    },
+    {
+      rank: 1,
+      name: props.first?.name ?? "User",
+      score: props.first?.score ?? 0,
+      imageUrl: props.first?.imageUrl ?? "/skeleton.png",
+      category: "gold" as const,
+      userId: props.first?.userId,
+    },
+    {
+      rank: 3,
+      name: props.third?.name ?? "User",
+      score: props.third?.score ?? 0,
+      imageUrl: props.third?.imageUrl ?? "/skeleton.png",
+      category: "bronze" as const,
+      userId: props.third?.userId,
+    },
+  ];
+
+  const getXPTextColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "text-yellow-400";
+      case 2:
+        return "text-gray-300";
+      case 3:
+        return "text-orange-400";
+      default:
+        return "text-white";
+    }
+  };
+
+  const getPodiumHeight = (rank: number) => {
+    // Responsive, slightly shorter podium heights
+    // mobile: shorter, md+: a bit taller for visual emphasis
+    switch (rank) {
+      case 1:
+        return "h-24 sm:h-28 md:h-32";
+      case 2:
+        return "h-20 sm:h-24 md:h-28";
+      case 3:
+        return "h-16 sm:h-20 md:h-24";
+      default:
+        return "h-16 sm:h-20 md:h-24";
+    }
+  };
+
+  const getPodiumColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "from-gray-400/50 to-gray-500/30";
+      case 2:
+        return "from-gray-400/50 to-gray-500/30";
+      case 3:
+        return "from-gray-400/50 to-gray-500/30";
+      default:
+        return "from-gray-500/30 to-gray-600/20";
+    }
+  };
+
+  const getRankBadgeColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "bg-gradient-to-br from-yellow-400 to-yellow-600 text-yellow-900";
+      case 2:
+        return "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-900";
+      case 3:
+        return "bg-gradient-to-br from-orange-500 to-orange-700 text-orange-100";
+      default:
+        return "bg-gradient-to-br from-gray-400 to-gray-600 text-gray-100";
+    }
+  };
+
+  const getAvatarBorderColor = (category: "gold" | "silver" | "bronze") => {
+    switch (category) {
+      case "gold":
+        return "from-yellow-400 to-yellow-600";
+      case "silver":
+        return "from-gray-300 to-gray-500";
+      case "bronze":
+        return "from-orange-500 to-orange-700";
+    }
+  };
+
+  return (
+    <div className="w-full max-w-md mx-auto p-4 pb-0">
+      <div className="flex items-end justify-center">
+        {leaderboardData.filter((player) => player.score).map((player) => (
+          <div
+            key={player.rank}
+            className="flex flex-col items-center relative flex-1"
+            style={{
+              order: player.rank === 1 ? 2 : player.rank === 2 ? 1 : 3,
+              maxWidth: "110px",
+            }}
+          >
+            <div className="relative mb-2 transform hover:scale-110 transition-transform duration-300">
+              {player.rank === 1 && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-2xl z-20">
+                  👑
+                </div>
+              )}
+
+              <div
+                className={`absolute -top-1 -right-1 w-6 h-6 rounded-full ${getRankBadgeColor(
+                  player.rank
+                )} flex items-center justify-center font-bold text-xs shadow-lg z-10 border-2 border-white`}
+              >
+                {player.rank}
+              </div>
+
+              <div
+                className={`w-14 h-14 rounded-full bg-gradient-to-br ${getAvatarBorderColor(
+                  player.category
+                )} p-0.5 shadow-xl ${props.currentUserId && player.userId === props.currentUserId
+                  ? "ring-2 ring-green-400 ring-offset-2 ring-offset-gray-900"
+                  : ""
+                  }`}
+              >
+                <PodiumImage
+                  src={player.imageUrl}
+                  alt={player.name}
+                  size={14}
+                />
+              </div>
+            </div>
+
+            <div
+              className={`font-bold text-sm mb-0.5 text-center truncate w-full px-1 ${props.currentUserId && player.userId === props.currentUserId
+                ? "text-green-400"
+                : "text-white"
+                }`}
+            >
+              {player.name}
+            </div>
+
+            <div className="flex items-center gap-0.5 mb-2">
+              <span
+                className={`font-semibold text-sm ${getXPTextColor(
+                  player.rank
+                )}`}
+              >
+                {player.score} XP
+              </span>
+            </div>
+
+            <div
+              className={`w-full ${getPodiumHeight(
+                player.rank
+              )} relative perspective-1000`}
+            >
+              <div
+                className={`absolute inset-0 bg-gradient-to-t ${getPodiumColor(
+                  player.rank
+                )} backdrop-blur-sm rounded-t-lg overflow-hidden shadow-2xl`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-black to-black/20"></div>
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white/40 font-bold text-7xl pt-3">
+                    {player.rank}
+                  </span>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+              </div>
+
+              <div
+                className={`absolute top-0 left-0 right-0 h-3 bg-gradient-to-br ${getPodiumColor(
+                  player.rank
+                )} border-t border-l border-r border-white/30 rounded-t-lg`}
+                style={{
+                  transform: "perspective(400px) rotateX(60deg)",
+                  transformOrigin: "bottom",
+                  filter: "brightness(1.3)",
+                }}
+              ></div>
+
+              <div
+                className={`absolute top-3 right-0 bottom-0 bg-gradient-to-b ${getPodiumColor(
+                  player.rank
+                )} border-r border-white/20`}
+                style={{
+                  transform: "perspective(400px) rotateY(65deg)",
+                  transformOrigin: "left",
+                  filter: "brightness(0.7)",
+                }}
+              ></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
