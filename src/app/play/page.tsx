@@ -108,8 +108,19 @@ export default function PlayPage() {
           {/* Header */}
           <div className="border-b border-gray-800 px-4 py-3">
             <div className="flex items-center justify-between">
-              <div className="w-8">
-                <ChevronLeftIcon className="w-6 h-6" onClick={() => router.push("/play")} />
+              <div
+                className="w-8 cursor-pointer flex items-center justify-center"
+                onClick={() => router.back()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    router.back();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <ChevronLeftIcon className="w-6 h-6 pointer-events-none" />
               </div>
               <h1 className="text-lg text-white">Book & Play Matches</h1>
               <div className="flex flex-row items-center justify-end gap-2">

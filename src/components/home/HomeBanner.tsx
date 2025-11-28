@@ -11,8 +11,10 @@ export function HomeBanner({ calibrated }: { calibrated: boolean }) {
     return (
         <div className="relative w-full h-[400px] overflow-hidden">
             {calibrated === false && (
-                <div className="absolute z-10 top-0 left-0 w-full ">
-                    <CalibrationChip />
+                <div className="absolute z-50 top-0 left-0 w-full pointer-events-none">
+                    <div className="pointer-events-auto">
+                        <CalibrationChip />
+                    </div>
                 </div>
             )}
             {/* Background Image */}
