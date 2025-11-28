@@ -121,3 +121,17 @@ export async function fetchCalibrationStatus() {
   const response = await api.get('/users/calibration-status');
   return response.data;
 }
+
+// Validate promo code
+export async function validatePromoCode(code: string, bookingAmount: number, matchId?: number) {
+  try {
+    const response = await api.post('/promo-codes/validate', {
+      code,
+      bookingAmount,
+      matchId
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { success: false, message: 'Failed to validate promo code' };
+  }
+}

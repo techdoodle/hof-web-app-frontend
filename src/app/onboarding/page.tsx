@@ -120,7 +120,7 @@ export default function OnboardingPage() {
     //   timestamp: new Date().toISOString()
     // });
 
-    // router.push('/home');
+    router.push('/home');
   };
 
   return (
