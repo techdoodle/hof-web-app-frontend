@@ -116,6 +116,12 @@ export async function hasActiveBookingForMatch(matchId: number, userId: number) 
   }
 }
 
+// Fetch calibration status for the current user
+export async function fetchCalibrationStatus() {
+  const response = await api.get('/users/calibration-status');
+  return response.data;
+}
+
 // Validate promo code
 export async function validatePromoCode(code: string, bookingAmount: number, matchId?: number) {
   try {
