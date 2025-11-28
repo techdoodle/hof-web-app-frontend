@@ -279,10 +279,20 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 setFinalPrice(result.data.finalAmount || finalPrice);
                 showToast('Promo code applied successfully!', 'success');
             } else {
+                // Clear any applied promo if backend says it's invalid (e.g. already used)
+                setAppliedPromoCode(null);
+                setPromoCodeDiscount(0);
                 setPromoCodeError(result.message || 'Invalid promo code');
             }
         } catch (error: any) {
-            setPromoCodeError(error.message || 'Failed to validate promo code');
+            const backendMessage =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error.message;
+            // Clear applied promo state on error as well
+            setAppliedPromoCode(null);
+            setPromoCodeDiscount(0);
+            setPromoCodeError(backendMessage || 'Failed to validate promo code');
         } finally {
             setIsValidatingPromoCode(false);
         }
@@ -478,9 +488,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
             // Proceed with booking and payment
             await processBookingAndPayment();
-        } catch (error) {
+        } catch (error: any) {
             console.log("validating...   error", error);
-            showToast('Failed to validate booking. Please try again.', 'error');
+            const backendMessage =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error.message;
+            showToast(backendMessage || 'Failed to validate booking. Please try again.', 'error');
         } finally {
             setIsValidatingSlots(false);
         }
@@ -678,9 +692,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
             openRazorpayCheckout(razorpayOptions);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Booking process error:', error);
-            showToast('Failed to process booking. Please try again.', 'error');
+            const backendMessage =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error.message;
+            showToast(backendMessage || 'Failed to process booking. Please try again.', 'error');
         } finally {
             setIsProcessingBooking(false);
         }
