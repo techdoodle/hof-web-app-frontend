@@ -34,15 +34,16 @@ export function AppearancesLeaderboard() {
         prefetchNextPage,
         filters: originalFilters,
         handleFilterClick: originalHandleFilterClick,
-        LEADERBOARD_CUMULATIVE_FILTERS
-    } = useLeaderBoard(itemsPerPage, 'gna'); // Use GNA data to extract appearances
+        resetFilters,
+        LEADERBOARD_FILTERS
+    } = useLeaderBoard(itemsPerPage); // Use GNA data to extract appearances
 
     // Override filters to show 'appearances' as selected in UI
     const filters = { ...originalFilters, type: 'appearances' };
 
     // Custom handleFilterClick to properly handle type changes
-    const handleFilterClick = (key: string, value: string) => {
-        if (key === "type") {
+    const handleFilterClick = (filterType: 'city' | 'position' | 'gender' | 'leaderboard_type', value: string) => {
+        if (filterType === "leaderboard_type") {
             // For type changes, navigate to the appropriate leaderboard page using Next.js router
             const params = new URLSearchParams();
             if (value !== 'overall') {
@@ -52,7 +53,7 @@ export function AppearancesLeaderboard() {
             router.push(newUrl);
         } else {
             // For other filters (like city), use the original handler
-            originalHandleFilterClick(key, value);
+            originalHandleFilterClick(filterType, value);
         }
     };
 
@@ -146,7 +147,7 @@ export function AppearancesLeaderboard() {
 
     return (
         <div className="flex flex-col gap-1 p-4">
-            <LeaderBoardFilters filter_data={LEADERBOARD_CUMULATIVE_FILTERS} filters={filters} handleFilterClick={handleFilterClick} />
+            <LeaderBoardFilters filterData={LEADERBOARD_FILTERS} filters={filters} handleFilterClick={handleFilterClick} resetFilters={resetFilters} />
             {appearancesLeaderboard && appearancesLeaderboard.length === 0 && !isLeaderboardLoading && (
                 <div className="text-center text-gray-400">No appearances data available</div>
             )}
