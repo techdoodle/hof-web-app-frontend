@@ -24,8 +24,8 @@ export function UserInfoScreen({
   const [formData, setFormData] = useState<UserInfo>({
     firstName: '',
     lastName: '',
-    city: userData.city ? userData.city.cityName : '',
-    gender: 'MALE',
+    city: userData?.city ? userData.city.cityName : '',
+    gender: userData?.gender ? userData.gender as 'MALE' | 'FEMALE' | 'OTHER' : 'MALE',
   });
   const [cities, setCities] = useState<Array<{ id: number, cityName: string }>>([]);
   const [citiesLoading, setCitiesLoading] = useState(true);
