@@ -78,11 +78,11 @@ export function CalibrationChip() {
                         className="pointer-events-none"
                     />
                     <div className="flex flex-col items-start justify-center gap-0 flex-1">
-                        <p className="text-sm text-[#FFA726] font-medium leading-relaxed">
+                        <p className="text-md text-[#FFA726] font-medium leading-relaxed">
                             {titleText}
                         </p>
                         {subtitleText && (
-                            <p className="text-xs text-white font-medium leading-relaxed">
+                            <p className="text-md text-white font-medium leading-relaxed">
                                 {subtitleText}
                             </p>
                         )}
