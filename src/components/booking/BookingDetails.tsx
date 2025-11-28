@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/contexts/ToastContext';
@@ -29,8 +29,9 @@ interface BookingDetailsProps {
 
 export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsProps) {
     const { showToast } = useToast();
-    const { user, isAuthenticated } = useAuthContext();
+    const { user, isAuthenticated, isLoading: authLoading } = useAuthContext();
     const router = useRouter();
+    const hasRedirectedRef = useRef(false);
     const [bookingType, setBookingType] = useState<'regular' | 'waitlist' | null>(null);
     const [numSlots, setNumSlots] = useState(1);
     const [userEmail, setUserEmail] = useState(user?.email || '');
@@ -62,15 +63,6 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     // Type assertion to fix TypeScript error
     const typedBookingInfo = bookingInfo as CriticalBookingInfo | undefined;
 
-    // Require login before booking - redirect to login page if not authenticated
-    useEffect(() => {
-        if (!isAuthenticated || !user) {
-            showToast('Please login to book a match', 'info');
-            // Redirect to login with redirect parameter to return to booking after login
-            router.push(`/onboarding?redirect=/book-match/${matchId}&step=LOGIN`);
-        }
-    }, [isAuthenticated, user, router, matchId, showToast]);
-
     // Generate booking idempotency key with 15-min expiry
     useEffect(() => {
         const key = `booking_${matchId}_${Date.now()}`;
@@ -95,8 +87,27 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         })();
     }, [user?.id, matchId]);
 
+    // Require login before booking - redirect to login page if not authenticated
+    useEffect(() => {
+        // Wait for auth to finish loading
+        if (authLoading) return;
+        
+        // Only redirect once and if not authenticated
+        if (!isAuthenticated || !user) {
+            if (!hasRedirectedRef.current) {
+                hasRedirectedRef.current = true;
+                showToast('Please login to book a match', 'info');
+                // Use replace instead of push to replace current history entry
+                router.replace(`/onboarding?redirect=/book-match/${matchId}&step=LOGIN`);
+            }
+        }
+    }, [isAuthenticated, user, router, matchId, authLoading, showToast]);
+
     // Ensure additionalSlots length matches required player count
     useEffect(() => {
+        // Only run if user is authenticated
+        if (!isAuthenticated || !user) return;
+        
         const targetLength = isAdditionalBooking ? numSlots : Math.max(0, numSlots - 1);
         if (additionalSlots.length !== targetLength) {
             const next = [...additionalSlots];
@@ -111,7 +122,28 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             setAdditionalSlots(next);
             // Do not auto-open the form; it should open only when user clicks "Book"
         }
-    }, [isAdditionalBooking, numSlots]);
+    }, [isAdditionalBooking, numSlots, isAuthenticated, user, additionalSlots.length]);
+    
+    // Early return - don't render booking UI if not authenticated (after all hooks)
+    if (authLoading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center text-white">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div>
+            </div>
+        );
+    }
+    
+    if (!isAuthenticated || !user) {
+        // Show loading while redirecting
+        return (
+            <div className="flex min-h-screen items-center justify-center text-white">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-white mx-auto mb-4"></div>
+                    <p className="text-gray-400">Redirecting to login...</p>
+                </div>
+            </div>
+        );
+    }
 
     const handleSlotChange = (increment: boolean) => {
         if (!typedBookingInfo || !bookingType) return;
