@@ -56,13 +56,6 @@ export function ExistingUsersPickerModal({
     }
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      loadUsers(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     loadUsers(true);
@@ -173,16 +166,20 @@ export function ExistingUsersPickerModal({
             )}
 
             {users.length === 0 && !loading && (
-              <p className="text-sm text-gray-400 text-center">No players found.</p>
+              <p className="text-sm text-gray-400 text-center">
+                {query.trim()
+                  ? 'No players found for this search.'
+                  : 'Start by searching for players by name or phone.'}
+              </p>
             )}
           </div>
 
           <div className="p-4 border-t border-gray-700 flex gap-2">
             <Button className="flex-1" onClick={handleApply} disabled={selectedIds.length === 0}>
-              Add selected
+              Add &amp; close
             </Button>
             <Button variant="outline" className="flex-1" onClick={onClose}>
-              Cancel
+              Close
             </Button>
           </div>
         </div>
