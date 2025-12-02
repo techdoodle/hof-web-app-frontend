@@ -205,27 +205,68 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     };
 
     const handleApplyExistingUsers = (users: ExistingUserSummary[]) => {
-        // Determine how many friend slots are available
-        const maxFriends = isAdditionalBooking ? numSlots : Math.max(0, numSlots - 1);
+        if (!users.length) return;
+
+        // Only applies for confirmed bookings
+        if (bookingType !== 'regular' || !typedBookingInfo) {
+            return;
+        }
+
+        const availableRegularSlots = typedBookingInfo.availableRegularSlots || 0;
+        if (availableRegularSlots <= 0) {
+            showToast('No confirmed slots available for this match.', 'error');
+            return;
+        }
+
+        // How many friend slots can we actually allocate based on availability
+        // - In additional-booking mode: all slots are friends
+        // - In normal mode: 1 slot is for the main user, rest are friends
+        const maxFriendSlotsByAvailability = isAdditionalBooking
+            ? availableRegularSlots
+            : Math.max(0, availableRegularSlots - 1);
+
+        if (maxFriendSlotsByAvailability <= 0) {
+            showToast('No additional slots available for friends.', 'error');
+            return;
+        }
+
+        const desiredFriends = Math.min(users.length, maxFriendSlotsByAvailability);
+
+        if (users.length > desiredFriends) {
+            showToast(
+                `Only ${desiredFriends} player${desiredFriends > 1 ? 's' : ''} can be added based on available slots.`,
+                'info'
+            );
+        }
+
+        const newTotalSlots = isAdditionalBooking ? desiredFriends : (1 + desiredFriends);
+
+        // Update total slots count so UI and pricing reflect the new players
+        setNumSlots(newTotalSlots);
+
+        // Ensure additionalSlots length matches desiredFriends
         const next: AdditionalSlotInfo[] = [...additionalSlots];
+        while (next.length < desiredFriends) {
+            next.push({ mode: 'new', firstName: '', lastName: '', phone: '' });
+        }
+        if (next.length > desiredFriends) {
+            next.splice(desiredFriends);
+        }
 
-        let slotIndex = 0;
-        for (const userSummary of users) {
-            if (slotIndex >= maxFriends) break;
-
-            next[slotIndex] = {
+        for (let i = 0; i < desiredFriends; i++) {
+            const userSummary = users[i];
+            next[i] = {
                 mode: 'existing',
                 existingUserId: userSummary.id,
                 firstName: userSummary.firstName || '',
                 lastName: userSummary.lastName || '',
                 phone: userSummary.phoneNumber || '',
-                teamName: next[slotIndex]?.teamName, // keep any pre-selected team
+                teamName: next[i]?.teamName, // keep any pre-selected team
             };
-
-            slotIndex++;
         }
 
         setAdditionalSlots(next);
+        setShowAdditionalDetails(true);
     };
 
     const validateAdditionalSlots = (): boolean => {
