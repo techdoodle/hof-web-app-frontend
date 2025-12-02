@@ -34,21 +34,30 @@ export function ExistingUsersPickerModal({
     setLoading(true);
     try {
       const nextPage = reset ? 1 : page;
+      const trimmedQuery = query.trim();
       const res = await searchUsers({
         cityId: matchCityId,
-        query: query.trim() || undefined,
+        query: trimmedQuery || undefined,
         page: nextPage,
         limit: 25,
       });
 
       if (res.success) {
         const fetched = res.data.users;
+        const lowered = trimmedQuery.toLowerCase();
+        const filtered = lowered
+          ? fetched.filter(u => {
+              const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
+              const phone = (u.phoneNumber || '').toLowerCase();
+              return name.includes(lowered) || phone.includes(lowered);
+            })
+          : fetched;
         setTotal(res.data.pagination.total);
         if (reset) {
-          setUsers(fetched);
+          setUsers(filtered);
           setPage(1);
         } else {
-          setUsers(prev => [...prev, ...fetched]);
+          setUsers(prev => [...prev, ...filtered]);
         }
       }
     } finally {
