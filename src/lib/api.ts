@@ -99,6 +99,32 @@ export async function fetchNewLeaderBoard(
   return response.data;
 }
 
+export interface ExistingUserSummary {
+  id: number;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  city?: { id: number; name: string } | null;
+  preferredTeam?: { id: number; teamName: string } | null;
+}
+
+export async function searchUsers(params: {
+  cityId?: number;
+  query?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const response = await api.get('/users/search', { params });
+  return response.data as {
+    success: boolean;
+    message: string;
+    data: {
+      users: ExistingUserSummary[];
+      pagination: { page: number; limit: number; total: number };
+    };
+  };
+}
+
 export default api;
 
 // Determine if the current user already has an active booking for a given match

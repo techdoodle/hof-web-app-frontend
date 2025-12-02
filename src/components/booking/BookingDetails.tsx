@@ -5,7 +5,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { CriticalBookingInfo, useCriticalBookingInfo } from '@/hooks/useCriticalBookingInfo';
 import { PhoneIcon, MinusIcon, PlusIcon, X, CircleX } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
-import api, { hasActiveBookingForMatch, validatePromoCode } from '@/lib/api';
+import api, { hasActiveBookingForMatch, validatePromoCode, ExistingUserSummary } from '@/lib/api';
 import { BookingService } from '@/lib/bookingService';
 import { WaitlistService } from '@/lib/waitlistService';
 import { loadRazorpayScript, openRazorpayCheckout, RazorpayOptions } from '@/lib/razorpay';
@@ -13,8 +13,13 @@ import { BookingConfirmation } from './BookingConfirmation';
 import { WaitlistConfirmation } from './WaitlistConfirmation';
 import { PaymentFailedConfirmation } from './PaymentFailedConfirmation';
 import { TeammatesModal } from './TeammatesModal';
+import { ExistingUsersPickerModal } from './ExistingUsersPickerModal';
+
+type SlotMode = 'existing' | 'new';
 
 interface AdditionalSlotInfo {
+    mode: SlotMode;
+    existingUserId?: number;
     firstName: string;
     lastName: string;
     phone: string;
@@ -51,6 +56,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
     const [waitlistMatchData, setWaitlistMatchData] = useState<any>(null);
     const [mainUserTeam, setMainUserTeam] = useState<string>(''); // Team selection for main user
     const [showTeammatesModal, setShowTeammatesModal] = useState(false);
+    const [showExistingUsersModal, setShowExistingUsersModal] = useState(false);
     const [promoCode, setPromoCode] = useState<string>('');
     const [promoCodeDiscount, setPromoCodeDiscount] = useState<number>(0);
     const [promoCodeError, setPromoCodeError] = useState<string | null>(null);
@@ -103,6 +109,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         }
     }, [isAuthenticated, user, router, matchId, authLoading, showToast]);
 
+    const normalizePhone = (raw: string | null | undefined): string => {
+        if (!raw) return '';
+        let digits = String(raw).replace(/\D/g, '');
+        if (digits.length === 10) return digits;
+        if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
+        if (digits.length > 10) return digits.slice(-10);
+        return digits;
+    };
+
     // Ensure additionalSlots length matches required player count
     useEffect(() => {
         // Only run if user is authenticated
@@ -113,7 +128,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             const next = [...additionalSlots];
             // Add missing entries
             while (next.length < targetLength) {
-                next.push({ firstName: '', lastName: '', phone: '' });
+                next.push({ mode: 'new', firstName: '', lastName: '', phone: '' });
             }
             // Trim extra
             while (next.length > targetLength) {
@@ -168,7 +183,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         if (isAdditionalBooking) {
             // Friends-only mode: we need details for every slot (including first)
             if (increment) {
-                setAdditionalSlots([...additionalSlots, { firstName: '', lastName: '', phone: '' }]);
+                setAdditionalSlots([...additionalSlots, { mode: 'new', firstName: '', lastName: '', phone: '' }]);
             } else {
                 setAdditionalSlots(additionalSlots.slice(0, -1));
             }
@@ -176,7 +191,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         } else {
             // Normal mode: additionalSlots represent slots after the main user
             if (increment) {
-                setAdditionalSlots([...additionalSlots, { firstName: '', lastName: '', phone: '' }]);
+                setAdditionalSlots([...additionalSlots, { mode: 'new', firstName: '', lastName: '', phone: '' }]);
             } else {
                 setAdditionalSlots(additionalSlots.slice(0, -1));
             }
@@ -189,29 +204,77 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
         setAdditionalSlots(newSlots);
     };
 
+    const handleApplyExistingUsers = (users: ExistingUserSummary[]) => {
+        // Determine how many friend slots are available
+        const maxFriends = isAdditionalBooking ? numSlots : Math.max(0, numSlots - 1);
+        const next: AdditionalSlotInfo[] = [...additionalSlots];
+
+        let slotIndex = 0;
+        for (const userSummary of users) {
+            if (slotIndex >= maxFriends) break;
+
+            next[slotIndex] = {
+                mode: 'existing',
+                existingUserId: userSummary.id,
+                firstName: userSummary.firstName || '',
+                lastName: userSummary.lastName || '',
+                phone: userSummary.phoneNumber || '',
+                teamName: next[slotIndex]?.teamName, // keep any pre-selected team
+            };
+
+            slotIndex++;
+        }
+
+        setAdditionalSlots(next);
+    };
+
     const validateAdditionalSlots = (): boolean => {
-        // Get user's phone number
-        const userPhone = user?.phoneNumber || '';
+        const mainUserPhone = user?.phoneNumber || '';
 
-        // Collect all phone numbers (user + additional slots)
-        const allPhones = (
-            isAdditionalBooking
-                ? additionalSlots.map(slot => slot.phone)
-                : [userPhone, ...additionalSlots.map(slot => slot.phone)]
-        ).filter(phone => phone && phone.trim() !== '');
+        const seenPhones = new Set<string>();
+        const seenExistingUserIds = new Set<number>();
 
-        // Check for duplicates
-        const uniquePhones = new Set(allPhones);
-        if (allPhones.length !== uniquePhones.size) {
-            showToast('Duplicate phone numbers are not allowed. Each player must have a unique phone number.', 'error');
-            return false;
+        if (!isAdditionalBooking && mainUserPhone) {
+            const norm = normalizePhone(mainUserPhone);
+            if (norm) {
+                seenPhones.add(norm);
+            }
         }
 
         for (let i = 0; i < additionalSlots.length; i++) {
             const slot = additionalSlots[i];
             const slotNum = isAdditionalBooking ? (i + 1) : (i + 2);
 
-            // First name required for each additional player
+            if (slot.mode === 'existing') {
+                if (!slot.existingUserId) {
+                    showToast(`Selected player missing for slot ${slotNum}`, 'error');
+                    return false;
+                }
+
+                if (seenExistingUserIds.has(slot.existingUserId)) {
+                    showToast(`You cannot assign the same player to multiple slots (slot ${slotNum})`, 'error');
+                    return false;
+                }
+                seenExistingUserIds.add(slot.existingUserId);
+
+                const norm = normalizePhone(slot.phone);
+                if (norm) {
+                    if (seenPhones.has(norm)) {
+                        showToast('Duplicate phone numbers are not allowed. Each player must have a unique phone number.', 'error');
+                        return false;
+                    }
+                    seenPhones.add(norm);
+                }
+
+                if (bookingType === 'regular' && !slot.teamName) {
+                    showToast(`Team selection is required for slot ${slotNum}`, 'error');
+                    return false;
+                }
+
+                continue;
+            }
+
+            // New player validation
             if (!slot.firstName?.trim()) {
                 showToast(`First name is required for slot ${slotNum}`, 'error');
                 return false;
@@ -221,21 +284,26 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 showToast(`Phone number is required for slot ${slotNum}`, 'error');
                 return false;
             }
-            // Validate phone number format (basic validation)
+
+            const normalized = normalizePhone(slot.phone);
             const phoneRegex = /^[6-9]\d{9}$/;
-            if (!phoneRegex.test(slot.phone.replace(/\D/g, ''))) {
+            if (!phoneRegex.test(normalized)) {
                 showToast(`Invalid phone number format for slot ${slotNum}`, 'error');
                 return false;
             }
 
-            // Validate team selection for confirmed bookings
+            if (seenPhones.has(normalized)) {
+                showToast('Duplicate phone numbers are not allowed. Each player must have a unique phone number.', 'error');
+                return false;
+            }
+            seenPhones.add(normalized);
+
             if (bookingType === 'regular' && !slot.teamName) {
                 showToast(`Team selection is required for slot ${slotNum}`, 'error');
                 return false;
             }
         }
 
-        // Validate main user's team selection for confirmed bookings
         if (bookingType === 'regular' && !isAdditionalBooking && !mainUserTeam) {
             showToast('Please select your team', 'error');
             return false;
@@ -555,21 +623,36 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             // Step 1: Create booking
             // Prepare players array
             // If this is an additional booking, do NOT auto-add current user; require friends only
-            const players = (
-                isAdditionalBooking
-                    ? []
-                    : [{
-                        firstName: user?.firstName || '',
-                        lastName: user?.lastName || '',
-                        phone: '', // Main user phone will be extracted from JWT token on backend
-                        teamName: mainUserTeam || undefined // Include team selection for main user
-                    }]
-            ).concat(additionalSlots.map(slot => ({
-                firstName: slot.firstName,
-                lastName: slot.lastName,
-                phone: slot.phone,
-                teamName: slot.teamName || undefined // Include team selection for each additional player
-            })));
+            const basePlayers = isAdditionalBooking
+                ? []
+                : [{
+                    existingUserId: user?.id,
+                    firstName: user?.firstName || '',
+                    lastName: user?.lastName || '',
+                    phone: '', // Main user phone will be extracted from JWT token on backend
+                    teamName: mainUserTeam || undefined // Include team selection for main user
+                }];
+
+            const friendPlayers = additionalSlots.map(slot => {
+                if (slot.mode === 'existing' && slot.existingUserId) {
+                    return {
+                        existingUserId: slot.existingUserId,
+                        firstName: slot.firstName || undefined,
+                        lastName: slot.lastName || undefined,
+                        phone: slot.phone || undefined,
+                        teamName: slot.teamName || undefined
+                    };
+                }
+
+                return {
+                    firstName: slot.firstName,
+                    lastName: slot.lastName,
+                    phone: slot.phone,
+                    teamName: slot.teamName || undefined
+                };
+            });
+
+            const players = basePlayers.concat(friendPlayers);
 
             const bookingData = {
                 matchId: Number(matchId),
@@ -580,16 +663,18 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 players: players,
                 isWaitlist: bookingType === 'waitlist', // Flag to indicate waitlist booking
                 promoCode: appliedPromoCode || undefined, // Include promo code if applied
-                metadata: {
-                    bookingType,
-                    amount: finalPrice, // Add amount to metadata
-                    additionalSlots: additionalSlots.map(slot => ({
-                        firstName: slot.firstName,
-                        lastName: slot.lastName,
-                        phone: slot.phone,
-                        teamName: slot.teamName || undefined
-                    }))
-                }
+                    metadata: {
+                        bookingType,
+                        amount: finalPrice, // Add amount to metadata
+                        additionalSlots: additionalSlots.map(slot => ({
+                            mode: slot.mode,
+                            existingUserId: slot.existingUserId,
+                            firstName: slot.firstName,
+                            lastName: slot.lastName,
+                            phone: slot.phone,
+                            teamName: slot.teamName || undefined
+                        }))
+                    }
             };
 
             // Final availability check before API call to handle race conditions
@@ -947,7 +1032,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                                             setNumSlots(1);
                                             // Initialize friend details immediately for additional-booking mode
                                             if (isAdditionalBooking) {
-                                                setAdditionalSlots([{ firstName: '', lastName: '', phone: '' }]);
+                                                setAdditionalSlots([{ mode: 'new', firstName: '', lastName: '', phone: '' }]);
                                                 setShowAdditionalDetails(true);
                                             } else {
                                                 setAdditionalSlots([]);
@@ -1129,12 +1214,23 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                         )}
 
                         {(isAdditionalBooking ? numSlots >= 1 : numSlots > 1) && (
-                            <button
-                                className="text-sm text-blue-400 hover:text-blue-300 mt-2 transition-colors"
-                                onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
-                            >
-                                {showAdditionalDetails ? '▼ Hide' : '▶ Add'} player details {bookingType === 'regular' && <span className="text-orange-400">*</span>}
-                            </button>
+                            <div className="mt-2 flex items-center justify-between gap-3">
+                                <button
+                                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                                    onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
+                                >
+                                    {showAdditionalDetails ? '▼ Hide' : '▶ Add'} player details {bookingType === 'regular' && <span className="text-orange-400">*</span>}
+                                </button>
+                                {bookingType === 'regular' && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowExistingUsersModal(true)}
+                                    >
+                                        Select existing players
+                                    </Button>
+                                )}
+                            </div>
                         )}
                     </div>
                 )}
@@ -1157,35 +1253,51 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     <div className="space-y-4">
                         {additionalSlots.map((slot, index) => (
                             <div key={index} className="bg-gray-800/30 rounded-lg p-4">
-                                <p className="text-sm font-medium mb-3">Slot {isAdditionalBooking ? (index + 1) : (index + 2)} - Player Details</p>
+                                <p className="text-sm font-medium mb-3">
+                                    Slot {isAdditionalBooking ? (index + 1) : (index + 2)} - Player Details
+                                </p>
                                 <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input
-                                            type="text"
-                                            placeholder="First Name"
-                                            value={slot.firstName || ''}
-                                            onChange={(e) => handleAdditionalSlotUpdate(index, 'firstName', e.target.value)}
-                                            className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
-                                        />
-                                        <input
-                                            type="text"
-                                            placeholder="Last Name (Optional)"
-                                            value={slot.lastName || ''}
-                                            onChange={(e) => handleAdditionalSlotUpdate(index, 'lastName', e.target.value)}
-                                            className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <PhoneIcon className="h-4 w-4" />
-                                        <input
-                                            type="tel"
-                                            placeholder="Phone Number *"
-                                            value={slot.phone || ''}
-                                            onChange={(e) => handleAdditionalSlotUpdate(index, 'phone', e.target.value)}
-                                            className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white flex-1"
-                                            required
-                                        />
-                                    </div>
+                                    {slot.mode === 'existing' ? (
+                                        <>
+                                            <div className="text-sm text-gray-200">
+                                                {slot.firstName} {slot.lastName}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                                                <PhoneIcon className="h-4 w-4" />
+                                                <span>{slot.phone}</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <input
+                                                    type="text"
+                                                    placeholder="First Name"
+                                                    value={slot.firstName || ''}
+                                                    onChange={(e) => handleAdditionalSlotUpdate(index, 'firstName', e.target.value)}
+                                                    className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Last Name (Optional)"
+                                                    value={slot.lastName || ''}
+                                                    onChange={(e) => handleAdditionalSlotUpdate(index, 'lastName', e.target.value)}
+                                                    className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
+                                                />
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <PhoneIcon className="h-4 w-4" />
+                                                <input
+                                                    type="tel"
+                                                    placeholder="Phone Number *"
+                                                    value={slot.phone || ''}
+                                                    onChange={(e) => handleAdditionalSlotUpdate(index, 'phone', e.target.value)}
+                                                    className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white flex-1"
+                                                    required
+                                                />
+                                            </div>
+                                        </>
+                                    )}
 
                                     {/* Team Selection for Additional Players (Confirmed Bookings Only) */}
                                     {bookingType === 'regular' && typedBookingInfo && (
