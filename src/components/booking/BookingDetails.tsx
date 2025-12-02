@@ -623,7 +623,15 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             // Step 1: Create booking
             // Prepare players array
             // If this is an additional booking, do NOT auto-add current user; require friends only
-            const basePlayers = isAdditionalBooking
+            type PlayerPayload = {
+                existingUserId?: number;
+                firstName?: string;
+                lastName?: string;
+                phone?: string;
+                teamName?: string;
+            };
+
+            const basePlayers: PlayerPayload[] = isAdditionalBooking
                 ? []
                 : [{
                     existingUserId: user?.id,
@@ -633,7 +641,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     teamName: mainUserTeam || undefined // Include team selection for main user
                 }];
 
-            const friendPlayers = additionalSlots.map(slot => {
+            const friendPlayers: PlayerPayload[] = additionalSlots.map(slot => {
                 if (slot.mode === 'existing' && slot.existingUserId) {
                     return {
                         existingUserId: slot.existingUserId,
@@ -652,7 +660,7 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 };
             });
 
-            const players = basePlayers.concat(friendPlayers);
+            const players: PlayerPayload[] = [...basePlayers, ...friendPlayers];
 
             const bookingData = {
                 matchId: Number(matchId),
