@@ -40,7 +40,7 @@ export function ExistingUsersPickerModal({
       const nextPage = reset ? 1 : page;
       const trimmedQuery = query.trim();
       const res = await searchUsers({
-        cityId: matchCityId,
+        // City filtering removed - search all users regardless of city
         query: trimmedQuery || undefined,
         page: nextPage,
         limit: 25,
