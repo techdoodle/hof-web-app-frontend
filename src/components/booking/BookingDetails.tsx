@@ -1530,6 +1530,17 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                     participants={matchData.participants}
                 />
             )}
+            {/* Existing Users Picker Modal */}
+            <ExistingUsersPickerModal
+                isOpen={showExistingUsersModal}
+                onClose={() => setShowExistingUsersModal(false)}
+                matchCityId={matchData?.venue?.city?.id}
+                initialSelectedUserIds={additionalSlots
+                    .filter(s => s.mode === 'existing' && s.existingUserId)
+                    .map(s => s.existingUserId as number)
+                }
+                onApply={handleApplyExistingUsers}
+            />
         </div>
     );
 }
