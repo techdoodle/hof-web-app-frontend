@@ -24,10 +24,14 @@ export function ExistingUsersPickerModal({
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>(initialSelectedUserIds);
+  // Keep track of all selected user objects (not just IDs) so we can send them even if not in current search
+  const [selectedUsersMap, setSelectedUsersMap] = useState<Map<number, ExistingUserSummary>>(new Map());
 
   useEffect(() => {
     if (!isOpen) return;
     setSelectedIds(initialSelectedUserIds);
+    // Reset selected users map when modal opens
+    setSelectedUsersMap(new Map());
   }, [isOpen, initialSelectedUserIds]);
 
   const loadUsers = async (reset = false) => {
@@ -70,10 +74,27 @@ export function ExistingUsersPickerModal({
     loadUsers(true);
   };
 
-  const toggleSelection = (id: number) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+  const toggleSelection = (user: ExistingUserSummary) => {
+    const id = user.id;
+    setSelectedIds(prev => {
+      if (prev.includes(id)) {
+        // Remove from selection
+        setSelectedUsersMap(prevMap => {
+          const next = new Map(prevMap);
+          next.delete(id);
+          return next;
+        });
+        return prev.filter(x => x !== id);
+      } else {
+        // Add to selection - store the full user object
+        setSelectedUsersMap(prevMap => {
+          const next = new Map(prevMap);
+          next.set(id, user);
+          return next;
+        });
+        return [...prev, id];
+      }
+    });
   };
 
   const handleLoadMore = () => {
@@ -84,7 +105,8 @@ export function ExistingUsersPickerModal({
   };
 
   const handleApply = () => {
-    const selectedUsers = users.filter(u => selectedIds.includes(u.id));
+    // Get all selected users from the map (includes users from previous searches)
+    const selectedUsers = Array.from(selectedUsersMap.values());
     onApply(selectedUsers);
     onClose();
   };
@@ -144,7 +166,7 @@ export function ExistingUsersPickerModal({
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => toggleSelection(user.id)}
+                      onChange={() => toggleSelection(user)}
                       className="accent-orange-500"
                     />
                     <div className="flex flex-col">

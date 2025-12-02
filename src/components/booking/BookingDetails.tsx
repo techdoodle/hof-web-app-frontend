@@ -230,41 +230,82 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             return;
         }
 
-        const desiredFriends = Math.min(users.length, maxFriendSlotsByAvailability);
+        // Get currently selected existing user IDs to avoid duplicates
+        const existingSelectedIds = new Set(
+            additionalSlots
+                .filter(s => s.mode === 'existing' && s.existingUserId)
+                .map(s => s.existingUserId as number)
+        );
 
-        if (users.length > desiredFriends) {
+        // Filter out users that are already selected
+        const newUsers = users.filter(u => !existingSelectedIds.has(u.id));
+
+        if (newUsers.length === 0) {
+            showToast('All selected players are already added.', 'info');
+            return;
+        }
+
+        // Count how many slots are currently filled (existing + new with data)
+        const currentlyFilledSlots = additionalSlots.filter(
+            s => (s.mode === 'existing' && s.existingUserId) ||
+                 (s.mode === 'new' && s.firstName?.trim() && s.phone?.trim())
+        ).length;
+
+        // Calculate how many more slots we can add
+        const remainingSlots = maxFriendSlotsByAvailability - currentlyFilledSlots;
+        const usersToAdd = Math.min(newUsers.length, remainingSlots);
+
+        if (usersToAdd === 0) {
+            showToast('No more slots available. Please remove some players first.', 'info');
+            return;
+        }
+
+        if (newUsers.length > usersToAdd) {
             showToast(
-                `Only ${desiredFriends} player${desiredFriends > 1 ? 's' : ''} can be added based on available slots.`,
+                `Only ${usersToAdd} more player${usersToAdd > 1 ? 's' : ''} can be added based on available slots.`,
                 'info'
             );
         }
 
-        const newTotalSlots = isAdditionalBooking ? desiredFriends : (1 + desiredFriends);
-
-        // Update total slots count so UI and pricing reflect the new players
-        setNumSlots(newTotalSlots);
-
-        // Ensure additionalSlots length matches desiredFriends
+        // Append new users to existing slots
         const next: AdditionalSlotInfo[] = [...additionalSlots];
-        while (next.length < desiredFriends) {
-            next.push({ mode: 'new', firstName: '', lastName: '', phone: '' });
-        }
-        if (next.length > desiredFriends) {
-            next.splice(desiredFriends);
+        let addedCount = 0;
+
+        // First, try to fill empty/new slots
+        for (let i = 0; i < next.length && addedCount < usersToAdd; i++) {
+            const slot = next[i];
+            // If slot is empty (new mode with no data) or has no existing user, fill it
+            if (slot.mode === 'new' && (!slot.firstName?.trim() && !slot.phone?.trim())) {
+                const user = newUsers[addedCount];
+                next[i] = {
+                    mode: 'existing',
+                    existingUserId: user.id,
+                    firstName: user.firstName || '',
+                    lastName: user.lastName || '',
+                    phone: user.phoneNumber || '',
+                    teamName: slot.teamName, // preserve any pre-selected team
+                };
+                addedCount++;
+            }
         }
 
-        for (let i = 0; i < desiredFriends; i++) {
-            const userSummary = users[i];
-            next[i] = {
+        // If we still have users to add, append new slots
+        while (addedCount < usersToAdd) {
+            const user = newUsers[addedCount];
+            next.push({
                 mode: 'existing',
-                existingUserId: userSummary.id,
-                firstName: userSummary.firstName || '',
-                lastName: userSummary.lastName || '',
-                phone: userSummary.phoneNumber || '',
-                teamName: next[i]?.teamName, // keep any pre-selected team
-            };
+                existingUserId: user.id,
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                phone: user.phoneNumber || '',
+                teamName: undefined,
+            });
+            addedCount++;
         }
 
+        // Update total slots count
+        const newTotalSlots = isAdditionalBooking ? next.length : (1 + next.length);
+        setNumSlots(newTotalSlots);
         setAdditionalSlots(next);
         setShowAdditionalDetails(true);
     };
