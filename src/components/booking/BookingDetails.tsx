@@ -714,13 +714,13 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
             };
 
             const basePlayers: PlayerPayload[] = isAdditionalBooking
-                ? []
-                : [{
+                    ? []
+                    : [{
                     existingUserId: user?.id,
-                    firstName: user?.firstName || '',
-                    lastName: user?.lastName || '',
-                    phone: '', // Main user phone will be extracted from JWT token on backend
-                    teamName: mainUserTeam || undefined // Include team selection for main user
+                        firstName: user?.firstName || '',
+                        lastName: user?.lastName || '',
+                        phone: '', // Main user phone will be extracted from JWT token on backend
+                        teamName: mainUserTeam || undefined // Include team selection for main user
                 }];
 
             const friendPlayers: PlayerPayload[] = additionalSlots.map(slot => {
@@ -735,9 +735,9 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 }
 
                 return {
-                    firstName: slot.firstName,
-                    lastName: slot.lastName,
-                    phone: slot.phone,
+                firstName: slot.firstName,
+                lastName: slot.lastName,
+                phone: slot.phone,
                     teamName: slot.teamName || undefined
                 };
             });
@@ -753,18 +753,18 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                 players: players,
                 isWaitlist: bookingType === 'waitlist', // Flag to indicate waitlist booking
                 promoCode: appliedPromoCode || undefined, // Include promo code if applied
-                    metadata: {
-                        bookingType,
-                        amount: finalPrice, // Add amount to metadata
-                        additionalSlots: additionalSlots.map(slot => ({
+                metadata: {
+                    bookingType,
+                    amount: finalPrice, // Add amount to metadata
+                    additionalSlots: additionalSlots.map(slot => ({
                             mode: slot.mode,
                             existingUserId: slot.existingUserId,
-                            firstName: slot.firstName,
-                            lastName: slot.lastName,
-                            phone: slot.phone,
-                            teamName: slot.teamName || undefined
-                        }))
-                    }
+                        firstName: slot.firstName,
+                        lastName: slot.lastName,
+                        phone: slot.phone,
+                        teamName: slot.teamName || undefined
+                    }))
+                }
             };
 
             // Final availability check before API call to handle race conditions
@@ -1305,12 +1305,12 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
 
                         {(isAdditionalBooking ? numSlots >= 1 : numSlots > 1) && (
                             <div className="mt-2 flex items-center justify-between gap-3">
-                                <button
+                            <button
                                     className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                                    onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
-                                >
-                                    {showAdditionalDetails ? '▼ Hide' : '▶ Add'} player details {bookingType === 'regular' && <span className="text-orange-400">*</span>}
-                                </button>
+                                onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
+                            >
+                                {showAdditionalDetails ? '▼ Hide' : '▶ Add'} player details {bookingType === 'regular' && <span className="text-orange-400">*</span>}
+                            </button>
                                 {bookingType === 'regular' && (
                                     <Button
                                         variant="outline"
@@ -1359,33 +1359,33 @@ export function BookingDetails({ matchId, matchData, onClose }: BookingDetailsPr
                                         </>
                                     ) : (
                                         <>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <input
-                                                    type="text"
-                                                    placeholder="First Name"
-                                                    value={slot.firstName || ''}
-                                                    onChange={(e) => handleAdditionalSlotUpdate(index, 'firstName', e.target.value)}
-                                                    className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Last Name (Optional)"
-                                                    value={slot.lastName || ''}
-                                                    onChange={(e) => handleAdditionalSlotUpdate(index, 'lastName', e.target.value)}
-                                                    className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
-                                                />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <PhoneIcon className="h-4 w-4" />
-                                                <input
-                                                    type="tel"
-                                                    placeholder="Phone Number *"
-                                                    value={slot.phone || ''}
-                                                    onChange={(e) => handleAdditionalSlotUpdate(index, 'phone', e.target.value)}
-                                                    className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white flex-1"
-                                                    required
-                                                />
-                                            </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <input
+                                            type="text"
+                                            placeholder="First Name"
+                                            value={slot.firstName || ''}
+                                            onChange={(e) => handleAdditionalSlotUpdate(index, 'firstName', e.target.value)}
+                                            className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Last Name (Optional)"
+                                            value={slot.lastName || ''}
+                                            onChange={(e) => handleAdditionalSlotUpdate(index, 'lastName', e.target.value)}
+                                            className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white"
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <PhoneIcon className="h-4 w-4" />
+                                        <input
+                                            type="tel"
+                                            placeholder="Phone Number *"
+                                            value={slot.phone || ''}
+                                            onChange={(e) => handleAdditionalSlotUpdate(index, 'phone', e.target.value)}
+                                            className="bg-transparent border-b border-gray-400 focus:outline-none focus:border-white flex-1"
+                                            required
+                                        />
+                                    </div>
                                         </>
                                     )}
 
