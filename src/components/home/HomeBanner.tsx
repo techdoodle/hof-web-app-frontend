@@ -18,7 +18,7 @@ export function HomeBanner({ calibrated }: { calibrated: boolean }) {
             {/* Background Image */}
             <div className="absolute inset-0">
                 <Image
-                    src="/hof-banner-1.svg"
+                    src="/home_banner_without_logo.svg"
                     alt="Humans of Football Select Games Banner"
                     fill
                     className="object-cover"

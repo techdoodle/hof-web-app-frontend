@@ -12,13 +12,13 @@ function LeaderboardContent() {
   const [isChipVisible, setIsChipVisible] = useState(true);
   //use cached calibration status from reqct query
   const queryClient = useQueryClient();
-  const calibrationStatus = queryClient.getQueryData(['calibrationStatus']);
+  const calibrationStatus = queryClient.getQueryData(['calibration-status']);
 
   useEffect(() => {
     if (calibrationStatus && (calibrationStatus as any).isCalibrated && (calibrationStatus as any).isMinimumRequisiteCompleteForCalibration) {
       setIsChipVisible(false);
     }
-  }, ['calibrationStatus']);
+  }, ['calibration-status']);
 
   return (
     <AuthWrapper>
