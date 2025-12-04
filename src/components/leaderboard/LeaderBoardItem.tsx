@@ -124,7 +124,7 @@ export function LeaderboardItem({
     >
       <div className="absolute left-1 top-1/2 -translate-y-1/2 pointer-events-none">
         <span
-          className={`text-[100px] font-black font-serif leading-none ${isUser ? "text-[#00CC66]/20" : "text-gray-600/50"
+          className={`text-[50px] font-black font-serif leading-none ${isUser ? "text-[#00CC66]/20" : "text-gray-600/50"
             }`}
         >
           {item.rank}
