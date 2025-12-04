@@ -46,22 +46,23 @@ export function ExistingUsersPickerModal({
         limit: 25,
       });
 
+      console.log('[ExistingUsersPickerModal] searchUsers response', {
+        query: trimmedQuery,
+        page: nextPage,
+        total: res?.data?.pagination?.total,
+        count: res?.data?.users?.length,
+        sample: res?.data?.users?.slice(0, 3),
+      });
+
       if (res.success) {
         const fetched = res.data.users;
-        const lowered = trimmedQuery.toLowerCase();
-        const filtered = lowered
-          ? fetched.filter(u => {
-              const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
-              const phone = (u.phoneNumber || '').toLowerCase();
-              return name.includes(lowered) || phone.includes(lowered);
-            })
-          : fetched;
+        // Trust backend filtering; do not re-filter on the client
         setTotal(res.data.pagination.total);
         if (reset) {
-          setUsers(filtered);
+          setUsers(fetched);
           setPage(1);
         } else {
-          setUsers(prev => [...prev, ...filtered]);
+          setUsers(prev => [...prev, ...fetched]);
         }
       }
     } finally {
