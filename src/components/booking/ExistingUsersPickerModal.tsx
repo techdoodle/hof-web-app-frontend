@@ -119,7 +119,7 @@ export function ExistingUsersPickerModal({
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-gray-900 rounded-2xl shadow-xl border border-gray-700 w-full max-w-3xl max-h-[80vh] overflow-hidden"
+          className="bg-gray-900 rounded-2xl shadow-xl border border-gray-700 w-full max-w-3xl max-h-[80vh] h-full flex flex-col"
           onClick={e => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
@@ -144,7 +144,7 @@ export function ExistingUsersPickerModal({
             </form>
           </div>
 
-          <div className="p-4 overflow-y-auto max-h-[calc(80vh-150px)] space-y-2">
+          <div className="p-4 overflow-y-auto flex-1 space-y-2">
             {users.map(user => {
               const pn = user.phoneNumber || '';
               const maskedPhone =
