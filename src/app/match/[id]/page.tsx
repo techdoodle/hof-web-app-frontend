@@ -94,7 +94,7 @@ const MatchPage = ({ params }: MatchPageProps) => {
               onDrawerClose={hideDrawer}
             />}
             {getMatchRecapAndHighlights(matchStats).length > 0 && <HighlightLinks links={getMatchRecapAndHighlights(matchStats)} heading="Match Highlights and Recap" />}
-            {matchStats?.playerHighlights && matchStats?.playerHighlights.length > 0 && <HighlightLinks links={[matchStats?.playerHighlights || '']} heading="Player Highlights" />}
+            {matchStats?.playerHighlights && typeof matchStats.playerHighlights === 'string' && matchStats.playerHighlights.trim().length > 0 && <HighlightLinks links={[matchStats.playerHighlights]} heading="Player Highlights" />}
             <div className="h-24" />
           </div>
         );
