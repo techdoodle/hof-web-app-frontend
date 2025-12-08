@@ -1,5 +1,7 @@
 {
   "name": "Humans of Football",
+  "version": "1.0.0",
+  "version_name": "1.0.0",
   "short_name": "HOF",
   "description": "Connect with fellow players and find your next match",
   "start_url": "/",
@@ -7,7 +9,11 @@
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#001F10",
-  "categories": ["sports", "social", "lifestyle"],
+  "categories": [
+    "sports",
+    "social",
+    "lifestyle"
+  ],
   "lang": "en",
   "dir": "ltr",
   "icons": [
@@ -18,13 +24,13 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192x192.svg",
+      "src": "/icons/192x192.svg?v=2",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512x512.svg",
+      "src": "/icons/512x512.svg?v=2",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
@@ -43,14 +49,14 @@
       "name": "Find Match",
       "short_name": "Find Match",
       "description": "Find your next football match",
-      "url": "/",
+      "url": "/nearby",
       "icons": [
         {
-          "src": "/icons/icon-192x192.svg",
+          "src": "/icons/192x192.svg?v=2",
           "sizes": "192x192",
           "type": "image/svg+xml"
         }
       ]
     }
   ]
-} 
+}

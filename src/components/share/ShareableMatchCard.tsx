@@ -48,6 +48,7 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
                     minHeight: '550px',
                     position: 'relative',
                     overflow: 'hidden',
+                    paddingBottom: '80px', // Add padding to ensure bottom strip is included in capture
                 }}
             >
                 {/* Main Content */}

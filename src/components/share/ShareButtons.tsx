@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Share2, Download, MessageCircle, Instagram } from 'lucide-react';
-import { downloadCardAsPNG, shareToWhatsApp, shareToWhatsAppStory, shareToInstagram, shareViaWebShare } from '@/lib/utils/shareUtils';
+import { downloadCardAsPNG, shareToWhatsApp, shareToWhatsAppStory, shareToInstagram, shareViaWebShare, preloadCardImage } from '@/lib/utils/shareUtils';
 
 interface ShareButtonsProps {
     cardRef: React.RefObject<HTMLDivElement>;
@@ -12,6 +12,17 @@ interface ShareButtonsProps {
 
 export const ShareButtons = ({ cardRef, type, playerName }: ShareButtonsProps) => {
     const [isSharing, setIsSharing] = useState(false);
+
+    // Preload the image when card is ready
+    useEffect(() => {
+        if (cardRef.current) {
+            // Wait a bit for images to load, then preload
+            const timer = setTimeout(() => {
+                preloadCardImage(cardRef.current!);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cardRef]);
 
     const handleDownload = async () => {
         if (!cardRef.current) return;

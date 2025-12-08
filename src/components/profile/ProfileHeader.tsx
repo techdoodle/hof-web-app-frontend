@@ -4,7 +4,6 @@ import { DropdownMenu, DropdownMenuItem } from '@/components/ui/DropdownMenu';
 import { useRouter } from 'next/navigation';
 import { EllipsisVertical, HistoryIcon, LogOutIcon, Share2Icon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
 
 interface ProfileHeaderProps {
   userData: UserData;
