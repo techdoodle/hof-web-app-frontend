@@ -88,6 +88,7 @@ export function LeaderboardItem({
   isVisible = false,
   rankChange = 0,
   isBottomCard = false,
+  onClick,
 }: {
   floating?: boolean;
   item: any;
@@ -95,6 +96,7 @@ export function LeaderboardItem({
   isVisible?: boolean;
   rankChange?: number;
   isBottomCard?: boolean;
+  onClick?: () => void;
 }) {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -113,8 +115,10 @@ export function LeaderboardItem({
 
   return (
     <div
+      onClick={onClick}
       className={`
                 ${isBottomCard ? 'bg-black' : 'relative'} flex items-center justify-between p-4 rounded-2xl transition-all duration-300 overflow-hidden
+                ${onClick ? 'cursor-pointer' : ''}
                 ${isUser
           ? "bg-[#00CC66]/10 border-2 border-[#00CC66] hover:scale-[1.02] shadow-xl ring-2 ring-[#00CC66]/50"
           : "bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 hover:bg-gray-700/50 shadow-lg"

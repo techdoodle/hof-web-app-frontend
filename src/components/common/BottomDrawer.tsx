@@ -70,7 +70,7 @@ export const BottomDrawer = ({
     const getHeightValue = () => {
         switch (height) {
             case 'half':
-                return '55%'; // 55% of viewport height
+                return '58%'; // 58% of viewport height
             case 'full':
                 return '90%';
             default:

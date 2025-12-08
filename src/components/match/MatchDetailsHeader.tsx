@@ -1,9 +1,14 @@
 "use client";
 
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const MatchDetailsHeader = ({ matchStats }: { matchStats: any }) => {
+interface MatchDetailsHeaderProps {
+    matchStats: any;
+    onShareClick?: () => void;
+}
+
+const MatchDetailsHeader = ({ matchStats, onShareClick }: MatchDetailsHeaderProps) => {
     const router = useRouter();
 
     return (<div className="flex flex-col gap-4">
@@ -11,7 +16,15 @@ const MatchDetailsHeader = ({ matchStats }: { matchStats: any }) => {
             <div onClick={() => router.back()}><ChevronLeftIcon className="w-6 h-6" /></div>
             <div className="text-xl font-bold">Match Details</div>
             <div>
-                {/* <Share2 className="w-6 h-6 text-gray-500" /> */}
+                {onShareClick && (
+                    <button
+                        onClick={onShareClick}
+                        className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+                        title="Share match stats"
+                    >
+                        <Share2 className="w-6 h-6 text-white" />
+                    </button>
+                )}
             </div>
         </div>
     </div>);

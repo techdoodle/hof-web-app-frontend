@@ -2,15 +2,16 @@ import { UserData } from '@/modules/onboarding/types';
 import { EditIcon } from '@/components/icons';
 import { DropdownMenu, DropdownMenuItem } from '@/components/ui/DropdownMenu';
 import { useRouter } from 'next/navigation';
-import { BookCheckIcon, EllipsisVertical, HistoryIcon, LogOutIcon } from 'lucide-react';
-import { NotificationTest } from '@/components/common/NotificationTest';
+import { EllipsisVertical, HistoryIcon, LogOutIcon, Share2Icon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useState } from 'react';
 
 interface ProfileHeaderProps {
   userData: UserData;
+  onShareClick?: () => void;
 }
 
-export function ProfileHeader({ userData }: ProfileHeaderProps) {
+export function ProfileHeader({ userData, onShareClick }: ProfileHeaderProps) {
   const router = useRouter();
   const { logout } = useAuth();
 
@@ -44,8 +45,16 @@ export function ProfileHeader({ userData }: ProfileHeaderProps) {
     <div className="border-gray-800 px-4 py-3 z-10">
       {/* <NotificationTest /> */}
       <div className="flex items-center justify-between">
-        {/* Left side - empty for balance */}
-        <div className="w-10"></div>
+        {/* Left side - Share button */}
+        <div className="w-10">
+          <button
+            onClick={onShareClick}
+            className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+            title="Share your stats"
+          >
+            <Share2Icon className="w-6 h-6 text-white" />
+          </button>
+        </div>
 
         {/* Center - Title */}
         <h1 className="text-xl font-semibold text-white">Profile</h1>

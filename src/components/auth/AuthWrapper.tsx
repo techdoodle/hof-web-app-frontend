@@ -29,6 +29,17 @@ export function AuthWrapper({ children, fallback, requireOnboarding = true }: Au
     }
   }, [isLoading, isAuthenticated, userData, requireOnboarding, pathname, router]);
 
+  // Redirect to onboarding if no user data is found
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !userData)) {
+      // Don't redirect if already on onboarding page (prevent infinite loop)
+      if (pathname !== '/onboarding') {
+        console.log('AuthWrapper - No user data found, redirecting to /onboarding');
+        router.push('/onboarding');
+      }
+    }
+  }, [isLoading, isAuthenticated, userData, pathname, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -48,30 +59,23 @@ export function AuthWrapper({ children, fallback, requireOnboarding = true }: Au
     );
   }
 
+  // Show loading state while redirecting to onboarding
   if (!isAuthenticated || !userData) {
     if (fallback) {
       return <>{fallback}</>;
     }
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">No user data found</p>
-          <p className="text-gray-400 text-sm mb-4">
-            Authenticated: {isAuthenticated ? 'Yes' : 'No'},
-            User Data: {userData ? 'Present' : 'Missing'},
-            Error: {error ? 'Yes' : 'No'}
-          </p>
-          <button
-            onClick={() => refetch()}
-            className="mb-4 px-4 py-2 bg-primary text-white rounded"
-          >
-            Retry Loading User Data
-          </button>
-          <br />
-          <a href="/onboarding" className="underline text-md text-gray-400">Please login to continue</a>
+    // Show loading state while redirecting
+    if (pathname !== '/onboarding') {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-400">Redirecting to login...</p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return null;
   }
 
   // If onboarding is required but not complete, show loading while redirecting

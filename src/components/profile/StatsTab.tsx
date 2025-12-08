@@ -4,15 +4,20 @@ import { ProfilePicture } from './ProfilePicture';
 import { StatsTable } from './StatsTable';
 import { positionAbbreviationMapping } from '@/utils/positionMapping';
 import NameComponent from './NameComponent';
+import { useState } from 'react';
+import { ShareModal } from '../share/ShareModal';
+import { ShareablePlayerCard } from '../share/ShareablePlayerCard';
 
 interface StatsTabProps {
   userData: UserData;
   stats: any;
   isLoading?: boolean;
   error?: any;
+  isShareModalOpen?: boolean;
+  onShareModalClose?: () => void;
 }
 
-export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
+export function StatsTab({ userData, stats, isLoading, error, isShareModalOpen = false, onShareModalClose }: StatsTabProps) {
   // Handle loading state
   if (isLoading) {
     return (
@@ -42,7 +47,15 @@ export function StatsTab({ userData, stats, isLoading, error }: StatsTabProps) {
     return <UncalibratedStats userData={userData} error={error || false} />;
   }
 
-  return <CalibratedStats userData={userData} stats={stats} />;
+  return (
+    <CalibratedStats
+      userData={userData}
+      stats={stats}
+      isShareModalOpen={isShareModalOpen}
+      onShareModalClose={onShareModalClose || (() => { })}
+      playerName={`${userData.firstName} ${userData.lastName}`}
+    />
+  );
 }
 
 function UncalibratedStats({ userData, error }: { userData: UserData, error: any }) {
@@ -152,7 +165,19 @@ function UncalibratedStats({ userData, error }: { userData: UserData, error: any
   );
 }
 
-function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }) {
+function CalibratedStats({
+  userData,
+  stats,
+  isShareModalOpen,
+  onShareModalClose,
+  playerName
+}: {
+  userData: UserData;
+  stats: any;
+  isShareModalOpen: boolean;
+  onShareModalClose: () => void;
+  playerName: string;
+}) {
   // Get player position from userData
   const getPlayerPosition = (): 'GK' | 'DEF' | 'FWD' | undefined => {
     console.log('debugging userData', userData);
@@ -218,6 +243,20 @@ function CalibratedStats({ userData, stats }: { userData: UserData; stats: any }
       {stats?.spiderChart && <div className="radar chart">
         <RadarChart data={stats?.spiderChart} />
       </div>}
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={onShareModalClose}
+        type="profile"
+        playerName={playerName}
+      >
+        <ShareablePlayerCard
+          userData={userData}
+          stats={stats}
+          playerPosition={playerPosition}
+        />
+      </ShareModal>
     </div>
   );
 } 

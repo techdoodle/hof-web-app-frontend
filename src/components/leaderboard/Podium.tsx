@@ -59,6 +59,7 @@ export const Podium = (props: {
   second: any;
   third: any;
   currentUserId?: number | null; // Allow null
+  onPlayerClick?: (player: any) => void;
 }) => {
   const leaderboardData = [
     {
@@ -155,14 +156,17 @@ export const Podium = (props: {
   return (
     <div className="w-full max-w-md mx-auto p-4 pb-0">
       <div className="flex items-end justify-center">
-        {leaderboardData.filter((player) => player.score).map((player) => (
+        {leaderboardData.filter((player) => player.score).map((player) => {
+          const playerData = player.rank === 1 ? props.first : player.rank === 2 ? props.second : props.third;
+          return (
           <div
             key={player.rank}
-            className="flex flex-col items-center relative flex-1"
+            className={`flex flex-col items-center relative flex-1 ${props.onPlayerClick ? 'cursor-pointer' : ''}`}
             style={{
               order: player.rank === 1 ? 2 : player.rank === 2 ? 1 : 3,
               maxWidth: "110px",
             }}
+            onClick={() => props.onPlayerClick && playerData && props.onPlayerClick(playerData)}
           >
             <div className="relative mb-2 transform hover:scale-110 transition-transform duration-300">
               {player.rank === 1 && (
@@ -258,7 +262,8 @@ export const Podium = (props: {
               ></div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

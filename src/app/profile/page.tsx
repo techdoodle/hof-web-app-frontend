@@ -13,6 +13,7 @@ import { useProfile } from '@/hooks/useProfile';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'stats' | 'matchHistory'>('stats');
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { userStats, userMatches, isLoading, error } = useProfile();
 
   return (
@@ -27,7 +28,7 @@ export default function ProfilePage() {
           {/* Mobile container with max-width for larger screens */}
           <div className="relative h-full w-full mx-auto flex flex-col max-w-md">
             {/* Header */}
-            <ProfileHeader userData={userData} />
+            <ProfileHeader userData={userData} onShareClick={() => setIsShareModalOpen(true)} />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
@@ -37,7 +38,14 @@ export default function ProfilePage() {
               {/* Tab Content */}
               <div className="flex-1">
                 {activeTab === 'stats' ? (
-                  <StatsTab userData={userData} stats={userStats} isLoading={isLoading} error={error} />
+                  <StatsTab
+                    userData={userData}
+                    stats={userStats}
+                    isLoading={isLoading}
+                    error={error}
+                    isShareModalOpen={isShareModalOpen}
+                    onShareModalClose={() => setIsShareModalOpen(false)}
+                  />
                 ) : (
                   <MatchHistoryTab userData={userData} matches={userMatches} isLoading={isLoading} error={error} />
                 )}

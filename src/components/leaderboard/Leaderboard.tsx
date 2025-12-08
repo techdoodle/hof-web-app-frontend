@@ -7,6 +7,8 @@ import { LeaderBoardFilters } from "./LeaderBoardFilters";
 import { ComingSoon } from "../common/ComingSoon";
 import { InfiniteScrollTrigger } from "../common/InfiniteScrollTrigger";
 import { Table, TableColumn, PlayerAvatar, TruncatedText } from "../common/Table";
+import { PlayerOverallDetailsDrawer } from "./PlayerOverallDetailsDrawer";
+import { useBottomNavVisibility } from "@/hooks/useBottomNavVisibility";
 
 type LeaderboardItemType = {
     id: number;
@@ -42,6 +44,13 @@ export function Leaderboard() {
     const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
     const userItemRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    // Drawer state for player details
+    const [selectedPlayer, setSelectedPlayer] = useState<LeaderboardItemType | null>(null);
+    const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+    const { showDrawer, hideDrawer } = useBottomNavVisibility();
 
     // Get userId safely
     const userId = userData?.id ?? null;
@@ -129,6 +138,48 @@ export function Leaderboard() {
     }, [userItem, isUserVisible]);
 
     const isOverall = (filters as any).leaderboard_type === 'overall' || !(filters as any).leaderboard_type;
+
+    // Handler to open drawer with selected player
+    const handlePlayerClick = (player: LeaderboardItemType, index?: number) => {
+        // Prevent opening if we're in the process of closing (to avoid reopening after clicking outside)
+        if (isClosing) return;
+
+        setSelectedPlayer(player);
+        // For overall leaderboard, account for top 3 podium players
+        if (isOverall && index !== undefined) {
+            // index is from slice(3), so add 3 to get actual position
+            setCurrentPlayerIndex(index + 3);
+        } else if (index !== undefined) {
+            setCurrentPlayerIndex(index);
+        } else {
+            // Find index in full leaderboard
+            const fullIndex = leaderboard.findIndex((item: LeaderboardItemType) => item.id === player.id);
+            setCurrentPlayerIndex(fullIndex >= 0 ? fullIndex : 0);
+        }
+        setIsDrawerOpen(true);
+        showDrawer();
+    };
+
+    // Handler to close drawer
+    const handleDrawerClose = () => {
+        setIsClosing(true);
+        setIsDrawerOpen(false);
+        setSelectedPlayer(null);
+        hideDrawer();
+
+        // Reset closing flag after a short delay to prevent immediate reopening
+        setTimeout(() => {
+            setIsClosing(false);
+        }, 300); // Match the drawer close animation duration
+    };
+
+    // Handler to change player in drawer (for navigation)
+    const handlePlayerChange = (newIndex: number) => {
+        if (newIndex >= 0 && newIndex < leaderboard.length) {
+            setCurrentPlayerIndex(newIndex);
+            setSelectedPlayer(leaderboard[newIndex]);
+        }
+    };
 
     // Show loading skeletons for leaderboard data
     if (isLeaderboardLoading) {
@@ -285,6 +336,7 @@ export function Leaderboard() {
                             second={leaderboard[1]}
                             third={leaderboard[2]}
                             currentUserId={userId}
+                            onPlayerClick={handlePlayerClick}
                         />
                     </div>
                 )}
@@ -328,6 +380,7 @@ export function Leaderboard() {
                                                 item={item}
                                                 isUser={userId ? item.id === userId : false}
                                                 isVisible={isUserVisible}
+                                                onClick={() => handlePlayerClick(item, index)}
                                             />
                                         </div>
                                     ))}
@@ -369,9 +422,28 @@ export function Leaderboard() {
                         isUser={true}
                         isVisible={isUserVisible}
                         isBottomCard={true}
+                        onClick={() => userItem && handlePlayerClick(userItem)}
                     />
                 </div>
             )}
+
+            {/* Player Details Drawer */}
+            <PlayerOverallDetailsDrawer
+                isOpen={isDrawerOpen}
+                onClose={handleDrawerClose}
+                player={selectedPlayer ? {
+                    id: selectedPlayer.id,
+                    name: selectedPlayer.name,
+                    imageUrl: selectedPlayer.imageUrl,
+                } : null}
+                players={leaderboard.map((item: LeaderboardItemType) => ({
+                    id: item.id,
+                    name: item.name,
+                    imageUrl: item.imageUrl,
+                }))}
+                currentPlayerIndex={currentPlayerIndex}
+                onPlayerChange={handlePlayerChange}
+            />
         </div>
     );
 }
