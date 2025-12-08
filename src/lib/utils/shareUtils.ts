@@ -14,59 +14,232 @@ const getCacheKey = (element: HTMLElement): string => {
 };
 
 /**
+ * Preloads an image and returns a promise that resolves when loaded
+ */
+const preloadImage = (src: string): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
+        if (!src || src === 'undefined' || src.includes('skeleton.png')) {
+            resolve(undefined);
+            return;
+        }
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        const timeout = setTimeout(() => {
+            resolve(undefined); // Timeout after 8 seconds
+        }, 8000);
+
+        img.onload = () => {
+            clearTimeout(timeout);
+            // Wait a bit to ensure image is fully decoded
+            setTimeout(() => resolve(undefined), 200);
+        };
+
+        img.onerror = () => {
+            clearTimeout(timeout);
+            resolve(undefined); // Continue even if image fails
+        };
+
+        img.src = src;
+    });
+};
+
+/**
  * Generates canvas from element with proper options to capture full content
  */
 const generateCanvas = async (cardElement: HTMLElement): Promise<HTMLCanvasElement> => {
-    // Wait for all images to load
+    // Step 1: Find and preload all profile picture images directly from their URLs
+    const profilePictureContainers = cardElement.querySelectorAll('[class*="ProfilePicture"], img[src*="storage.googleapis"], img[src*="firebasestorage"]');
+    const imageUrls = new Set<string>();
+
+    // Extract image URLs from img elements
+    cardElement.querySelectorAll('img').forEach((img) => {
+        const src = img.getAttribute('src') || img.src;
+        if (src && !src.includes('skeleton.png') && !src.includes('hof-logo')) {
+            // Remove cache-busting parameters
+            const cleanUrl = src.split('?')[0].split('&')[0];
+            imageUrls.add(cleanUrl);
+        }
+    });
+
+    // Preload all images
+    await Promise.all(Array.from(imageUrls).map(url => preloadImage(url)));
+
+    // Step 2: Wait for all images in the DOM to load
     const images = cardElement.querySelectorAll('img');
     await Promise.all(
         Array.from(images).map((img) => {
-            if (img.complete) return Promise.resolve();
-            return new Promise((resolve) => {
-                img.onload = resolve;
-                img.onerror = resolve; // Continue even if image fails
-                // Timeout after 5 seconds
-                setTimeout(resolve, 5000);
+            if (img.src.includes('skeleton.png') || img.src.includes('hof-logo')) {
+                return Promise.resolve<void>(undefined);
+            }
+
+            if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+                return Promise.resolve<void>(undefined);
+            }
+
+            return new Promise<void>((resolve) => {
+                const timeout = setTimeout(() => resolve(undefined), 8000);
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    setTimeout(() => resolve(undefined), 200);
+                };
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    resolve(undefined);
+                };
             });
         })
     );
 
-    // Calculate the actual height needed to include all content including absolutely positioned elements
+    // Step 3: Wait for React state to update and images to be visible
+    await new Promise<void>((resolve) => {
+        let attempts = 0;
+        const maxAttempts = 40; // Increased attempts
+
+        const checkReady = () => {
+            attempts++;
+
+            // Check for visible skeletons
+            const skeletons = cardElement.querySelectorAll('[class*="animate-pulse"]');
+            const hasVisibleSkeletons = Array.from(skeletons).some((skeleton) => {
+                const htmlEl = skeleton as HTMLElement;
+                const style = window.getComputedStyle(htmlEl);
+                return htmlEl.offsetParent !== null &&
+                    style.display !== 'none' &&
+                    style.visibility !== 'hidden' &&
+                    style.opacity !== '0';
+            });
+
+            // Check if profile images are actually visible (not hidden by loading state)
+            const profileImages = cardElement.querySelectorAll('img:not([src*="skeleton"]):not([src*="hof-logo"])');
+            const imagesVisible = Array.from(profileImages).every((img) => {
+                const htmlImg = img as HTMLImageElement;
+                const style = window.getComputedStyle(htmlImg);
+                return htmlImg.complete &&
+                    htmlImg.naturalWidth > 0 &&
+                    htmlImg.naturalHeight > 0 &&
+                    style.opacity !== '0' &&
+                    style.visibility !== 'hidden';
+            });
+
+            if ((!hasVisibleSkeletons && imagesVisible) || attempts >= maxAttempts) {
+                // Extra delay to ensure React has fully rendered
+                setTimeout(resolve, 800);
+            } else {
+                setTimeout(checkReady, 250);
+            }
+        };
+
+        // Start after a longer initial delay to let images load
+        setTimeout(checkReady, 1000);
+    });
+
+    // Step 4: Calculate height explicitly including footer
     const rect = cardElement.getBoundingClientRect();
-    const scrollHeight = Math.max(
-        cardElement.scrollHeight,
-        rect.height,
-        // Check for absolutely positioned bottom elements
-        Array.from(cardElement.querySelectorAll('[class*="absolute"]')).reduce((max, el) => {
-            const htmlEl = el as HTMLElement;
-            const elRect = htmlEl.getBoundingClientRect();
-            const cardRect = cardElement.getBoundingClientRect();
-            const bottomOffset = elRect.bottom - cardRect.top;
-            return Math.max(max, bottomOffset);
-        }, cardElement.scrollHeight)
-    );
+
+    // Find the footer element using data attribute or class
+    const footer = cardElement.querySelector('[data-footer="true"]') as HTMLElement ||
+        cardElement.querySelector('[class*="absolute"][class*="bottom-0"]') as HTMLElement;
+
+    // Calculate actual footer height
+    let footerHeight = 64; // Default to 64px (h-16)
+    if (footer) {
+        const footerRect = footer.getBoundingClientRect();
+        const cardRect = cardElement.getBoundingClientRect();
+        footerHeight = footerRect.height || 64;
+    }
+
+    // Get the actual bottom position of all content
+    let maxBottom = 0;
+    cardElement.querySelectorAll('*').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        const elRect = htmlEl.getBoundingClientRect();
+        const cardRect = cardElement.getBoundingClientRect();
+        const bottomPos = elRect.bottom - cardRect.top;
+        if (bottomPos > maxBottom) {
+            maxBottom = bottomPos;
+        }
+    });
+
+    // Use the maximum of scrollHeight or calculated bottom position, add small padding
+    const totalHeight = Math.ceil(Math.max(cardElement.scrollHeight, maxBottom) + 8);
 
     return await html2canvas(cardElement, {
         backgroundColor: '#0B1E19',
-        scale: 2, // Higher quality
+        scale: 2,
         logging: false,
         useCORS: true,
         allowTaint: true,
-        height: scrollHeight,
+        height: totalHeight,
         width: cardElement.scrollWidth || rect.width,
         scrollX: 0,
         scrollY: 0,
-        // Ensure we capture the full element including absolutely positioned children
         onclone: (clonedDoc) => {
             const clonedElement = clonedDoc.querySelector('.shareable-card') as HTMLElement;
             if (clonedElement) {
-                // Ensure all content is visible in the clone
+                // Set explicit height
+                clonedElement.style.height = totalHeight + 'px';
+                clonedElement.style.minHeight = totalHeight + 'px';
                 clonedElement.style.overflow = 'visible';
-                clonedElement.style.height = scrollHeight + 'px';
+                // Preserve existing padding; just ensure overflow is visible
 
-                // Make sure all absolutely positioned elements are visible
-                const absoluteElements = clonedElement.querySelectorAll('[class*="absolute"]');
-                absoluteElements.forEach((el) => {
+                // Remove all loading skeletons
+                clonedElement.querySelectorAll('[class*="animate-pulse"]').forEach((el) => {
+                    (el as HTMLElement).style.display = 'none';
+                });
+
+                // Force all images to be visible and loaded
+                clonedElement.querySelectorAll('img').forEach((img) => {
+                    const htmlImg = img as HTMLImageElement;
+                    if (htmlImg.src.includes('skeleton.png')) {
+                        htmlImg.style.display = 'none';
+                    } else if (!htmlImg.src.includes('hof-logo')) {
+                        // For profile images, ensure they're visible
+                        htmlImg.style.opacity = '1';
+                        htmlImg.style.visibility = 'visible';
+                        htmlImg.style.display = '';
+                        htmlImg.style.position = 'relative';
+                        htmlImg.style.zIndex = '10';
+
+                        // If image is not loaded, try to reload it
+                        if (!htmlImg.complete || htmlImg.naturalWidth === 0) {
+                            const originalSrc = htmlImg.src;
+                            htmlImg.src = ''; // Clear src
+                            setTimeout(() => {
+                                htmlImg.src = originalSrc;
+                            }, 10);
+                        }
+                    }
+                });
+
+                // Hide any parent elements that might be hiding images (loading overlays)
+                clonedElement.querySelectorAll('[class*="absolute"][class*="inset"]').forEach((el) => {
+                    const htmlEl = el as HTMLElement;
+                    const style = window.getComputedStyle(htmlEl);
+                    if (style.backgroundColor === 'rgba(0, 0, 0, 0)' ||
+                        htmlEl.classList.toString().includes('animate-pulse') ||
+                        htmlEl.classList.toString().includes('gradient')) {
+                        htmlEl.style.display = 'none';
+                    }
+                });
+
+                // Ensure footer is visible
+                const clonedFooter = clonedElement.querySelector('[data-footer="true"]') as HTMLElement ||
+                    clonedElement.querySelector('[class*="absolute"][class*="bottom-0"]') as HTMLElement;
+                if (clonedFooter) {
+                    clonedFooter.style.visibility = 'visible';
+                    clonedFooter.style.opacity = '1';
+                    clonedFooter.style.display = 'flex';
+                    clonedFooter.style.position = 'absolute';
+                    clonedFooter.style.bottom = '0';
+                    clonedFooter.style.left = '0';
+                    clonedFooter.style.right = '0';
+                    clonedFooter.style.width = '100%';
+                }
+
+                // Make all absolute elements visible
+                clonedElement.querySelectorAll('[class*="absolute"]').forEach((el) => {
                     const htmlEl = el as HTMLElement;
                     htmlEl.style.visibility = 'visible';
                     htmlEl.style.opacity = '1';

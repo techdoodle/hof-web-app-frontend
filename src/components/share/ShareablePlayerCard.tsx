@@ -26,11 +26,10 @@ export const ShareablePlayerCard = forwardRef<HTMLDivElement, ShareablePlayerCar
                     minHeight: '500px',
                     position: 'relative',
                     overflow: 'hidden',
-                    paddingBottom: '80px', // Add padding to ensure bottom strip is included in capture
                 }}
             >
                 {/* Main Content */}
-                <div className="p-6 pb-6 space-y-4">
+                <div className="p-6 pb-2 space-y-2">
                     {/* Header Section with Profile and Key Stats */}
                     <div className="relative flex items-end justify-between gap-2">
                         {/* Left Key Stat - Position and Goals */}
@@ -94,7 +93,7 @@ export const ShareablePlayerCard = forwardRef<HTMLDivElement, ShareablePlayerCar
                 </div>
 
                 {/* Black Strip at Bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-16 flex flex-col justify-between px-6 py-2 gap-2">
+                <div className="absolute bottom-0 left-0 right-0 flex flex-col justify-between px-6 gap-0" data-footer="true">
                     {/* Left: Logo and Text */}
                     <div className="flex items-center gap-2">
                         <img
@@ -107,19 +106,21 @@ export const ShareablePlayerCard = forwardRef<HTMLDivElement, ShareablePlayerCar
                             }}
                         />
                         <span className="text-white font-semibold text-md font-orbitron whitespace-nowrap">Humans of Football</span>
+                        <div className="text-white font-semibold text-sm text-right">
+                            app.humansoffootball.in
+                        </div>
                     </div>
 
-                    {/* Right: Join Us Link */}
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                         <div
-                            className="text-[#00CC66] font-semibold text-sm hover:underline"
+                            className="text-[#00CC66] font-semibold text-sm"
                         >
                             Join Us
                         </div>
                         <div className="text-white font-semibold text-sm">
                             app.humansoffootball.in
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         );

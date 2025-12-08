@@ -48,7 +48,7 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
                     minHeight: '550px',
                     position: 'relative',
                     overflow: 'hidden',
-                    paddingBottom: '80px', // Add padding to ensure bottom strip is included in capture
+                    paddingBottom: '100px', // Increased padding to ensure bottom strip is fully included in capture
                 }}
             >
                 {/* Main Content */}
@@ -133,7 +133,7 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
                 </div>
 
                 {/* Black Strip at Bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-16 flex flex-col justify-between px-6 py-2 gap-2">
+                <div className="absolute bottom-0 left-0 right-0 h-16 flex flex-col justify-between px-6 py-2 gap-2" data-footer="true">
                     {/* Left: Logo and Text */}
                     <div className="flex items-center gap-2">
                         <img
@@ -146,10 +146,13 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
                             }}
                         />
                         <span className="text-white font-semibold text-md font-orbitron whitespace-nowrap">Humans of Football</span>
+                        <div className="text-white font-semibold text-sm">
+                            app.humansoffootball.in
+                        </div>
                     </div>
 
                     {/* Right: Join Us Link */}
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                         <div
                             className="text-[#00CC66] font-semibold text-sm hover:underline"
                         >
@@ -158,7 +161,7 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
                         <div className="text-white font-semibold text-sm">
                             app.humansoffootball.in
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         );

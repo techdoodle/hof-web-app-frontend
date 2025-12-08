@@ -15,6 +15,7 @@ interface ShareModalProps {
 
 export const ShareModal = ({ isOpen, onClose, children, type, playerName }: ShareModalProps) => {
     const cardRef = useRef<HTMLDivElement>(null);
+    const captureRef = useRef<HTMLDivElement>(null);
 
     // Clone children and add ref
     const childrenWithRef = isValidElement(children)
@@ -36,14 +37,16 @@ export const ShareModal = ({ isOpen, onClose, children, type, playerName }: Shar
                 </div>
 
                 {/* Shareable Card */}
-                <div className="flex-1 overflow-y-auto p-4">
-                    {childrenWithRef}
+                <div className="flex-1 overflow-y-auto p-2 pb-1">
+                    <div ref={captureRef} className="flex justify-center">
+                        {childrenWithRef}
+                    </div>
                 </div>
 
                 {/* Share Buttons */}
                 <div className="border-t border-gray-700 bg-[#0B1E19]">
                     <ShareButtons
-                        cardRef={cardRef}
+                        cardRef={captureRef}
                         type={type}
                         playerName={playerName}
                     />
