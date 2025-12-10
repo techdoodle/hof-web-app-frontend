@@ -89,10 +89,14 @@ export function ProfilePicture({
         onLoad={handleImageLoad}
         onError={handleImageError}
         alt={userName}
+        crossOrigin="anonymous"
+        referrerPolicy="no-referrer"
         className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'
           }`}
         style={{
-          maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%',
+          // Use a gentle vignette; keep CSS valid so html2canvas can render it
+          maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)',
         }}
         ref={(img) => {
           // Check if image is already loaded (cached)

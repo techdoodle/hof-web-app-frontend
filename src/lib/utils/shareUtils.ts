@@ -1,4 +1,6 @@
 import html2canvas from 'html2canvas';
+import api from '../api';
+import { getAccessToken } from './auth';
 
 // Cache to store generated images
 const imageCache = new Map<string, Blob>();
@@ -45,6 +47,37 @@ const preloadImage = (src: string): Promise<void> => {
     });
 };
 
+// Use the same backend base URL as axios api client
+const IMAGE_PROXY_ENDPOINT = `${api.defaults.baseURL?.replace(/\/$/, '') || ''}/image-proxy`;
+
+const blobToDataUrl = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+};
+
+const fetchImageThroughProxy = async (src: string): Promise<string | null> => {
+    try {
+        const proxyUrl = `${IMAGE_PROXY_ENDPOINT}?url=${encodeURIComponent(src)}`;
+        const token = getAccessToken();
+        const res = await fetch(proxyUrl, {
+            cache: 'no-store',
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) {
+            return null;
+        }
+        const blob = await res.blob();
+        return await blobToDataUrl(blob);
+    } catch (error) {
+        console.error('Error fetching image via proxy', error);
+        return null;
+    }
+};
+
 /**
  * Generates canvas from element with proper options to capture full content
  */
@@ -55,11 +88,13 @@ const generateCanvas = async (cardElement: HTMLElement): Promise<HTMLCanvasEleme
 
     // Extract image URLs from img elements
     cardElement.querySelectorAll('img').forEach((img) => {
+        // Force CORS-friendly fetching so html2canvas can use the bitmap
+        (img as HTMLImageElement).crossOrigin = 'anonymous';
+
         const src = img.getAttribute('src') || img.src;
         if (src && !src.includes('skeleton.png') && !src.includes('hof-logo')) {
-            // Remove cache-busting parameters
-            const cleanUrl = src.split('?')[0].split('&')[0];
-            imageUrls.add(cleanUrl);
+            // Keep the full URL (including tokens) so signed URLs keep working
+            imageUrls.add(src);
         }
     });
 
@@ -135,7 +170,40 @@ const generateCanvas = async (cardElement: HTMLElement): Promise<HTMLCanvasEleme
         setTimeout(checkReady, 1000);
     });
 
-    // Step 4: Calculate height explicitly including footer
+    // Step 4: Fetch proxied data URLs for images so canvas isn't tainted by CORS
+    const imageDataUrlMap = new Map<string, string>();
+    const candidateImages = Array.from(cardElement.querySelectorAll('img')).filter((img) => {
+        const src = img.getAttribute('src') || img.src;
+        return src &&
+            !src.includes('skeleton.png') &&
+            !src.includes('hof-logo');
+    });
+
+    const normalizeSrcs = (src: string) => {
+        const entries = new Set<string>();
+        const base = src.split('?')[0].split('&')[0];
+        entries.add(src);
+        entries.add(base);
+        try {
+            const abs = new URL(src, window.location.origin).href;
+            entries.add(abs);
+            entries.add(abs.split('?')[0].split('&')[0]);
+        } catch {
+            // ignore URL construction errors
+        }
+        return Array.from(entries);
+    };
+
+    await Promise.all(candidateImages.map(async (img) => {
+        const src = img.getAttribute('src') || img.src;
+        if (!src) return;
+        const dataUrl = await fetchImageThroughProxy(src);
+        if (dataUrl) {
+            normalizeSrcs(src).forEach((key) => imageDataUrlMap.set(key, dataUrl));
+        }
+    }));
+
+    // Step 5: Calculate height explicitly including footer
     const rect = cardElement.getBoundingClientRect();
 
     // Find the footer element using data attribute or class
@@ -192,6 +260,26 @@ const generateCanvas = async (cardElement: HTMLElement): Promise<HTMLCanvasEleme
                 // Force all images to be visible and loaded
                 clonedElement.querySelectorAll('img').forEach((img) => {
                     const htmlImg = img as HTMLImageElement;
+                    const originalSrc = htmlImg.getAttribute('src') || htmlImg.src;
+                    const baseSrc = (originalSrc || '').split('?')[0].split('&')[0];
+                    let dataUrl = imageDataUrlMap.get(originalSrc) || imageDataUrlMap.get(baseSrc);
+                    if (!dataUrl) {
+                        try {
+                            const abs = new URL(originalSrc, window.location.origin).href;
+                            const absBase = abs.split('?')[0].split('&')[0];
+                            dataUrl = imageDataUrlMap.get(abs) || imageDataUrlMap.get(absBase);
+                        } catch {
+                            // ignore
+                        }
+                    }
+
+                    if (dataUrl) {
+                        htmlImg.src = dataUrl;
+                    }
+
+                    htmlImg.crossOrigin = 'anonymous';
+                    htmlImg.referrerPolicy = 'no-referrer';
+
                     if (htmlImg.src.includes('skeleton.png')) {
                         htmlImg.style.display = 'none';
                     } else if (!htmlImg.src.includes('hof-logo')) {
