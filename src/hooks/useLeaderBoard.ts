@@ -20,6 +20,8 @@ const LEADERBOARD_FILTERS = {
         'Gurugram': 'gurugram',
         'Mumbai': 'mumbai',
         'Bengaluru': 'bengaluru',
+        'Pune': 'pune',
+        'Kolkata': 'kolkata',
     },
     positions: {
         'All Positions': 'all',

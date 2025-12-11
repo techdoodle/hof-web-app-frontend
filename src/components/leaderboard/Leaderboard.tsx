@@ -352,7 +352,7 @@ export function Leaderboard() {
                 {hasNoData ? (
                     <div className="flex flex-col items-center justify-center h-full py-12">
                         <div className="text-center text-gray-400 mb-4">
-                            <p className="text-lg font-medium mb-2">No players yet for the filters</p>
+                            <p className="text-lg font-medium mb-2">No player has played 3+ games yet</p>
                             <p className="text-sm text-gray-500">Try adjusting your filter selections</p>
                             <button className="bg-green-500 text-white mt-2 px-2 py-1 rounded-md" onClick={() => {
                                 resetFilters();
