@@ -9,7 +9,8 @@ console.log("environment DEBUG", environment, "deployment:", deploymentEnv);
 
 if (environment === 'development') {
   baseURL = 'http://localhost:8000';
-  // baseURL = 'https://testapi.humansoffootball.in';
+  // baseURL = 'https://hof-web-app-backend-production.up.railway.app';
+  // baseURL = 'https://hof-web-app-backend-staging.up.railway.app';
 } else if (deploymentEnv === 'staging') {
   baseURL = 'https://testapi.humansoffootball.in';
 } else {
